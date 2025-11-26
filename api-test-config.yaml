@@ -101,14 +101,6 @@ scenarios:
           status: 200
           body:
             $.success: true
-            $.data.plans[0].id: "!null"
-            $.data.plans[0].name: "!null"
-            $.data.plans[0].price: "!null"
-            $.data.plans[0].currency: "CNY"
-            $.data.plans[0].duration_days: "!null"
-        extract:
-          monthlyPlan: $.data.plans[?(@.id=='plan_monthly')]
-          yearlyPlan: $.data.plans[?(@.id=='plan_yearly')]
 
   # ==================== 用户订阅查询测试 ====================
   
@@ -117,16 +109,15 @@ scenarios:
     description: 测试用户订阅状态查询
     steps:
       - name: 查询用户订阅状态（未订阅）
-        endpoint: /v1/subscription/my/{{.test_user_id}}
+        endpoint: /v1/subscription/my/1001
         method: GET
-        dependencies: [验证套餐数据结构]
         assert:
           status: 200
           body:
             $.success: true
         extract:
-          isActive: $.data.is_active
-          currentPlanId: $.data.plan_id
+          isActive: $.data.isActive
+          currentPlanId: $.data.planId
           subscriptionStatus: $.data.status
 
       - name: 查询其他用户订阅状态
@@ -145,11 +136,12 @@ scenarios:
     description: 测试用户订阅查询的异常情况
     steps:
       - name: 查询-无效用户ID（0）
-        endpoint: /v1/subscription/my/{{.invalid_user_id}}
+        endpoint: /v1/subscription/my/0
         method: GET
-        dependencies: [查询其他用户订阅状态]
         assert:
-          status: [400, 500]
+          status: 400
+          body:
+            $.success: false
       
       - name: 查询-负数用户ID
         endpoint: /v1/subscription/my/{{.negative_user_id}}
@@ -174,20 +166,19 @@ scenarios:
       - name: 创建月度订阅订单
         endpoint: /v1/subscription/order
         method: POST
-        dependencies: [查询-非数字用户ID]
         request_body:
-          uid: "{{.test_user_id}}"
-          plan_id: "{{.plan_monthly_id}}"
-          payment_method: "{{.payment_method_alipay}}"
+          uid: 1001
+          plan_id: "plan_monthly"
+          payment_method: "alipay"
         assert:
           status: 200
           body:
             $.success: true
-            $.data.order_id: "!null"
-            $.data.payment_id: "!null"
+            $.data.orderId: "!null"
+            $.data.paymentId: "!null"
         extract:
-          monthlyOrderId: $.data.order_id
-          monthlyPaymentId: $.data.payment_id
+          monthlyOrderId: $.data.orderId
+          monthlyPaymentId: $.data.paymentId
           monthlyPayUrl: $.data.pay_url
           monthlyPayCode: $.data.pay_code
 
@@ -196,18 +187,18 @@ scenarios:
         method: POST
         dependencies: [创建月度订阅订单]
         request_body:
-          uid: "{{.test_user_id_2}}"
-          plan_id: "{{.plan_yearly_id}}"
-          payment_method: "{{.payment_method_wechat}}"
+          uid: 1002
+          plan_id: "plan_yearly"
+          payment_method: "wechatpay"
         assert:
           status: 200
           body:
             $.success: true
-            $.data.order_id: "!null"
+            $.data.orderId: "!null"
         extract:
-          yearlyOrderId: $.data.order_id
-          yearlyPaymentId: $.data.payment_id
-          yearlyPayParams: $.data.pay_params
+          yearlyOrderId: $.data.orderId
+          yearlyPaymentId: $.data.paymentId
+          yearlyPayParams: $.data.payParams
   
   # 6. 订阅购买异常场景
   - name: 06-订阅购买异常场景

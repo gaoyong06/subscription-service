@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.9.0
 // - protoc             v5.29.3
-// source: api/subscription/v1/subscription.proto
+// source: subscription.proto
 
 package v1
 

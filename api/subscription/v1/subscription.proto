@@ -34,6 +34,60 @@ service Subscription {
       body: "*"
     };
   }
+  // 取消订阅
+  rpc CancelSubscription (CancelSubscriptionRequest) returns (CancelSubscriptionReply) {
+    option (google.api.http) = {
+      post: "/v1/subscription/cancel"
+      body: "*"
+    };
+  }
+  // 暂停订阅
+  rpc PauseSubscription (PauseSubscriptionRequest) returns (PauseSubscriptionReply) {
+    option (google.api.http) = {
+      post: "/v1/subscription/pause"
+      body: "*"
+    };
+  }
+  // 恢复订阅
+  rpc ResumeSubscription (ResumeSubscriptionRequest) returns (ResumeSubscriptionReply) {
+    option (google.api.http) = {
+      post: "/v1/subscription/resume"
+      body: "*"
+    };
+  }
+  // 获取订阅历史记录
+  rpc GetSubscriptionHistory (GetSubscriptionHistoryRequest) returns (GetSubscriptionHistoryReply) {
+    option (google.api.http) = {
+      get: "/v1/subscription/history/{uid}"
+    };
+  }
+  // 设置自动续费
+  rpc SetAutoRenew (SetAutoRenewRequest) returns (SetAutoRenewReply) {
+    option (google.api.http) = {
+      post: "/v1/subscription/auto-renew"
+      body: "*"
+    };
+  }
+  // 获取即将过期的订阅（用于定时任务）
+  rpc GetExpiringSubscriptions (GetExpiringSubscriptionsRequest) returns (GetExpiringSubscriptionsReply) {
+    option (google.api.http) = {
+      get: "/v1/subscription/expiring"
+    };
+  }
+  // 批量更新过期订阅状态（用于定时任务）
+  rpc UpdateExpiredSubscriptions (UpdateExpiredSubscriptionsRequest) returns (UpdateExpiredSubscriptionsReply) {
+    option (google.api.http) = {
+      post: "/v1/subscription/expired/update"
+      body: "*"
+    };
+  }
+  // 处理自动续费（用于定时任务）
+  rpc ProcessAutoRenewals (ProcessAutoRenewalsRequest) returns (ProcessAutoRenewalsReply) {
+    option (google.api.http) = {
+      post: "/v1/subscription/auto-renew/process"
+      body: "*"
+    };
+  }
 }
 
 message Plan {
@@ -61,7 +115,8 @@ message GetMySubscriptionReply {
   string plan_id = 2;
   int64 start_time = 3;
   int64 end_time = 4;
-  string status = 5; // active, expired
+  string status = 5; // active, expired, paused, cancelled
+  bool auto_renew = 6; // 是否自动续费
 }
 
 message CreateSubscriptionOrderRequest {
@@ -86,4 +141,128 @@ message HandlePaymentSuccessRequest {
 
 message HandlePaymentSuccessReply {
   bool success = 1;
+}
+
+// 取消订阅
+message CancelSubscriptionRequest {
+  uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
+  string reason = 2; // 取消原因（可选）
+}
+
+message CancelSubscriptionReply {
+  bool success = 1;
+  string message = 2;
+}
+
+// 暂停订阅
+message PauseSubscriptionRequest {
+  uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
+  string reason = 2; // 暂停原因（可选）
+}
+
+message PauseSubscriptionReply {
+  bool success = 1;
+  string message = 2;
+}
+
+// 恢复订阅
+message ResumeSubscriptionRequest {
+  uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
+}
+
+message ResumeSubscriptionReply {
+  bool success = 1;
+  string message = 2;
+}
+
+// 订阅历史记录
+message SubscriptionHistoryItem {
+  uint64 id = 1;
+  string plan_id = 2;
+  string plan_name = 3;
+  int64 start_time = 4;
+  int64 end_time = 5;
+  string status = 6; // active, expired, paused, cancelled
+  string action = 7; // created, renewed, upgraded, paused, resumed, cancelled
+  int64 created_at = 8;
+}
+
+message GetSubscriptionHistoryRequest {
+  uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
+  int32 page = 2; // 页码，从1开始
+  int32 page_size = 3; // 每页数量，默认10
+}
+
+message GetSubscriptionHistoryReply {
+  repeated SubscriptionHistoryItem items = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+// 自动续费设置
+message SetAutoRenewRequest {
+  uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
+  bool auto_renew = 2; // true: 开启自动续费, false: 关闭自动续费
+}
+
+message SetAutoRenewReply {
+  bool success = 1;
+  string message = 2;
+}
+
+// 获取即将过期的订阅
+message GetExpiringSubscriptionsRequest {
+  int32 days_before_expiry = 1 [(validate.rules).int32 = {gte: 1, lte: 30}]; // 过期前多少天，默认7天
+  int32 page = 2; // 页码，从1开始
+  int32 page_size = 3; // 每页数量，默认10
+}
+
+message SubscriptionInfo {
+  uint64 uid = 1;
+  string plan_id = 2;
+  string plan_name = 3;
+  int64 start_time = 4;
+  int64 end_time = 5;
+  bool auto_renew = 6;
+  double amount = 7;
+}
+
+message GetExpiringSubscriptionsReply {
+  repeated SubscriptionInfo subscriptions = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+// 批量更新过期订阅
+message UpdateExpiredSubscriptionsRequest {
+  // 空请求，自动处理所有过期订阅
+}
+
+message UpdateExpiredSubscriptionsReply {
+  int32 updated_count = 1;
+  repeated uint64 updated_uids = 2; // 更新的用户ID列表
+}
+
+// 自动续费处理
+message ProcessAutoRenewalsRequest {
+  int32 days_before_expiry = 1 [(validate.rules).int32 = {gte: 1, lte: 30}]; // 提前多少天续费，默认3天
+  bool dry_run = 2; // 是否为测试运行
+}
+
+message AutoRenewResult {
+  uint64 uid = 1;
+  string plan_id = 2;
+  bool success = 3;
+  string order_id = 4;
+  string payment_id = 5;
+  string error_message = 6;
+}
+
+message ProcessAutoRenewalsReply {
+  int32 total_count = 1;    // 总共需要处理的数量
+  int32 success_count = 2;  // 成功的数量
+  int32 failed_count = 3;   // 失败的数量
+  repeated AutoRenewResult results = 4;
 }

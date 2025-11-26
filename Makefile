@@ -22,6 +22,7 @@ api:
 	  --proto_path=$(shell go env GOPATH)/pkg/mod/github.com/go-kratos/kratos/v2@v2.9.1/third_party \
 	  --proto_path=$(shell go list -m -f '{{.Dir}}' github.com/grpc-ecosystem/grpc-gateway)/third_party/googleapis \
 	  --go_out=paths=source_relative:. \
+	  --go-http_out=paths=source_relative:. \
 	  --go-grpc_out=paths=source_relative:. \
 	  --validate_out=paths=source_relative,lang=go:. \
 	  api/subscription/v1/subscription.proto
@@ -30,16 +31,31 @@ api:
 # 生成依赖注入代码
 wire:
 	cd cmd/server && wire
+	cd cmd/cron && wire
 
 .PHONY: build
 # 构建项目
 build:
 	mkdir -p bin/ && go build -ldflags "-X main.Version=$(VERSION)" -o ./bin/server ./cmd/server
 
+.PHONY: build-cron
+# 构建 cron 服务
+build-cron:
+	mkdir -p bin/ && go build -ldflags "-X main.Version=$(VERSION)" -o ./bin/cron ./cmd/cron
+
+.PHONY: build-all
+# 构建所有服务
+build-all: build build-cron
+
 .PHONY: run
 # 运行服务
 run:
 	go run cmd/server/main.go cmd/server/wire_gen.go -conf configs/config.yaml
+
+.PHONY: run-cron
+# 运行 cron 服务
+run-cron:
+	./bin/cron -conf ./configs/config.yaml
 
 .PHONY: test
 # 运行 API 测试
@@ -58,6 +74,7 @@ clean:
 	rm -rf bin/
 	rm -f api/subscription/v1/*.pb.go
 	rm -f cmd/server/wire_gen.go
+	rm -f cmd/cron/wire_gen.go
 	rm -rf test-reports/
 
 .PHONY: docker-build
@@ -72,7 +89,7 @@ docker-run:
 
 .PHONY: all
 # 生成所有代码并构建
-all: api wire build
+all: api wire build-all
 
 .PHONY: help
 # 显示帮助信息
@@ -83,10 +100,13 @@ help:
 	@echo "  make init         - 安装所需工具"
 	@echo "  make api          - 生成 API 代码"
 	@echo "  make wire         - 生成依赖注入代码"
-	@echo "  make build        - 编译项目"
-	@echo "  make run          - 运行服务"
+	@echo "  make build        - 编译主服务"
+	@echo "  make build-cron   - 编译 cron 服务"
+	@echo "  make build-all    - 编译所有服务"
+	@echo "  make run          - 运行主服务"
+	@echo "  make run-cron     - 运行 cron 服务"
 	@echo "  make test         - 运行 API 测试"
 	@echo "  make clean        - 清理生成的文件"
 	@echo "  make docker-build - 构建 Docker 镜像"
 	@echo "  make docker-run   - 运行 Docker 容器"
-	@echo "  make all          - 生成代码并构建"
+	@echo "  make all          - 生成代码并构建所有服务"

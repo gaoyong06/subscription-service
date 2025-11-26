@@ -5,22 +5,171 @@ openapi: 3.0.3
 info:
     title: Subscription API
     version: 0.0.1
-    description: Subscription Service API for managing user subscriptions and plans
 paths:
-    /v1/subscription/plans:
-        get:
+    /v1/subscription/auto-renew:
+        post:
             tags:
                 - Subscription
-            summary: 获取所有订阅套餐
-            description: 获取所有可用的订阅套餐列表
-            operationId: Subscription_ListPlans
+            description: 设置自动续费
+            operationId: Subscription_SetAutoRenew
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/SetAutoRenewRequest'
+                required: true
             responses:
                 "200":
                     description: OK
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ListPlansReply'
+                                $ref: '#/components/schemas/SetAutoRenewReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/subscription/auto-renew/process:
+        post:
+            tags:
+                - Subscription
+            description: 处理自动续费（用于定时任务）
+            operationId: Subscription_ProcessAutoRenewals
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ProcessAutoRenewalsRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ProcessAutoRenewalsReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/subscription/cancel:
+        post:
+            tags:
+                - Subscription
+            description: 取消订阅
+            operationId: Subscription_CancelSubscription
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CancelSubscriptionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CancelSubscriptionReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/subscription/expired/update:
+        post:
+            tags:
+                - Subscription
+            description: 批量更新过期订阅状态（用于定时任务）
+            operationId: Subscription_UpdateExpiredSubscriptions
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateExpiredSubscriptionsRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UpdateExpiredSubscriptionsReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/subscription/expiring:
+        get:
+            tags:
+                - Subscription
+            description: 获取即将过期的订阅（用于定时任务）
+            operationId: Subscription_GetExpiringSubscriptions
+            parameters:
+                - name: daysBeforeExpiry
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetExpiringSubscriptionsReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/subscription/history/{uid}:
+        get:
+            tags:
+                - Subscription
+            description: 获取订阅历史记录
+            operationId: Subscription_GetSubscriptionHistory
+            parameters:
+                - name: uid
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetSubscriptionHistoryReply'
                 default:
                     description: Default error response
                     content:
@@ -31,16 +180,14 @@ paths:
         get:
             tags:
                 - Subscription
-            summary: 获取用户的订阅状态
-            description: 获取指定用户的当前订阅状态
+            description: 获取用户的订阅状态
             operationId: Subscription_GetMySubscription
             parameters:
                 - name: uid
                   in: path
                   required: true
                   schema:
-                      type: integer
-                      format: uint64
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -58,8 +205,7 @@ paths:
         post:
             tags:
                 - Subscription
-            summary: 创建订阅订单
-            description: 创建订阅订单并调用 Payment Service
+            description: 创建订阅订单 (调用 Payment Service)
             operationId: Subscription_CreateSubscriptionOrder
             requestBody:
                 content:
@@ -80,12 +226,36 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/subscription/pause:
+        post:
+            tags:
+                - Subscription
+            description: 暂停订阅
+            operationId: Subscription_PauseSubscription
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/PauseSubscriptionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PauseSubscriptionReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/subscription/payment/success:
         post:
             tags:
                 - Subscription
-            summary: 支付回调处理
-            description: 处理支付成功回调，通常由 Payment Service 或 MQ 调用
+            description: 支付回调处理 (通常由 Payment Service 或 MQ 调用)
             operationId: Subscription_HandlePaymentSuccess
             requestBody:
                 content:
@@ -106,97 +276,173 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/subscription/plans:
+        get:
+            tags:
+                - Subscription
+            description: 获取所有订阅套餐
+            operationId: Subscription_ListPlans
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListPlansReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/subscription/resume:
+        post:
+            tags:
+                - Subscription
+            description: 恢复订阅
+            operationId: Subscription_ResumeSubscription
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ResumeSubscriptionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ResumeSubscriptionReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
+        AutoRenewResult:
+            type: object
+            properties:
+                uid:
+                    type: string
+                planId:
+                    type: string
+                success:
+                    type: boolean
+                orderId:
+                    type: string
+                paymentId:
+                    type: string
+                errorMessage:
+                    type: string
+        CancelSubscriptionReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+        CancelSubscriptionRequest:
+            type: object
+            properties:
+                uid:
+                    type: string
+                reason:
+                    type: string
+            description: 取消订阅
         CreateSubscriptionOrderReply:
             type: object
             properties:
-                order_id:
+                orderId:
                     type: string
-                    description: 业务订单号
-                payment_id:
+                paymentId:
                     type: string
-                    description: 支付流水号
-                pay_url:
+                payUrl:
                     type: string
-                    description: 支付链接
-                pay_code:
+                payCode:
                     type: string
-                    description: 支付二维码
-                pay_params:
+                payParams:
                     type: string
-                    description: 支付参数
         CreateSubscriptionOrderRequest:
-            required:
-                - uid
-                - plan_id
-                - payment_method
             type: object
             properties:
                 uid:
+                    type: string
+                planId:
+                    type: string
+                paymentMethod:
+                    type: string
+        GetExpiringSubscriptionsReply:
+            type: object
+            properties:
+                subscriptions:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SubscriptionInfo'
+                total:
                     type: integer
-                    description: 用户ID
-                    format: uint64
-                plan_id:
-                    type: string
-                    description: 套餐ID (plan_monthly, plan_yearly)
-                payment_method:
-                    type: string
-                    description: 支付方式 (alipay, wechatpay)
-                    enum:
-                        - alipay
-                        - wechatpay
+                    format: int32
+                page:
+                    type: integer
+                    format: int32
+                pageSize:
+                    type: integer
+                    format: int32
         GetMySubscriptionReply:
             type: object
             properties:
-                is_active:
+                isActive:
                     type: boolean
-                    description: 是否激活
-                plan_id:
+                planId:
                     type: string
-                    description: 当前套餐ID
-                start_time:
-                    type: integer
-                    description: 开始时间（Unix时间戳）
-                    format: int64
-                end_time:
-                    type: integer
-                    description: 结束时间（Unix时间戳）
-                    format: int64
+                startTime:
+                    type: string
+                endTime:
+                    type: string
                 status:
                     type: string
-                    description: 订阅状态 (active, expired)
-        GetMySubscriptionRequest:
-            required:
-                - uid
+                autoRenew:
+                    type: boolean
+        GetSubscriptionHistoryReply:
             type: object
             properties:
-                uid:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/SubscriptionHistoryItem'
+                total:
                     type: integer
-                    description: 用户ID
-                    format: uint64
+                    format: int32
+                page:
+                    type: integer
+                    format: int32
+                pageSize:
+                    type: integer
+                    format: int32
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
         HandlePaymentSuccessReply:
             type: object
             properties:
                 success:
                     type: boolean
-                    description: 处理是否成功
         HandlePaymentSuccessRequest:
-            required:
-                - order_id
-                - payment_id
-                - amount
             type: object
             properties:
-                order_id:
+                orderId:
                     type: string
-                    description: 订单号
-                payment_id:
+                paymentId:
                     type: string
-                    description: 支付流水号
                 amount:
                     type: number
-                    description: 支付金额
                     format: double
         ListPlansReply:
             type: object
@@ -205,52 +451,160 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/Plan'
-        ListPlansRequest:
+        PauseSubscriptionReply:
             type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+        PauseSubscriptionRequest:
+            type: object
+            properties:
+                uid:
+                    type: string
+                reason:
+                    type: string
+            description: 暂停订阅
         Plan:
             type: object
             properties:
                 id:
                     type: string
-                    description: 套餐ID (plan_monthly, plan_yearly)
                 name:
                     type: string
-                    description: 套餐名称
                 description:
                     type: string
-                    description: 套餐描述
                 price:
                     type: number
-                    description: 价格
                     format: double
                 currency:
                     type: string
-                    description: 币种 (CNY, USD)
-                duration_days:
+                durationDays:
                     type: integer
-                    description: 持续天数
                     format: int32
                 type:
                     type: string
-                    description: 套餐类型 (free, pro, enterprise)
+        ProcessAutoRenewalsReply:
+            type: object
+            properties:
+                totalCount:
+                    type: integer
+                    format: int32
+                successCount:
+                    type: integer
+                    format: int32
+                failedCount:
+                    type: integer
+                    format: int32
+                results:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/AutoRenewResult'
+        ProcessAutoRenewalsRequest:
+            type: object
+            properties:
+                daysBeforeExpiry:
+                    type: integer
+                    format: int32
+                dryRun:
+                    type: boolean
+            description: 自动续费处理
+        ResumeSubscriptionReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+        ResumeSubscriptionRequest:
+            type: object
+            properties:
+                uid:
+                    type: string
+            description: 恢复订阅
+        SetAutoRenewReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                message:
+                    type: string
+        SetAutoRenewRequest:
+            type: object
+            properties:
+                uid:
+                    type: string
+                autoRenew:
+                    type: boolean
+            description: 自动续费设置
         Status:
             type: object
             properties:
                 code:
                     type: integer
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
                     format: int32
                 message:
                     type: string
+                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
                 details:
                     type: array
                     items:
                         $ref: '#/components/schemas/GoogleProtobufAny'
-        GoogleProtobufAny:
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        SubscriptionHistoryItem:
             type: object
             properties:
-                '@type':
+                id:
                     type: string
-            additionalProperties: true
+                planId:
+                    type: string
+                planName:
+                    type: string
+                startTime:
+                    type: string
+                endTime:
+                    type: string
+                status:
+                    type: string
+                action:
+                    type: string
+                createdAt:
+                    type: string
+            description: 订阅历史记录
+        SubscriptionInfo:
+            type: object
+            properties:
+                uid:
+                    type: string
+                planId:
+                    type: string
+                planName:
+                    type: string
+                startTime:
+                    type: string
+                endTime:
+                    type: string
+                autoRenew:
+                    type: boolean
+                amount:
+                    type: number
+                    format: double
+        UpdateExpiredSubscriptionsReply:
+            type: object
+            properties:
+                updatedCount:
+                    type: integer
+                    format: int32
+                updatedUids:
+                    type: array
+                    items:
+                        type: string
+        UpdateExpiredSubscriptionsRequest:
+            type: object
+            properties: {}
+            description: 批量更新过期订阅
 tags:
     - name: Subscription
-      description: 订阅管理服务

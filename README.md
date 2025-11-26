@@ -14,6 +14,10 @@ Subscription Service 是一个独立的**订阅管理微服务**，负责管理�
 - ✅ **订阅延长**: 处理支付成功后的订阅延长
 - ✅ **订阅续费**: 支持订阅到期后续费
 - ✅ **订阅升级**: 支持从低级套餐升级到高级套餐
+- ✅ **订阅取消**: 支持用户主动取消订阅
+- ✅ **订阅暂停/恢复**: 支持临时暂停和恢复订阅
+- ✅ **历史记录**: 记录所有订阅状态变更历史
+- ✅ **自动续费**: 支持开启/关闭自动续费功能
 - ✅ **统一响应**: 标准化的 API 响应格式
 - ✅ **国际化**: 支持多语言错误消息
 
@@ -24,8 +28,10 @@ Subscription Service 是一个独立的**订阅管理微服务**，负责管理�
 - 用户订阅状态的管理和查询
 - 订阅订单的创建和管理
 - 与 Payment Service 的集成
-- 订阅生命周期管理（激活、延长、过期）
+- 订阅生命周期管理（激活、延长、过期、取消、暂停、恢复）
 - 订阅业务逻辑（首购、续费、升级）
+- 订阅历史记录的管理
+- 自动续费功能的管理
 
 **不负责**:
 - 支付处理（由 Payment Service 处理）
@@ -127,7 +133,8 @@ message GetMySubscriptionReply {
   string plan_id = 2;        // 当前套餐ID
   int64 start_time = 3;      // 开始时间（Unix时间戳）
   int64 end_time = 4;        // 结束时间（Unix时间戳）
-  string status = 5;         // active, expired
+  string status = 5;         // active, expired, paused, cancelled
+  bool auto_renew = 6;       // 是否自动续费
 }
 ```
 
@@ -199,6 +206,151 @@ resp, err := client.HandlePaymentSuccess(context.Background(), &subscriptionv1.H
     OrderId:   "SUB20231123001",
     PaymentId: "PAY20231123001",
     Amount:    9.99,
+})
+```
+
+#### 5. 取消订阅 (CancelSubscription)
+
+```protobuf
+rpc CancelSubscription (CancelSubscriptionRequest) returns (CancelSubscriptionReply);
+
+message CancelSubscriptionRequest {
+  uint64 uid = 1;
+  string reason = 2;  // 取消原因（可选）
+}
+
+message CancelSubscriptionReply {
+  bool success = 1;
+  string message = 2;
+}
+```
+
+**示例**:
+```go
+resp, err := client.CancelSubscription(context.Background(), &subscriptionv1.CancelSubscriptionRequest{
+    Uid:    1001,
+    Reason: "不再需要此服务",
+})
+```
+
+#### 6. 暂停订阅 (PauseSubscription)
+
+```protobuf
+rpc PauseSubscription (PauseSubscriptionRequest) returns (PauseSubscriptionReply);
+
+message PauseSubscriptionRequest {
+  uint64 uid = 1;
+  string reason = 2;  // 暂停原因（可选）
+}
+
+message PauseSubscriptionReply {
+  bool success = 1;
+  string message = 2;
+}
+```
+
+**示例**:
+```go
+resp, err := client.PauseSubscription(context.Background(), &subscriptionv1.PauseSubscriptionRequest{
+    Uid:    1001,
+    Reason: "临时不使用",
+})
+```
+
+#### 7. 恢复订阅 (ResumeSubscription)
+
+```protobuf
+rpc ResumeSubscription (ResumeSubscriptionRequest) returns (ResumeSubscriptionReply);
+
+message ResumeSubscriptionRequest {
+  uint64 uid = 1;
+}
+
+message ResumeSubscriptionReply {
+  bool success = 1;
+  string message = 2;
+}
+```
+
+**示例**:
+```go
+resp, err := client.ResumeSubscription(context.Background(), &subscriptionv1.ResumeSubscriptionRequest{
+    Uid: 1001,
+})
+```
+
+#### 8. 获取订阅历史 (GetSubscriptionHistory)
+
+```protobuf
+rpc GetSubscriptionHistory (GetSubscriptionHistoryRequest) returns (GetSubscriptionHistoryReply);
+
+message GetSubscriptionHistoryRequest {
+  uint64 uid = 1;
+  int32 page = 2;       // 页码，从1开始
+  int32 page_size = 3;  // 每页数量，默认10
+}
+
+message SubscriptionHistoryItem {
+  uint64 id = 1;
+  string plan_id = 2;
+  string plan_name = 3;
+  int64 start_time = 4;
+  int64 end_time = 5;
+  string status = 6;
+  string action = 7;     // created, renewed, upgraded, paused, resumed, cancelled
+  int64 created_at = 8;
+}
+
+message GetSubscriptionHistoryReply {
+  repeated SubscriptionHistoryItem items = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+```
+
+**示例**:
+```go
+resp, err := client.GetSubscriptionHistory(context.Background(), &subscriptionv1.GetSubscriptionHistoryRequest{
+    Uid:      1001,
+    Page:     1,
+    PageSize: 10,
+})
+
+for _, item := range resp.Items {
+    fmt.Printf("操作: %s, 套餐: %s, 时间: %s\n", 
+        item.Action, item.PlanName, time.Unix(item.CreatedAt, 0))
+}
+```
+
+#### 9. 设置自动续费 (SetAutoRenew)
+
+```protobuf
+rpc SetAutoRenew (SetAutoRenewRequest) returns (SetAutoRenewReply);
+
+message SetAutoRenewRequest {
+  uint64 uid = 1;
+  bool auto_renew = 2;  // true: 开启, false: 关闭
+}
+
+message SetAutoRenewReply {
+  bool success = 1;
+  string message = 2;
+}
+```
+
+**示例**:
+```go
+// 开启自动续费
+resp, err := client.SetAutoRenew(context.Background(), &subscriptionv1.SetAutoRenewRequest{
+    Uid:       1001,
+    AutoRenew: true,
+})
+
+// 关闭自动续费
+resp, err := client.SetAutoRenew(context.Background(), &subscriptionv1.SetAutoRenewRequest{
+    Uid:       1001,
+    AutoRenew: false,
 })
 ```
 

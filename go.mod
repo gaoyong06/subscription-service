@@ -1,6 +1,8 @@
 module xinyuan_tech/subscription-service
 
-go 1.24.10
+go 1.24.0
+
+toolchain go1.24.10
 
 require (
 	github.com/gaoyong06/go-pkg v0.0.0-20251124073010-648037637cb1

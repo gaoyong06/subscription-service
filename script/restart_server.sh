@@ -37,6 +37,10 @@ cd "$(dirname "$0")/../" || exit
 echo -e "${YELLOW}正在生成proto文件...${NC}"
 make api
 
+# 生成swagger文档
+echo -e "${YELLOW}正在生成swagger文档...${NC}"
+make swagger
+
 # 启动主服务器（前台运行）
 echo -e "${YELLOW}正在启动主服务器...${NC}"
 make run

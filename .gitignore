@@ -34,3 +34,4 @@ dist
 /backup_data
 /logs
 data/GeoIP2-City.mmdb
+reports

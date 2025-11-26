@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v5.29.3
-// source: api/subscription/v1/subscription.proto
+// source: subscription.proto
 
 package v1
 
@@ -559,5 +559,5 @@ var Subscription_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "api/subscription/v1/subscription.proto",
+	Metadata: "subscription.proto",
 }
