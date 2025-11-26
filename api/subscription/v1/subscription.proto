@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package subscription.v1;
+
+option go_package = "xinyuan_tech/subscription-service/api/subscription/v1;v1";
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+service Subscription {
+  // 获取所有订阅套餐
+  rpc ListPlans (ListPlansRequest) returns (ListPlansReply) {
+    option (google.api.http) = {
+      get: "/v1/subscription/plans"
+    };
+  }
+  // 获取用户的订阅状态
+  rpc GetMySubscription (GetMySubscriptionRequest) returns (GetMySubscriptionReply) {
+    option (google.api.http) = {
+      get: "/v1/subscription/my/{uid}"
+    };
+  }
+  // 创建订阅订单 (调用 Payment Service)
+  rpc CreateSubscriptionOrder (CreateSubscriptionOrderRequest) returns (CreateSubscriptionOrderReply) {
+    option (google.api.http) = {
+      post: "/v1/subscription/order"
+      body: "*"
+    };
+  }
+  // 支付回调处理 (通常由 Payment Service 或 MQ 调用)
+  rpc HandlePaymentSuccess (HandlePaymentSuccessRequest) returns (HandlePaymentSuccessReply) {
+    option (google.api.http) = {
+      post: "/v1/subscription/payment/success"
+      body: "*"
+    };
+  }
+}
+
+message Plan {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  string currency = 5;
+  int32 duration_days = 6; // 持续天数
+  string type = 7;         // free, pro, enterprise
+}
+
+message ListPlansRequest {}
+
+message ListPlansReply {
+  repeated Plan plans = 1;
+}
+
+message GetMySubscriptionRequest {
+  uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
+}
+
+message GetMySubscriptionReply {
+  bool is_active = 1;
+  string plan_id = 2;
+  int64 start_time = 3;
+  int64 end_time = 4;
+  string status = 5; // active, expired
+}
+
+message CreateSubscriptionOrderRequest {
+  uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
+  string plan_id = 2 [(validate.rules).string = {min_len: 1, max_len: 50}];
+  string payment_method = 3 [(validate.rules).string = {in: ["alipay", "wechatpay"]}]; // alipay, wechatpay
+}
+
+message CreateSubscriptionOrderReply {
+  string order_id = 1;       // 业务订单号
+  string payment_id = 2;     // 支付流水号
+  string pay_url = 3;
+  string pay_code = 4;
+  string pay_params = 5;
+}
+
+message HandlePaymentSuccessRequest {
+  string order_id = 1 [(validate.rules).string = {min_len: 1, max_len: 100}];
+  string payment_id = 2 [(validate.rules).string = {min_len: 1, max_len: 100}];
+  double amount = 3 [(validate.rules).double = {gt: 0}];
+}
+
+message HandlePaymentSuccessReply {
+  bool success = 1;
+}

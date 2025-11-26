@@ -1,0 +1,26 @@
+server:
+  http:
+    addr: 0.0.0.0:8102
+    timeout: 1s
+  grpc:
+    addr: 0.0.0.0:9102
+    timeout: 1s
+
+data:
+  database:
+    driver: mysql
+    source: root:@tcp(localhost:3306)/subscription_service?charset=utf8mb4&parseTime=True&loc=Local
+
+client:
+  payment:
+    addr: localhost:9101
+
+log:
+  level: info
+  format: json
+  output: both  # stdout, file, both
+  file_path: logs/subscription-service.log
+  max_size: 100  # MB
+  max_age: 30    # days
+  max_backups: 10
+  compress: true

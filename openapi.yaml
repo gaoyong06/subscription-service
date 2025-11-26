@@ -1,0 +1,256 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: Subscription API
+    version: 0.0.1
+    description: Subscription Service API for managing user subscriptions and plans
+paths:
+    /v1/subscription/plans:
+        get:
+            tags:
+                - Subscription
+            summary: 获取所有订阅套餐
+            description: 获取所有可用的订阅套餐列表
+            operationId: Subscription_ListPlans
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListPlansReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/subscription/my/{uid}:
+        get:
+            tags:
+                - Subscription
+            summary: 获取用户的订阅状态
+            description: 获取指定用户的当前订阅状态
+            operationId: Subscription_GetMySubscription
+            parameters:
+                - name: uid
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+                      format: uint64
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetMySubscriptionReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/subscription/order:
+        post:
+            tags:
+                - Subscription
+            summary: 创建订阅订单
+            description: 创建订阅订单并调用 Payment Service
+            operationId: Subscription_CreateSubscriptionOrder
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateSubscriptionOrderRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CreateSubscriptionOrderReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/subscription/payment/success:
+        post:
+            tags:
+                - Subscription
+            summary: 支付回调处理
+            description: 处理支付成功回调，通常由 Payment Service 或 MQ 调用
+            operationId: Subscription_HandlePaymentSuccess
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/HandlePaymentSuccessRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/HandlePaymentSuccessReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+components:
+    schemas:
+        CreateSubscriptionOrderReply:
+            type: object
+            properties:
+                order_id:
+                    type: string
+                    description: 业务订单号
+                payment_id:
+                    type: string
+                    description: 支付流水号
+                pay_url:
+                    type: string
+                    description: 支付链接
+                pay_code:
+                    type: string
+                    description: 支付二维码
+                pay_params:
+                    type: string
+                    description: 支付参数
+        CreateSubscriptionOrderRequest:
+            required:
+                - uid
+                - plan_id
+                - payment_method
+            type: object
+            properties:
+                uid:
+                    type: integer
+                    description: 用户ID
+                    format: uint64
+                plan_id:
+                    type: string
+                    description: 套餐ID (plan_monthly, plan_yearly)
+                payment_method:
+                    type: string
+                    description: 支付方式 (alipay, wechatpay)
+                    enum:
+                        - alipay
+                        - wechatpay
+        GetMySubscriptionReply:
+            type: object
+            properties:
+                is_active:
+                    type: boolean
+                    description: 是否激活
+                plan_id:
+                    type: string
+                    description: 当前套餐ID
+                start_time:
+                    type: integer
+                    description: 开始时间（Unix时间戳）
+                    format: int64
+                end_time:
+                    type: integer
+                    description: 结束时间（Unix时间戳）
+                    format: int64
+                status:
+                    type: string
+                    description: 订阅状态 (active, expired)
+        GetMySubscriptionRequest:
+            required:
+                - uid
+            type: object
+            properties:
+                uid:
+                    type: integer
+                    description: 用户ID
+                    format: uint64
+        HandlePaymentSuccessReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                    description: 处理是否成功
+        HandlePaymentSuccessRequest:
+            required:
+                - order_id
+                - payment_id
+                - amount
+            type: object
+            properties:
+                order_id:
+                    type: string
+                    description: 订单号
+                payment_id:
+                    type: string
+                    description: 支付流水号
+                amount:
+                    type: number
+                    description: 支付金额
+                    format: double
+        ListPlansReply:
+            type: object
+            properties:
+                plans:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Plan'
+        ListPlansRequest:
+            type: object
+        Plan:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: 套餐ID (plan_monthly, plan_yearly)
+                name:
+                    type: string
+                    description: 套餐名称
+                description:
+                    type: string
+                    description: 套餐描述
+                price:
+                    type: number
+                    description: 价格
+                    format: double
+                currency:
+                    type: string
+                    description: 币种 (CNY, USD)
+                duration_days:
+                    type: integer
+                    description: 持续天数
+                    format: int32
+                type:
+                    type: string
+                    description: 套餐类型 (free, pro, enterprise)
+        Status:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: int32
+                message:
+                    type: string
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufAny'
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+            additionalProperties: true
+tags:
+    - name: Subscription
+      description: 订阅管理服务
