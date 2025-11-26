@@ -8,6 +8,7 @@ Subscription Service 是一个独立的**订阅管理微服务**，负责管理�
 
 ### 核心能力
 
+#### 订阅管理
 - ✅ **套餐管理**: 管理各种订阅套餐（月卡、年卡等）
 - ✅ **订阅查询**: 查询用户当前订阅状态
 - ✅ **订阅购买**: 创建订阅订单并调用支付服务
@@ -18,8 +19,18 @@ Subscription Service 是一个独立的**订阅管理微服务**，负责管理�
 - ✅ **订阅暂停/恢复**: 支持临时暂停和恢复订阅
 - ✅ **历史记录**: 记录所有订阅状态变更历史
 - ✅ **自动续费**: 支持开启/关闭自动续费功能
+
+#### 定时任务（Cron 服务）
+- ✅ **过期检查**: 每天自动更新过期订阅状态
+- ✅ **续费提醒**: 每天检查即将过期的订阅
+- ✅ **自动续费**: 每天自动处理开启自动续费的订阅
+- ✅ **批量查询**: 支持批量查询即将过期的订阅
+- ✅ **批量更新**: 支持批量更新过期订阅状态
+
+#### 技术特性
 - ✅ **统一响应**: 标准化的 API 响应格式
 - ✅ **国际化**: 支持多语言错误消息
+- ✅ **参数验证**: 使用 protobuf validate 进行参数校验
 
 ### 服务边界
 
@@ -79,6 +90,61 @@ Subscription Service 是一个独立的**订阅管理微服务**，负责管理�
 |------|------|
 | active | 激活中 |
 | expired | 已过期 |
+
+## Cron 定时任务服务
+
+Subscription Service 包含一个独立的 Cron 服务，用于执行定时任务。
+
+### 定时任务列表
+
+| 任务名称 | 执行时间 | Cron 表达式 | 功能描述 |
+|---------|---------|------------|---------|
+| 订阅过期检查 | 每天凌晨 2:00 | `0 0 2 * * *` | 批量更新过期订阅状态 |
+| 续费提醒 | 每天上午 10:00 | `0 0 10 * * *` | 获取7天内过期的订阅并发送提醒 |
+| 自动续费处理 | 每天凌晨 3:00 | `0 0 3 * * *` | 处理3天内过期且开启自动续费的订阅 |
+
+### Cron 服务启动
+
+```bash
+# 编译 Cron 服务
+make build-cron
+
+# 启动 Cron 服务
+./bin/cron -conf ./configs/config.yaml
+
+# 或使用 Makefile
+make run-cron
+
+# 使用 Supervisor（生产环境）
+supervisorctl start subscription-cron
+```
+
+### Supervisor 配置
+
+配置文件位于 `deploy/supervisor/subscription-cron.conf`：
+
+```ini
+[program:subscription-cron]
+directory=/path/to/subscription-service
+command=/path/to/subscription-service/bin/cron -conf /path/to/configs/config.yaml
+autostart=true
+autorestart=true
+user=www-data
+stdout_logfile=/path/to/logs/cron.log
+stderr_logfile=/path/to/logs/cron_error.log
+```
+
+### 日志查看
+
+```bash
+# 查看 Cron 服务日志
+tail -f logs/cron.log
+
+# 查看错误日志
+tail -f logs/cron_error.log
+```
+
+详细文档请参考：[Cron 服务实现总结](docs/CRON_SERVICE_SUMMARY.md)
 
 ## API 文档
 
@@ -354,6 +420,64 @@ resp, err := client.SetAutoRenew(context.Background(), &subscriptionv1.SetAutoRe
 })
 ```
 
+#### 10. 获取即将过期的订阅 (GetExpiringSubscriptions)
+
+**用途**: 用于定时任务，查询即将过期的订阅
+
+```protobuf
+rpc GetExpiringSubscriptions (GetExpiringSubscriptionsRequest) returns (GetExpiringSubscriptionsReply);
+
+message GetExpiringSubscriptionsRequest {
+  int32 days_before_expiry = 1;  // 过期前多少天，默认7天
+  int32 page = 2;                // 页码，从1开始
+  int32 page_size = 3;           // 每页数量，默认10
+}
+
+message GetExpiringSubscriptionsReply {
+  repeated SubscriptionInfo subscriptions = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+```
+
+#### 11. 批量更新过期订阅 (UpdateExpiredSubscriptions)
+
+**用途**: 用于定时任务，批量更新过期订阅状态
+
+```protobuf
+rpc UpdateExpiredSubscriptions (UpdateExpiredSubscriptionsRequest) returns (UpdateExpiredSubscriptionsReply);
+
+message UpdateExpiredSubscriptionsRequest {
+  // 空请求，自动处理所有过期订阅
+}
+
+message UpdateExpiredSubscriptionsReply {
+  int32 updated_count = 1;        // 更新的订阅数量
+  repeated uint64 updated_uids = 2;  // 更新的用户ID列表
+}
+```
+
+#### 12. 处理自动续费 (ProcessAutoRenewals)
+
+**用途**: 用于定时任务，自动处理订阅续费
+
+```protobuf
+rpc ProcessAutoRenewals (ProcessAutoRenewalsRequest) returns (ProcessAutoRenewalsReply);
+
+message ProcessAutoRenewalsRequest {
+  int32 days_before_expiry = 1;  // 提前多少天续费，默认3天
+  bool dry_run = 2;              // 是否为测试运行
+}
+
+message ProcessAutoRenewalsReply {
+  int32 total_count = 1;      // 总共需要处理的数量
+  int32 success_count = 2;    // 成功的数量
+  int32 failed_count = 3;     // 失败的数量
+  repeated AutoRenewResult results = 4;
+}
+```
+
 ### HTTP 接口
 
 #### 健康检查
@@ -550,10 +674,20 @@ mysql -u root -p < docs/sql/subscription.sql
 # 编辑 configs/config.yaml，修改数据库连接等配置
 
 # 5. 启动服务
+
+# 方式1: 只启动主服务
 make run
 
-# 或直接运行
-go run cmd/server/main.go cmd/server/wire_gen.go -conf configs/config.yaml
+# 方式2: 启动所有服务（主服务 + Cron 服务）
+bash script/restart_server.sh
+# 或
+make build-all && make run-all
+
+# 方式3: 分别启动
+# 终端1: 启动主服务
+make run
+# 终端2: 启动 Cron 服务
+make run-cron
 ```
 
 ### 开发工具
@@ -568,11 +702,20 @@ make api
 # 生成依赖注入代码（修改 wire.go 后）
 make wire
 
-# 编译项目
+# 编译主服务
 make build
+
+# 编译 Cron 服务
+make build-cron
+
+# 编译所有服务
+make build-all
 
 # 运行测试
 make test
+
+# 停止所有服务
+make stop-all
 
 # 查看所有命令
 make help

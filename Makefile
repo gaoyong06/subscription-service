@@ -48,7 +48,7 @@ build-cron:
 build-all: build build-cron
 
 .PHONY: run
-# 运行服务
+# 运行主服务
 run:
 	go run cmd/server/main.go cmd/server/wire_gen.go -conf configs/config.yaml
 
@@ -56,6 +56,41 @@ run:
 # 运行 cron 服务
 run-cron:
 	./bin/cron -conf ./configs/config.yaml
+
+.PHONY: run-all
+# 同时运行所有服务（cron 后台，server 前台）
+run-all:
+	@echo "启动 cron 服务（后台）..."
+	@nohup ./bin/cron -conf ./configs/config.yaml > logs/cron.log 2>&1 & echo $$! > logs/cron.pid
+	@sleep 1
+	@if [ -f logs/cron.pid ]; then \
+		CRON_PID=$$(cat logs/cron.pid); \
+		if ps -p $$CRON_PID > /dev/null; then \
+			echo "cron 服务已启动，PID: $$CRON_PID"; \
+		else \
+			echo "cron 服务启动失败!"; \
+		fi \
+	fi
+	@echo "启动主服务（前台）..."
+	@echo "========================================="
+	@./bin/server -conf ./configs/config.yaml; \
+	if [ -f logs/cron.pid ]; then \
+		CRON_PID=$$(cat logs/cron.pid); \
+		if ps -p $$CRON_PID > /dev/null; then \
+			echo "停止 cron 服务..."; \
+			kill $$CRON_PID; \
+		fi; \
+		rm -f logs/cron.pid; \
+	fi
+
+.PHONY: stop-all
+# 停止所有服务
+stop-all:
+	@echo "停止所有服务..."
+	@-pkill -f "bin/server" || true
+	@-pkill -f "bin/cron" || true
+	@-rm -f logs/cron.pid
+	@echo "所有服务已停止"
 
 .PHONY: test
 # 运行 API 测试
@@ -103,8 +138,10 @@ help:
 	@echo "  make build        - 编译主服务"
 	@echo "  make build-cron   - 编译 cron 服务"
 	@echo "  make build-all    - 编译所有服务"
-	@echo "  make run          - 运行主服务"
-	@echo "  make run-cron     - 运行 cron 服务"
+	@echo "  make run          - 运行主服务（前台）"
+	@echo "  make run-cron     - 运行 cron 服务（前台）"
+	@echo "  make run-all      - 运行所有服务（cron 后台 + server 前台）"
+	@echo "  make stop-all     - 停止所有服务"
 	@echo "  make test         - 运行 API 测试"
 	@echo "  make clean        - 清理生成的文件"
 	@echo "  make docker-build - 构建 Docker 镜像"
