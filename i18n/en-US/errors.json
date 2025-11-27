@@ -1,0 +1,25 @@
+{
+  "errors": {
+    "1001": "Invalid argument",
+    "1002": "Internal server error",
+    "1003": "Unauthorized access",
+    "1004": "Forbidden access",
+    "10001": "Subscription plan not found",
+    "10002": "Invalid plan price",
+    "10003": "Plan pricing not found for region",
+    "10101": "Subscription not found",
+    "10102": "Subscription is not active",
+    "10103": "Subscription has expired",
+    "10104": "Invalid subscription status",
+    "10105": "User already has an active subscription",
+    "10106": "Cannot cancel subscription with current status",
+    "10107": "Can only pause active subscription",
+    "10108": "Can only resume paused subscription",
+    "10109": "Can only set auto-renew for active subscription",
+    "10201": "Subscription order not found",
+    "10202": "Order has already been paid",
+    "10203": "Failed to create subscription order",
+    "10301": "Payment service error",
+    "10302": "Invalid payment amount"
+  }
+}

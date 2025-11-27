@@ -2,9 +2,12 @@ package biz
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"xinyuan_tech/subscription-service/internal/conf"
+	"xinyuan_tech/subscription-service/internal/errors"
+
+	pkgErrors "github.com/gaoyong06/go-pkg/errors"
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -43,6 +46,7 @@ type SubscriptionUsecase struct {
 	orderRepo     SubscriptionOrderRepo
 	historyRepo   SubscriptionHistoryRepo
 	paymentClient PaymentClient
+	config        *conf.Bootstrap
 	log           *log.Helper
 }
 
@@ -53,6 +57,7 @@ func NewSubscriptionUsecase(
 	orderRepo SubscriptionOrderRepo,
 	historyRepo SubscriptionHistoryRepo,
 	paymentClient PaymentClient,
+	config *conf.Bootstrap,
 	logger log.Logger,
 ) *SubscriptionUsecase {
 	return &SubscriptionUsecase{
@@ -61,6 +66,7 @@ func NewSubscriptionUsecase(
 		orderRepo:     orderRepo,
 		historyRepo:   historyRepo,
 		paymentClient: paymentClient,
+		config:        config,
 		log:           log.NewHelper(logger),
 	}
 }
@@ -92,12 +98,12 @@ func (uc *SubscriptionUsecase) CancelSubscription(ctx context.Context, userID ui
 		return err
 	}
 	if sub == nil {
-		return fmt.Errorf("no active subscription found")
+		return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeSubscriptionNotFound)
 	}
 
 	// 只能取消 active 或 paused 状态的订阅
 	if sub.Status != "active" && sub.Status != "paused" {
-		return fmt.Errorf("cannot cancel subscription with status: %s", sub.Status)
+		return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeCannotCancelStatus)
 	}
 
 	now := time.Now().UTC()
@@ -139,12 +145,12 @@ func (uc *SubscriptionUsecase) PauseSubscription(ctx context.Context, userID uin
 		return err
 	}
 	if sub == nil {
-		return fmt.Errorf("no active subscription found")
+		return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeSubscriptionNotFound)
 	}
 
 	// 只能暂停 active 状态的订阅
 	if sub.Status != "active" {
-		return fmt.Errorf("can only pause active subscription, current status: %s", sub.Status)
+		return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeCannotPauseStatus)
 	}
 
 	now := time.Now().UTC()
@@ -185,12 +191,12 @@ func (uc *SubscriptionUsecase) ResumeSubscription(ctx context.Context, userID ui
 		return err
 	}
 	if sub == nil {
-		return fmt.Errorf("no subscription found")
+		return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeSubscriptionNotFound)
 	}
 
 	// 只能恢复 paused 状态的订阅
 	if sub.Status != "paused" {
-		return fmt.Errorf("can only resume paused subscription, current status: %s", sub.Status)
+		return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeCannotResumeStatus)
 	}
 
 	now := time.Now().UTC()
@@ -231,12 +237,12 @@ func (uc *SubscriptionUsecase) SetAutoRenew(ctx context.Context, userID uint64, 
 		return err
 	}
 	if sub == nil {
-		return fmt.Errorf("no subscription found")
+		return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeSubscriptionNotFound)
 	}
 
 	// 只有 active 状态的订阅才能设置自动续费
 	if sub.Status != "active" {
-		return fmt.Errorf("can only set auto-renew for active subscription, current status: %s", sub.Status)
+		return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeCannotSetAutoRenew)
 	}
 
 	now := time.Now().UTC()

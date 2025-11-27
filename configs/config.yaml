@@ -15,6 +15,11 @@ client:
   payment:
     addr: localhost:9101
 
+subscription:
+  return_url: "http://localhost:8080/subscription/success"
+  auto_renew_days_before: 3
+  expiry_check_days: 7
+
 log:
   level: info
   format: json

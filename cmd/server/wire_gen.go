@@ -38,7 +38,7 @@ func wireApp(bootstrap *conf.Bootstrap, logger log.Logger) (*kratos.App, func(),
 		cleanup()
 		return nil, nil, err
 	}
-	subscriptionUsecase := biz.NewSubscriptionUsecase(planRepo, userSubscriptionRepo, subscriptionOrderRepo, subscriptionHistoryRepo, paymentClient, logger)
+	subscriptionUsecase := biz.NewSubscriptionUsecase(planRepo, userSubscriptionRepo, subscriptionOrderRepo, subscriptionHistoryRepo, paymentClient, bootstrap, logger)
 	subscriptionService := service.NewSubscriptionService(subscriptionUsecase)
 	grpcServer := server.NewGRPCServer(bootstrap, subscriptionService, logger)
 	httpServer := server.NewHTTPServer(bootstrap, subscriptionService, logger)

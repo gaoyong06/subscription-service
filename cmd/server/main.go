@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"xinyuan_tech/subscription-service/internal/conf"
-	"xinyuan_tech/subscription-service/internal/data/model"
 
 	"github.com/gaoyong06/go-pkg/errors"
 	"github.com/gaoyong06/go-pkg/logger"
@@ -18,9 +17,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
-	"github.com/sirupsen/logrus"
 	_ "go.uber.org/automaxprocs"
-	"gorm.io/gorm"
 )
 
 // go build -ldflags "-X main.Version=x.y.z"
@@ -80,21 +77,14 @@ func main() {
 
 	// 初始化日志 (使用 go-pkg/logger)
 	logConfig := &logger.Config{
-		Level:    bc.Log.Level,
-		Format:   bc.Log.Format,
-		Output:   "stdout", // 默认输出到 stdout
-		FilePath: "logs/subscription-service.log",
-	}
-
-	// 如果配置的 Output 不是 stdout，则认为是文件路径或者 "file"
-	if bc.Log.Output != "stdout" && bc.Log.Output != "" {
-		logConfig.Output = "file"
-		logConfig.FilePath = bc.Log.Output
-		// 如果 Output 是 "both"，则同时输出
-		if bc.Log.Output == "both" {
-			logConfig.Output = "both"
-			logConfig.FilePath = "logs/subscription-service.log"
-		}
+		Level:      bc.Log.Level,
+		Format:     bc.Log.Format,
+		Output:     bc.Log.Output,
+		FilePath:   bc.Log.FilePath,
+		MaxSize:    bc.Log.MaxSize,
+		MaxAge:     bc.Log.MaxAge,
+		MaxBackups: bc.Log.MaxBackups,
+		Compress:   bc.Log.Compress,
 	}
 
 	loggerInstance := logger.NewLogger(logConfig)
@@ -124,17 +114,5 @@ func main() {
 	// start and wait for stop signal
 	if err := app.Run(); err != nil {
 		panic(err)
-	}
-}
-
-func initPlans(db *gorm.DB, log *logrus.Logger) { // Changed signature to accept logrus.Logger
-	var count int64
-	if count == 0 {
-		plans := []model.Plan{
-			{ID: "plan_monthly", Name: "Pro Monthly", Description: "Pro features for 1 month", Price: 9.99, Currency: "CNY", DurationDays: 30, Type: "pro"},
-			{ID: "plan_yearly", Name: "Pro Yearly", Description: "Pro features for 1 year", Price: 99.99, Currency: "CNY", DurationDays: 365, Type: "pro"},
-		}
-		db.Create(&plans)
-		log.Info("Initialized default subscription plans") // Changed to log.Info
 	}
 }

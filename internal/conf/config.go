@@ -3,10 +3,11 @@ package conf
 import "fmt"
 
 type Bootstrap struct {
-	Server *Server `yaml:"server" json:"server"`
-	Data   *Data   `yaml:"data" json:"data"`
-	Client *Client `yaml:"client" json:"client"`
-	Log    *Log    `yaml:"log" json:"log"`
+	Server       *Server       `yaml:"server" json:"server"`
+	Data         *Data         `yaml:"data" json:"data"`
+	Client       *Client       `yaml:"client" json:"client"`
+	Subscription *Subscription `yaml:"subscription" json:"subscription"`
+	Log          *Log          `yaml:"log" json:"log"`
 }
 
 type Server struct {
@@ -33,10 +34,21 @@ type Client struct {
 	} `yaml:"payment" json:"payment"`
 }
 
+type Subscription struct {
+	ReturnURL           string `yaml:"return_url" json:"return_url"`
+	AutoRenewDaysBefore int    `yaml:"auto_renew_days_before" json:"auto_renew_days_before"`
+	ExpiryCheckDays     int    `yaml:"expiry_check_days" json:"expiry_check_days"`
+}
+
 type Log struct {
-	Level  string `yaml:"level" json:"level"`
-	Format string `yaml:"format" json:"format"`
-	Output string `yaml:"output" json:"output"`
+	Level      string `yaml:"level" json:"level"`
+	Format     string `yaml:"format" json:"format"`
+	Output     string `yaml:"output" json:"output"`
+	FilePath   string `yaml:"file_path" json:"file_path"`
+	MaxSize    int    `yaml:"max_size" json:"max_size"`
+	MaxAge     int    `yaml:"max_age" json:"max_age"`
+	MaxBackups int    `yaml:"max_backups" json:"max_backups"`
+	Compress   bool   `yaml:"compress" json:"compress"`
 }
 
 // Validate validates the configuration

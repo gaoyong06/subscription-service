@@ -63,3 +63,39 @@ func (r *planRepo) GetPlan(ctx context.Context, id string) (*biz.Plan, error) {
 	}, nil
 }
 
+// GetPlanPricing 根据套餐ID和区域获取定价
+func (r *planRepo) GetPlanPricing(ctx context.Context, planID, region string) (*biz.PlanPricing, error) {
+	var m model.PlanPricing
+	if err := r.data.db.WithContext(ctx).Where("plan_id = ? AND region = ?", planID, region).First(&m).Error; err != nil {
+		r.log.Warnf("Failed to get plan pricing for %s in region %s: %v", planID, region, err)
+		return nil, err
+	}
+	return &biz.PlanPricing{
+		ID:       m.ID,
+		PlanID:   m.PlanID,
+		Region:   m.Region,
+		Price:    m.Price,
+		Currency: m.Currency,
+	}, nil
+}
+
+// ListPlanPricings 获取套餐的所有区域定价
+func (r *planRepo) ListPlanPricings(ctx context.Context, planID string) ([]*biz.PlanPricing, error) {
+	var models []model.PlanPricing
+	if err := r.data.db.WithContext(ctx).Where("plan_id = ?", planID).Find(&models).Error; err != nil {
+		r.log.Errorf("Failed to list plan pricings for %s: %v", planID, err)
+		return nil, err
+	}
+
+	pricings := make([]*biz.PlanPricing, len(models))
+	for i, m := range models {
+		pricings[i] = &biz.PlanPricing{
+			ID:       m.ID,
+			PlanID:   m.PlanID,
+			Region:   m.Region,
+			Price:    m.Price,
+			Currency: m.Currency,
+		}
+	}
+	return pricings, nil
+}

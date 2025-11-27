@@ -28,7 +28,7 @@ func NewUserSubscriptionRepo(data *Data, logger log.Logger) biz.UserSubscription
 // GetSubscription 获取用户订阅
 func (r *subscriptionRepo) GetSubscription(ctx context.Context, userID uint64) (*biz.UserSubscription, error) {
 	var m model.UserSubscription
-	err := r.data.db.WithContext(ctx).Where("user_id = ?", userID).First(&m).Error
+	err := r.data.db.WithContext(ctx).Where("uid = ?", userID).First(&m).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -37,8 +37,8 @@ func (r *subscriptionRepo) GetSubscription(ctx context.Context, userID uint64) (
 		return nil, err
 	}
 	return &biz.UserSubscription{
-		ID:        m.ID,
-		UserID:    m.UserID,
+		ID:        m.SubscriptionID,
+		UserID:    m.UID,
 		PlanID:    m.PlanID,
 		StartTime: m.StartTime,
 		EndTime:   m.EndTime,
@@ -52,20 +52,23 @@ func (r *subscriptionRepo) GetSubscription(ctx context.Context, userID uint64) (
 // SaveSubscription 保存订阅
 func (r *subscriptionRepo) SaveSubscription(ctx context.Context, sub *biz.UserSubscription) error {
 	m := &model.UserSubscription{
-		ID:        sub.ID,
-		UserID:    sub.UserID,
-		PlanID:    sub.PlanID,
-		StartTime: sub.StartTime,
-		EndTime:   sub.EndTime,
-		Status:    sub.Status,
-		AutoRenew: sub.AutoRenew,
-		CreatedAt: sub.CreatedAt,
-		UpdatedAt: sub.UpdatedAt,
+		SubscriptionID: sub.ID,
+		UID:            sub.UserID,
+		PlanID:         sub.PlanID,
+		StartTime:      sub.StartTime,
+		EndTime:        sub.EndTime,
+		Status:         sub.Status,
+		OrderID:        "", // 需要从 biz 层传递
+		AutoRenew:      sub.AutoRenew,
+		CreatedAt:      sub.CreatedAt,
+		UpdatedAt:      sub.UpdatedAt,
 	}
 	if err := r.data.db.WithContext(ctx).Save(m).Error; err != nil {
 		r.log.Errorf("Failed to save subscription for user %d: %v", sub.UserID, err)
 		return err
 	}
+	// 更新 biz 对象的 ID（如果是新创建的）
+	sub.ID = m.SubscriptionID
 	return nil
 }
 
@@ -101,8 +104,8 @@ func (r *subscriptionRepo) GetExpiringSubscriptions(ctx context.Context, daysBef
 	subscriptions := make([]*biz.UserSubscription, len(models))
 	for i, m := range models {
 		subscriptions[i] = &biz.UserSubscription{
-			ID:        m.ID,
-			UserID:    m.UserID,
+			ID:        m.SubscriptionID,
+			UserID:    m.UID,
 			PlanID:    m.PlanID,
 			StartTime: m.StartTime,
 			EndTime:   m.EndTime,
@@ -133,10 +136,10 @@ func (r *subscriptionRepo) UpdateExpiredSubscriptions(ctx context.Context) (int,
 		return 0, []uint64{}, nil
 	}
 
-	// 提取 user_id 列表
+	// 提取 uid 列表
 	uids := make([]uint64, len(subscriptions))
 	for i, sub := range subscriptions {
-		uids[i] = sub.UserID
+		uids[i] = sub.UID
 	}
 
 	// 批量更新状态
@@ -174,8 +177,8 @@ func (r *subscriptionRepo) GetAutoRenewSubscriptions(ctx context.Context, daysBe
 	subscriptions := make([]*biz.UserSubscription, len(models))
 	for i, m := range models {
 		subscriptions[i] = &biz.UserSubscription{
-			ID:        m.ID,
-			UserID:    m.UserID,
+			ID:        m.SubscriptionID,
+			UserID:    m.UID,
 			PlanID:    m.PlanID,
 			StartTime: m.StartTime,
 			EndTime:   m.EndTime,
@@ -188,4 +191,3 @@ func (r *subscriptionRepo) GetAutoRenewSubscriptions(ctx context.Context, daysBe
 
 	return subscriptions, nil
 }
-

@@ -125,8 +125,8 @@ func (uc *SubscriptionUsecase) ProcessAutoRenewals(ctx context.Context, daysBefo
 			result.ErrorMessage = "dry run - not executed"
 			uc.log.Infof("[DRY RUN] Would renew subscription for user %d, plan %s", sub.UserID, sub.PlanID)
 		} else {
-			// 实际执行续费
-			order, paymentID, _, _, _, err := uc.CreateSubscriptionOrder(ctx, sub.UserID, sub.PlanID, "auto")
+			// 实际执行续费（使用默认区域定价）
+			order, paymentID, _, _, _, err := uc.CreateSubscriptionOrder(ctx, sub.UserID, sub.PlanID, "auto", "default")
 			if err != nil {
 				result.Success = false
 				result.ErrorMessage = err.Error()

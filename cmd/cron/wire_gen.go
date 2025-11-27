@@ -38,7 +38,7 @@ func wireApp(bootstrap *conf.Bootstrap) (*CronApp, func(), error) {
 		cleanup()
 		return nil, nil, err
 	}
-	subscriptionUsecase := biz.NewSubscriptionUsecase(planRepo, userSubscriptionRepo, subscriptionOrderRepo, subscriptionHistoryRepo, paymentClient, logger)
+	subscriptionUsecase := biz.NewSubscriptionUsecase(planRepo, userSubscriptionRepo, subscriptionOrderRepo, subscriptionHistoryRepo, paymentClient, bootstrap, logger)
 	cronApp := &CronApp{
 		subscriptionUsecase: subscriptionUsecase,
 	}
