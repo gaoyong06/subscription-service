@@ -2,6 +2,7 @@ package data
 
 import (
 	"xinyuan_tech/subscription-service/internal/conf"
+	"xinyuan_tech/subscription-service/internal/data/model"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
@@ -10,7 +11,15 @@ import (
 )
 
 // ProviderSet is data providers.
-var ProviderSet = wire.NewSet(NewData, NewDB, NewSubscriptionRepo, NewPaymentClient)
+var ProviderSet = wire.NewSet(
+	NewData,
+	NewDB,
+	NewPlanRepo,
+	NewUserSubscriptionRepo,
+	NewSubscriptionOrderRepo,
+	NewSubscriptionHistoryRepo,
+	NewPaymentClient,
+)
 
 // Data .
 type Data struct {
@@ -31,7 +40,7 @@ func NewDB(c *conf.Bootstrap) *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
-	if err := db.AutoMigrate(&Plan{}, &UserSubscription{}, &Order{}); err != nil {
+	if err := db.AutoMigrate(&model.Plan{}, &model.UserSubscription{}, &model.SubscriptionOrder{}, &model.SubscriptionHistory{}); err != nil {
 		panic(err)
 	}
 	initPlans(db)
@@ -40,9 +49,9 @@ func NewDB(c *conf.Bootstrap) *gorm.DB {
 
 func initPlans(db *gorm.DB) {
 	var count int64
-	db.Model(&Plan{}).Count(&count)
+	db.Model(&model.Plan{}).Count(&count)
 	if count == 0 {
-		plans := []Plan{
+		plans := []model.Plan{
 			{ID: "plan_monthly", Name: "Pro Monthly", Description: "Pro features for 1 month", Price: 9.99, Currency: "CNY", DurationDays: 30, Type: "pro"},
 			{ID: "plan_yearly", Name: "Pro Yearly", Description: "Pro features for 1 year", Price: 99.99, Currency: "CNY", DurationDays: 365, Type: "pro"},
 			{ID: "plan_quarterly", Name: "Pro Quarterly", Description: "Pro features for 3 months", Price: 25.99, Currency: "CNY", DurationDays: 90, Type: "pro"},

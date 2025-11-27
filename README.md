@@ -71,7 +71,7 @@ Subscription Service 是一个独立的**订阅管理微服务**，负责管理�
 |------|------|------|
 | `plan` | 订阅套餐表 | plan_id |
 | `user_subscription` | 用户订阅表 | user_subscription_id |
-| `subscription_order` | 订阅订单表 | subscription_order_id |
+| `subscription_order` | 订阅订单表 | order_id |
 
 ### 技术栈
 
@@ -948,7 +948,7 @@ curl http://localhost:8102/health
    - 检查数据库事务
    ```bash
    # 查看订单状态
-   mysql -u root -D subscription_service -e "SELECT * FROM subscription_order WHERE subscription_order_id='订单号';"
+   mysql -u root -D subscription_service -e "SELECT * FROM subscription_order WHERE order_id='订单号';"
    
    # 查看用户订阅状态
    mysql -u root -D subscription_service -e "SELECT * FROM user_subscription WHERE user_id=用户ID;"

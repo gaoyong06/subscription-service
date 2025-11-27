@@ -29,13 +29,16 @@ func wireApp(bootstrap *conf.Bootstrap) (*CronApp, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	subscriptionRepo := data.NewSubscriptionRepo(dataData, logger)
+	planRepo := data.NewPlanRepo(dataData, logger)
+	userSubscriptionRepo := data.NewUserSubscriptionRepo(dataData, logger)
+	subscriptionOrderRepo := data.NewSubscriptionOrderRepo(dataData, logger)
+	subscriptionHistoryRepo := data.NewSubscriptionHistoryRepo(dataData, logger)
 	paymentClient, err := data.NewPaymentClient(bootstrap)
 	if err != nil {
 		cleanup()
 		return nil, nil, err
 	}
-	subscriptionUsecase := biz.NewSubscriptionUsecase(subscriptionRepo, paymentClient, logger)
+	subscriptionUsecase := biz.NewSubscriptionUsecase(planRepo, userSubscriptionRepo, subscriptionOrderRepo, subscriptionHistoryRepo, paymentClient, logger)
 	cronApp := &CronApp{
 		subscriptionUsecase: subscriptionUsecase,
 	}

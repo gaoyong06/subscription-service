@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"xinyuan_tech/subscription-service/internal/conf"
-	"xinyuan_tech/subscription-service/internal/data"
+	"xinyuan_tech/subscription-service/internal/data/model"
 
 	"github.com/gaoyong06/go-pkg/errors"
 	"github.com/gaoyong06/go-pkg/logger"
@@ -130,7 +130,7 @@ func main() {
 func initPlans(db *gorm.DB, log *logrus.Logger) { // Changed signature to accept logrus.Logger
 	var count int64
 	if count == 0 {
-		plans := []data.Plan{
+		plans := []model.Plan{
 			{ID: "plan_monthly", Name: "Pro Monthly", Description: "Pro features for 1 month", Price: 9.99, Currency: "CNY", DurationDays: 30, Type: "pro"},
 			{ID: "plan_yearly", Name: "Pro Yearly", Description: "Pro features for 1 year", Price: 99.99, Currency: "CNY", DurationDays: 365, Type: "pro"},
 		}

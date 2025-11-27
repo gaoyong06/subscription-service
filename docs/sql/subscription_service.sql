@@ -24,13 +24,13 @@ CREATE TABLE `user_subscription` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户订阅表';
 
 CREATE TABLE `subscription_order` (
-  `subscription_order_id` varchar(64) NOT NULL COMMENT '订单号',
+  `order_id` varchar(64) NOT NULL COMMENT '订单号',
   `user_id` bigint unsigned NOT NULL COMMENT '用户ID',
   `plan_id` varchar(50) NOT NULL COMMENT '套餐ID',
   `amount` decimal(10,2) NOT NULL COMMENT '金额',
   `payment_status` varchar(20) NOT NULL COMMENT '支付状态',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`subscription_order_id`),
+  PRIMARY KEY (`order_id`),
   KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订阅订单表';
 
