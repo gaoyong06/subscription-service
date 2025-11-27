@@ -21,10 +21,10 @@ api:
 	  --proto_path=$(shell go env GOPATH)/pkg/mod \
 	  --proto_path=$(shell go env GOPATH)/pkg/mod/github.com/go-kratos/kratos/v2@v2.9.1/third_party \
 	  --proto_path=$(shell go list -m -f '{{.Dir}}' github.com/grpc-ecosystem/grpc-gateway)/third_party/googleapis \
-	  --go_out=paths=source_relative:. \
-	  --go-http_out=paths=source_relative:. \
-	  --go-grpc_out=paths=source_relative:. \
-	  --validate_out=paths=source_relative,lang=go:. \
+	  --go_out=paths=source_relative:api/subscription/v1 \
+	  --go-http_out=paths=source_relative:api/subscription/v1 \
+	  --go-grpc_out=paths=source_relative:api/subscription/v1 \
+	  --validate_out=paths=source_relative,lang=go:api/subscription/v1 \
 	  api/subscription/v1/subscription.proto
 
 .PHONY: wire
