@@ -102,7 +102,7 @@ test:
 	@echo "检查服务状态..."
 	@curl -s http://localhost:8102/health || echo "Subscription Service 启动中..."
 	@echo "\nRunning API tests..."
-	../api-tester/bin/api-tester run --config api-test-config.yaml
+	../api-tester/bin/api-tester run --config test/api/api-test-config.yaml
 
 .PHONY: clean
 # 清理生成的文件

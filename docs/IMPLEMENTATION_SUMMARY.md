@@ -63,7 +63,7 @@
 
 ### 3. 测试配置完善 ✅
 
-#### 3.1 api-test-config.yaml
+#### 3.1 test/api/api-test-config.yaml
 - ✅ 参考 passport-service 的测试标准
 - ✅ 添加全面的测试场景（11 个场景）
   - 健康检查测试

@@ -61,7 +61,10 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrder(ctx context.Context, user
 
 	// 3. 调用支付服务
 	// 从配置中获取 ReturnURL
-	returnURL := uc.config.Subscription.ReturnURL
+	returnURL := ""
+	if uc.config.Client != nil && uc.config.Client.SubscriptionService != nil {
+		returnURL = uc.config.Client.SubscriptionService.ReturnURL
+	}
 	if returnURL == "" {
 		returnURL = "http://localhost:8080/subscription/success" // 默认值
 	}

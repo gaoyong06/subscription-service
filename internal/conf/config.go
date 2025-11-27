@@ -5,11 +5,10 @@ import (
 )
 
 type Bootstrap struct {
-	Server       *Server       `yaml:"server" json:"server"`
-	Data         *Data         `yaml:"data" json:"data"`
-	Client       *Client       `yaml:"client" json:"client"`
-	Subscription *Subscription `yaml:"subscription" json:"subscription"`
-	Log          *Log          `yaml:"log" json:"log"`
+	Server *Server `yaml:"server" json:"server"`
+	Data   *Data   `yaml:"data" json:"data"`
+	Client *Client `yaml:"client" json:"client"`
+	Log    *Log    `yaml:"log" json:"log"`
 }
 
 type Server struct {
@@ -38,12 +37,15 @@ type Data struct {
 }
 
 type Client struct {
-	Payment struct {
-		Addr string `yaml:"addr" json:"addr"`
-	} `yaml:"payment" json:"payment"`
+	PaymentService      *PaymentService      `yaml:"payment_service" json:"payment_service"`
+	SubscriptionService *SubscriptionService `yaml:"subscription_service" json:"subscription_service"`
 }
 
-type Subscription struct {
+type PaymentService struct {
+	Addr string `yaml:"addr" json:"addr"`
+}
+
+type SubscriptionService struct {
 	ReturnURL           string `yaml:"return_url" json:"return_url"`
 	AutoRenewDaysBefore int    `yaml:"auto_renew_days_before" json:"auto_renew_days_before"`
 	ExpiryCheckDays     int    `yaml:"expiry_check_days" json:"expiry_check_days"`
@@ -80,8 +82,11 @@ func (b *Bootstrap) Validate() error {
 	if b.Client == nil {
 		return fmt.Errorf("client configuration is required")
 	}
-	if b.Client.Payment.Addr == "" {
-		return fmt.Errorf("client.payment.addr is required")
+	if b.Client.PaymentService == nil || b.Client.PaymentService.Addr == "" {
+		return fmt.Errorf("client.payment_service.addr is required")
+	}
+	if b.Client.SubscriptionService == nil {
+		return fmt.Errorf("client.subscription_service configuration is required")
 	}
 	if b.Log == nil {
 		return fmt.Errorf("log configuration is required")

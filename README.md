@@ -1022,7 +1022,8 @@ subscription-service/
 │   └── service/            # 服务实现层
 ├── logs/                   # 日志文件
 ├── reports/                # 测试报告
-├── api-test-config.yaml    # API 测试配置
+├── test/
+│   └── api/api-test-config.yaml  # API 测试配置
 ├── Makefile                # 构建脚本
 └── README.md               # 本文档
 ```
@@ -1043,7 +1044,7 @@ subscription-service/
 3. 在 `internal/service/subscription.go` 实现接口
 4. 在 `internal/biz/subscription.go` 添加业务逻辑
 5. 在 `internal/data/subscription.go` 添加数据访问
-6. 添加测试用例到 `api-test-config.yaml`
+6. 添加测试用例到 `test/api/api-test-config.yaml`
 7. 运行 `make test` 验证
 
 ### 代码规范
