@@ -16,7 +16,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/SetAutoRenewRequest'
+                            $ref: '#/components/schemas/subscription.v1.SetAutoRenewRequest'
                 required: true
             responses:
                 "200":
@@ -24,13 +24,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/SetAutoRenewReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/subscription.v1.SetAutoRenewReply'
     /v1/subscription/auto-renew/process:
         post:
             tags:
@@ -41,7 +35,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/ProcessAutoRenewalsRequest'
+                            $ref: '#/components/schemas/subscription.v1.ProcessAutoRenewalsRequest'
                 required: true
             responses:
                 "200":
@@ -49,13 +43,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ProcessAutoRenewalsReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/subscription.v1.ProcessAutoRenewalsReply'
     /v1/subscription/cancel:
         post:
             tags:
@@ -66,7 +54,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/CancelSubscriptionRequest'
+                            $ref: '#/components/schemas/subscription.v1.CancelSubscriptionRequest'
                 required: true
             responses:
                 "200":
@@ -74,13 +62,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/CancelSubscriptionReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/subscription.v1.CancelSubscriptionReply'
     /v1/subscription/expired/update:
         post:
             tags:
@@ -91,7 +73,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/UpdateExpiredSubscriptionsRequest'
+                            $ref: '#/components/schemas/subscription.v1.UpdateExpiredSubscriptionsRequest'
                 required: true
             responses:
                 "200":
@@ -99,13 +81,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/UpdateExpiredSubscriptionsReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/subscription.v1.UpdateExpiredSubscriptionsReply'
     /v1/subscription/expiring:
         get:
             tags:
@@ -134,13 +110,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/GetExpiringSubscriptionsReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/subscription.v1.GetExpiringSubscriptionsReply'
     /v1/subscription/history/{uid}:
         get:
             tags:
@@ -169,13 +139,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/GetSubscriptionHistoryReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/subscription.v1.GetSubscriptionHistoryReply'
     /v1/subscription/my/{uid}:
         get:
             tags:
@@ -194,13 +158,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/GetMySubscriptionReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/subscription.v1.GetMySubscriptionReply'
     /v1/subscription/order:
         post:
             tags:
@@ -211,7 +169,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/CreateSubscriptionOrderRequest'
+                            $ref: '#/components/schemas/subscription.v1.CreateSubscriptionOrderRequest'
                 required: true
             responses:
                 "200":
@@ -219,13 +177,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/CreateSubscriptionOrderReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/subscription.v1.CreateSubscriptionOrderReply'
     /v1/subscription/pause:
         post:
             tags:
@@ -236,7 +188,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/PauseSubscriptionRequest'
+                            $ref: '#/components/schemas/subscription.v1.PauseSubscriptionRequest'
                 required: true
             responses:
                 "200":
@@ -244,13 +196,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/PauseSubscriptionReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/subscription.v1.PauseSubscriptionReply'
     /v1/subscription/payment/success:
         post:
             tags:
@@ -261,7 +207,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/HandlePaymentSuccessRequest'
+                            $ref: '#/components/schemas/subscription.v1.HandlePaymentSuccessRequest'
                 required: true
             responses:
                 "200":
@@ -269,13 +215,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/HandlePaymentSuccessReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/subscription.v1.HandlePaymentSuccessReply'
     /v1/subscription/plans:
         get:
             tags:
@@ -288,13 +228,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ListPlansReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/subscription.v1.ListPlansReply'
     /v1/subscription/resume:
         post:
             tags:
@@ -305,7 +239,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/ResumeSubscriptionRequest'
+                            $ref: '#/components/schemas/subscription.v1.ResumeSubscriptionRequest'
                 required: true
             responses:
                 "200":
@@ -313,16 +247,10 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ResumeSubscriptionReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
+                                $ref: '#/components/schemas/subscription.v1.ResumeSubscriptionReply'
 components:
     schemas:
-        AutoRenewResult:
+        subscription.v1.AutoRenewResult:
             type: object
             properties:
                 uid:
@@ -337,14 +265,14 @@ components:
                     type: string
                 errorMessage:
                     type: string
-        CancelSubscriptionReply:
+        subscription.v1.CancelSubscriptionReply:
             type: object
             properties:
                 success:
                     type: boolean
                 message:
                     type: string
-        CancelSubscriptionRequest:
+        subscription.v1.CancelSubscriptionRequest:
             type: object
             properties:
                 uid:
@@ -352,7 +280,7 @@ components:
                 reason:
                     type: string
             description: 取消订阅
-        CreateSubscriptionOrderReply:
+        subscription.v1.CreateSubscriptionOrderReply:
             type: object
             properties:
                 orderId:
@@ -365,7 +293,7 @@ components:
                     type: string
                 payParams:
                     type: string
-        CreateSubscriptionOrderRequest:
+        subscription.v1.CreateSubscriptionOrderRequest:
             type: object
             properties:
                 uid:
@@ -376,13 +304,13 @@ components:
                     type: string
                 region:
                     type: string
-        GetExpiringSubscriptionsReply:
+        subscription.v1.GetExpiringSubscriptionsReply:
             type: object
             properties:
                 subscriptions:
                     type: array
                     items:
-                        $ref: '#/components/schemas/SubscriptionInfo'
+                        $ref: '#/components/schemas/subscription.v1.SubscriptionInfo'
                 total:
                     type: integer
                     format: int32
@@ -392,7 +320,7 @@ components:
                 pageSize:
                     type: integer
                     format: int32
-        GetMySubscriptionReply:
+        subscription.v1.GetMySubscriptionReply:
             type: object
             properties:
                 isActive:
@@ -407,13 +335,13 @@ components:
                     type: string
                 autoRenew:
                     type: boolean
-        GetSubscriptionHistoryReply:
+        subscription.v1.GetSubscriptionHistoryReply:
             type: object
             properties:
                 items:
                     type: array
                     items:
-                        $ref: '#/components/schemas/SubscriptionHistoryItem'
+                        $ref: '#/components/schemas/subscription.v1.SubscriptionHistoryItem'
                 total:
                     type: integer
                     format: int32
@@ -423,20 +351,12 @@ components:
                 pageSize:
                     type: integer
                     format: int32
-        GoogleProtobufAny:
-            type: object
-            properties:
-                '@type':
-                    type: string
-                    description: The type of the serialized message.
-            additionalProperties: true
-            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
-        HandlePaymentSuccessReply:
+        subscription.v1.HandlePaymentSuccessReply:
             type: object
             properties:
                 success:
                     type: boolean
-        HandlePaymentSuccessRequest:
+        subscription.v1.HandlePaymentSuccessRequest:
             type: object
             properties:
                 orderId:
@@ -446,21 +366,21 @@ components:
                 amount:
                     type: number
                     format: double
-        ListPlansReply:
+        subscription.v1.ListPlansReply:
             type: object
             properties:
                 plans:
                     type: array
                     items:
-                        $ref: '#/components/schemas/Plan'
-        PauseSubscriptionReply:
+                        $ref: '#/components/schemas/subscription.v1.Plan'
+        subscription.v1.PauseSubscriptionReply:
             type: object
             properties:
                 success:
                     type: boolean
                 message:
                     type: string
-        PauseSubscriptionRequest:
+        subscription.v1.PauseSubscriptionRequest:
             type: object
             properties:
                 uid:
@@ -468,7 +388,7 @@ components:
                 reason:
                     type: string
             description: 暂停订阅
-        Plan:
+        subscription.v1.Plan:
             type: object
             properties:
                 id:
@@ -487,7 +407,7 @@ components:
                     format: int32
                 type:
                     type: string
-        ProcessAutoRenewalsReply:
+        subscription.v1.ProcessAutoRenewalsReply:
             type: object
             properties:
                 totalCount:
@@ -502,8 +422,8 @@ components:
                 results:
                     type: array
                     items:
-                        $ref: '#/components/schemas/AutoRenewResult'
-        ProcessAutoRenewalsRequest:
+                        $ref: '#/components/schemas/subscription.v1.AutoRenewResult'
+        subscription.v1.ProcessAutoRenewalsRequest:
             type: object
             properties:
                 daysBeforeExpiry:
@@ -512,27 +432,27 @@ components:
                 dryRun:
                     type: boolean
             description: 自动续费处理
-        ResumeSubscriptionReply:
+        subscription.v1.ResumeSubscriptionReply:
             type: object
             properties:
                 success:
                     type: boolean
                 message:
                     type: string
-        ResumeSubscriptionRequest:
+        subscription.v1.ResumeSubscriptionRequest:
             type: object
             properties:
                 uid:
                     type: string
             description: 恢复订阅
-        SetAutoRenewReply:
+        subscription.v1.SetAutoRenewReply:
             type: object
             properties:
                 success:
                     type: boolean
                 message:
                     type: string
-        SetAutoRenewRequest:
+        subscription.v1.SetAutoRenewRequest:
             type: object
             properties:
                 uid:
@@ -540,23 +460,7 @@ components:
                 autoRenew:
                     type: boolean
             description: 自动续费设置
-        Status:
-            type: object
-            properties:
-                code:
-                    type: integer
-                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
-                    format: int32
-                message:
-                    type: string
-                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
-                details:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/GoogleProtobufAny'
-                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
-            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
-        SubscriptionHistoryItem:
+        subscription.v1.SubscriptionHistoryItem:
             type: object
             properties:
                 id:
@@ -576,7 +480,7 @@ components:
                 createdAt:
                     type: string
             description: 订阅历史记录
-        SubscriptionInfo:
+        subscription.v1.SubscriptionInfo:
             type: object
             properties:
                 uid:
@@ -594,7 +498,7 @@ components:
                 amount:
                     type: number
                     format: double
-        UpdateExpiredSubscriptionsReply:
+        subscription.v1.UpdateExpiredSubscriptionsReply:
             type: object
             properties:
                 updatedCount:
@@ -604,7 +508,7 @@ components:
                     type: array
                     items:
                         type: string
-        UpdateExpiredSubscriptionsRequest:
+        subscription.v1.UpdateExpiredSubscriptionsRequest:
             type: object
             properties: {}
             description: 批量更新过期订阅

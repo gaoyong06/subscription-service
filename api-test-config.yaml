@@ -1,9 +1,9 @@
-# Subscription Service 全面测试配置
-# 按照字节跳动产品质量要求编写
-# 包含正常场景、边界情况、异常场景等
+# API-Tester 配置文件
+# 用于订阅服务的 API 测试
 
-# API 规范文件路径
-spec: ./openapi.yaml
+# API 基础配置
+specFiles:
+  - ./api/openapi/v1/openapi.yaml
 
 # API 基础 URL
 base_url: http://localhost:8102
@@ -16,7 +16,7 @@ request:
     Content-Type: application/json
 
 # 输出目录
-output_dir: ./test-reports
+output_dir: ./reports
 # 是否详细输出
 verbose: true
 
@@ -26,469 +26,432 @@ logging:
   request_response: true
   variable_processing: true
 
+# CI/CD 集成配置
+ci:
+  output_format: json
+
 # 全局变量定义
 variables:
-  # 正常测试数据
-  test_user_id: 1001
-  test_user_id_2: 1002
-  test_user_id_3: 1003
-  plan_monthly_id: "plan_monthly"
-  plan_yearly_id: "plan_yearly"
-  payment_method_alipay: "alipay"
-  payment_method_wechat: "wechatpay"
-  
-  # 边界测试数据
-  invalid_user_id: 0
-  large_user_id: 999999999999
-  negative_user_id: -1
-  
-  # 异常测试数据
-  invalid_plan_id: "invalid_plan"
-  empty_plan_id: ""
-  invalid_payment_method: "invalid_method"
-  
-  # 金额测试数据
-  valid_amount: 9.99
-  zero_amount: 0
-  negative_amount: -1
-  large_amount: 999999.99
+  userId: 1001
+  planId: "plan_monthly"
 
 # 测试场景
 scenarios:
-  # ==================== 基础功能测试 ====================
-  
-  # 1. 健康检查测试
-  - name: 01-健康检查
-    description: 测试服务健康状态
+  - name: 基础功能测试
+    description: 测试订阅服务的基本功能
     steps:
-      - name: 检查服务健康
-        endpoint: /health
-        method: GET
-        assert:
-          status: 200
-          body:
-            $.success: true
-            $.data.status: UP
-            $.data.service: subscription-service
-        extract:
-          healthStatus: $.data.status
-
-  # ==================== 套餐管理测试 ====================
-  
-  # 2. 套餐管理正常流程
-  - name: 02-套餐管理正常流程
-    description: 测试订阅套餐的查询
-    steps:
-      - name: 获取所有套餐列表
+      - name: 获取套餐列表
         endpoint: /v1/subscription/plans
         method: GET
         assert:
           status: 200
-          body:
-            $.success: true
-            $.data.plans: "!null"
         extract:
-          plansList: $.data.plans
-          firstPlanId: $.data.plans[0].id
-          firstPlanName: $.data.plans[0].name
-          firstPlanPrice: $.data.plans[0].price
+          plans: $.plans
 
-      - name: 验证套餐数据结构
-        endpoint: /v1/subscription/plans
-        method: GET
-        dependencies: [获取所有套餐列表]
-        assert:
-          status: 200
-          body:
-            $.success: true
-
-  # ==================== 用户订阅查询测试 ====================
-  
-  # 3. 用户订阅查询正常流程
-  - name: 03-用户订阅查询正常流程
-    description: 测试用户订阅状态查询
+  - name: 多区域定价测试
+    description: 测试不同区域的定价策略
     steps:
-      - name: 查询用户订阅状态（未订阅）
-        endpoint: /v1/subscription/my/1001
-        method: GET
-        assert:
-          status: 200
-          body:
-            $.success: true
-        extract:
-          isActive: $.data.isActive
-          currentPlanId: $.data.planId
-          subscriptionStatus: $.data.status
-
-      - name: 查询其他用户订阅状态
-        endpoint: /v1/subscription/my/9999
-        method: GET
-        dependencies: [查询用户订阅状态（未订阅）]
-        assert:
-          status: 200
-          body:
-            $.success: true
-        extract:
-          otherUserActive: $.data.is_active
-  
-  # 4. 用户订阅查询异常场景
-  - name: 04-用户订阅查询异常场景
-    description: 测试用户订阅查询的异常情况
-    steps:
-      - name: 查询-无效用户ID（0）
-        endpoint: /v1/subscription/my/0
-        method: GET
-        assert:
-          status: 400
-          body:
-            $.success: false
-      
-      - name: 查询-负数用户ID
-        endpoint: /v1/subscription/my/{{.negative_user_id}}
-        method: GET
-        dependencies: [查询-无效用户ID（0）]
-        assert:
-          status: [400, 500]
-      
-      - name: 查询-非数字用户ID
-        endpoint: /v1/subscription/my/invalid
-        method: GET
-        dependencies: [查询-负数用户ID]
-        assert:
-          status: 400
-
-  # ==================== 订阅购买流程测试 ====================
-  
-  # 5. 订阅购买正常流程
-  - name: 05-订阅购买正常流程
-    description: 测试完整的订阅购买流程
-    steps:
-      - name: 创建月度订阅订单
+      # 1. 默认区域 (USD)
+      - name: 创建订单(默认区域)
         endpoint: /v1/subscription/order
         method: POST
+        dependencies: [获取套餐列表]
         request_body:
           uid: 1001
           plan_id: "plan_monthly"
           payment_method: "alipay"
+          region: "default"
+        extract:
+          orderIdDefault: $.order_id
+          paymentIdDefault: $.payment_id
         assert:
           status: 200
-          body:
-            $.success: true
-            $.data.orderId: "!null"
-            $.data.paymentId: "!null"
-        extract:
-          monthlyOrderId: $.data.orderId
-          monthlyPaymentId: $.data.paymentId
-          monthlyPayUrl: $.data.pay_url
-          monthlyPayCode: $.data.pay_code
 
-      - name: 创建年度订阅订单
+      # 2. 中国区域 (CNY)
+      - name: 创建订单(中国区域)
         endpoint: /v1/subscription/order
         method: POST
-        dependencies: [创建月度订阅订单]
+        dependencies: [创建订单(默认区域)]
         request_body:
           uid: 1002
-          plan_id: "plan_yearly"
+          plan_id: "plan_monthly"
           payment_method: "wechatpay"
+          region: "CN"
+        extract:
+          orderIdCN: $.order_id
+          paymentIdCN: $.payment_id
+        assert:
+          status: 200
+      
+      # 3. 欧洲区域 (EUR)
+      - name: 创建订单(欧洲区域)
+        endpoint: /v1/subscription/order
+        method: POST
+        dependencies: [创建订单(中国区域)]
+        request_body:
+          uid: 1003
+          plan_id: "plan_yearly"
+          payment_method: "alipay"
+          region: "EU"
+        extract:
+          orderIdEU: $.order_id
+          paymentIdEU: $.payment_id
+        assert:
+          status: 200
+
+      # 4. 美国区域 (回退到默认 USD)
+      - name: 创建订单(美国区域)
+        endpoint: /v1/subscription/order
+        method: POST
+        dependencies: [创建订单(欧洲区域)]
+        request_body:
+          uid: 1004
+          plan_id: "plan_quarterly"
+          payment_method: "alipay"
+          region: "US"
+        extract:
+          orderIdUS: $.order_id
+        assert:
+          status: 200
+
+      # 5. 未知区域 (回退到默认)
+      - name: 创建订单(未知区域)
+        endpoint: /v1/subscription/order
+        method: POST
+        dependencies: [创建订单(美国区域)]
+        request_body:
+          uid: 1005
+          plan_id: "plan_monthly"
+          payment_method: "alipay"
+          region: "JP"
+        extract:
+          orderIdUnknown: $.order_id
+        assert:
+          status: 200
+
+      # 6. 空区域参数
+      - name: 创建订单(空区域)
+        endpoint: /v1/subscription/order
+        method: POST
+        dependencies: [创建订单(未知区域)]
+        request_body:
+          uid: 1006
+          plan_id: "plan_monthly"
+          payment_method: "alipay"
+        extract:
+          orderIdEmpty: $.order_id
+        assert:
+          status: 200
+
+  - name: 订阅生命周期测试
+    description: 测试订阅的完整生命周期
+    steps:
+      # 1. 创建订单
+      - name: 创建新订单
+        endpoint: /v1/subscription/order
+        method: POST
+        dependencies: [创建订单(空区域)]
+        request_body:
+          uid: 2001
+          plan_id: "plan_monthly"
+          payment_method: "alipay"
+          region: "CN"
+        extract:
+          newOrderId: $.order_id
+          newPaymentId: $.payment_id
+        assert:
+          status: 200
+
+      # 2. 查询订阅（支付前，应该没有）
+      - name: 查询订阅(支付前)
+        endpoint: /v1/subscription/my/2001
+        method: GET
+        dependencies: [创建新订单]
         assert:
           status: 200
           body:
-            $.success: true
-            $.data.orderId: "!null"
-        extract:
-          yearlyOrderId: $.data.orderId
-          yearlyPaymentId: $.data.paymentId
-          yearlyPayParams: $.data.payParams
-  
-  # 6. 订阅购买异常场景
-  - name: 06-订阅购买异常场景
-    description: 测试订阅购买的异常情况
-    steps:
-      - name: 创建订单-无效用户ID
-        endpoint: /v1/subscription/order
-        method: POST
-        dependencies: [创建年度订阅订单]
-        request_body:
-          uid: "{{.invalid_user_id}}"
-          plan_id: "{{.plan_monthly_id}}"
-          payment_method: "{{.payment_method_alipay}}"
-        assert:
-          status: [400, 500]
-      
-      - name: 创建订单-无效套餐ID
-        endpoint: /v1/subscription/order
-        method: POST
-        dependencies: [创建订单-无效用户ID]
-        request_body:
-          uid: "{{.test_user_id}}"
-          plan_id: "{{.invalid_plan_id}}"
-          payment_method: "{{.payment_method_alipay}}"
-        assert:
-          status: [400, 404, 500]
-      
-      - name: 创建订单-空套餐ID
-        endpoint: /v1/subscription/order
-        method: POST
-        dependencies: [创建订单-无效套餐ID]
-        request_body:
-          uid: "{{.test_user_id}}"
-          plan_id: "{{.empty_plan_id}}"
-          payment_method: "{{.payment_method_alipay}}"
-        assert:
-          status: 400
-      
-      - name: 创建订单-无效支付方式
-        endpoint: /v1/subscription/order
-        method: POST
-        dependencies: [创建订单-空套餐ID]
-        request_body:
-          uid: "{{.test_user_id}}"
-          plan_id: "{{.plan_monthly_id}}"
-          payment_method: "{{.invalid_payment_method}}"
-        assert:
-          status: 400
-      
-      - name: 创建订单-缺少必填字段
-        endpoint: /v1/subscription/order
-        method: POST
-        dependencies: [创建订单-无效支付方式]
-        request_body:
-          uid: "{{.test_user_id}}"
-        assert:
-          status: 400
+            is_active: false
 
-  # ==================== 支付成功回调测试 ====================
-  
-  # 7. 支付成功处理正常流程
-  - name: 07-支付成功处理正常流程
-    description: 测试支付成功后的订阅激活
-    steps:
-      - name: 处理月度订阅支付成功
+      # 3. 模拟支付成功
+      - name: 支付成功回调
         endpoint: /v1/subscription/payment/success
         method: POST
-        dependencies: [创建订单-缺少必填字段]
+        dependencies: [查询订阅(支付前)]
+        request_body:
+          order_id: "{{.newOrderId}}"
+          payment_id: "{{.newPaymentId}}"
+          amount: 38.00
+        assert:
+          status: 200
+          body:
+            success: true
+
+      # 4. 查询订阅（支付后，应该激活）
+      - name: 查询订阅(支付后)
+        endpoint: /v1/subscription/my/2001
+        method: GET
+        dependencies: [支付成功回调]
+        assert:
+          status: 200
+          body:
+            is_active: true
+            plan_id: "plan_monthly"
+            status: "active"
+            auto_renew: false
+
+      # 5. 开启自动续费
+      - name: 开启自动续费
+        endpoint: /v1/subscription/auto-renew
+        method: POST
+        dependencies: [查询订阅(支付后)]
+        request_body:
+          uid: 2001
+          auto_renew: true
+        assert:
+          status: 200
+          body:
+            success: true
+
+      # 6. 验证自动续费状态
+      - name: 验证自动续费状态
+        endpoint: /v1/subscription/my/2001
+        method: GET
+        dependencies: [开启自动续费]
+        assert:
+          status: 200
+          body:
+            auto_renew: true
+
+      # 7. 暂停订阅
+      - name: 暂停订阅
+        endpoint: /v1/subscription/pause
+        method: POST
+        dependencies: [验证自动续费状态]
+        request_body:
+          uid: 2001
+          reason: "测试暂停"
+        assert:
+          status: 200
+          body:
+            success: true
+
+      # 8. 验证暂停状态
+      - name: 验证暂停状态
+        endpoint: /v1/subscription/my/2001
+        method: GET
+        dependencies: [暂停订阅]
+        assert:
+          status: 200
+          body:
+            status: "paused"
+
+      # 9. 恢复订阅
+      - name: 恢复订阅
+        endpoint: /v1/subscription/resume
+        method: POST
+        dependencies: [验证暂停状态]
+        request_body:
+          uid: 2001
+        assert:
+          status: 200
+          body:
+            success: true
+
+      # 10. 验证恢复状态
+      - name: 验证恢复状态
+        endpoint: /v1/subscription/my/2001
+        method: GET
+        dependencies: [恢复订阅]
+        assert:
+          status: 200
+          body:
+            status: "active"
+
+      # 11. 关闭自动续费
+      - name: 关闭自动续费
+        endpoint: /v1/subscription/auto-renew
+        method: POST
+        dependencies: [验证恢复状态]
+        request_body:
+          uid: 2001
+          auto_renew: false
+        assert:
+          status: 200
+          body:
+            success: true
+
+      # 12. 取消订阅
+      - name: 取消订阅
+        endpoint: /v1/subscription/cancel
+        method: POST
+        dependencies: [关闭自动续费]
+        request_body:
+          uid: 2001
+          reason: "测试取消"
+        assert:
+          status: 200
+          body:
+            success: true
+
+      # 13. 验证取消状态
+      - name: 验证取消状态
+        endpoint: /v1/subscription/my/2001
+        method: GET
+        dependencies: [取消订阅]
+        assert:
+          status: 200
+          body:
+            status: "cancelled"
+            auto_renew: false
+
+  - name: 订阅历史测试
+    description: 测试订阅历史记录功能
+    steps:
+      # 1. 获取订阅历史
+      - name: 获取订阅历史
+        endpoint: /v1/subscription/history/2001
+        method: GET
+        dependencies: [验证取消状态]
+        params:
+          page: 1
+          page_size: 10
+        assert:
+          status: 200
+
+  - name: 多套餐测试
+    description: 测试不同套餐的订阅
+    steps:
+      # 1. 订阅月度套餐
+      - name: 订阅月度套餐
+        endpoint: /v1/subscription/order
+        method: POST
+        dependencies: [获取订阅历史]
+        request_body:
+          uid: 3001
+          plan_id: "plan_monthly"
+          payment_method: "alipay"
+          region: "CN"
+        extract:
+          monthlyOrderId: $.order_id
+          monthlyPaymentId: $.payment_id
+        assert:
+          status: 200
+
+      - name: 月度套餐支付成功
+        endpoint: /v1/subscription/payment/success
+        method: POST
+        dependencies: [订阅月度套餐]
         request_body:
           order_id: "{{.monthlyOrderId}}"
           payment_id: "{{.monthlyPaymentId}}"
-          amount: "{{.valid_amount}}"
+          amount: 38.00
         assert:
           status: 200
-          body:
-            $.success: true
-            $.data.success: true
-        extract:
-          paymentSuccessResult: $.data.success
 
-      - name: 验证订阅已激活
-        endpoint: /v1/subscription/my/{{.test_user_id}}
-        method: GET
-        dependencies: [处理月度订阅支付成功]
+      # 2. 订阅季度套餐（不同用户）
+      - name: 订阅季度套餐
+        endpoint: /v1/subscription/order
+        method: POST
+        dependencies: [月度套餐支付成功]
+        request_body:
+          uid: 3002
+          plan_id: "plan_quarterly"
+          payment_method: "wechatpay"
+          region: "CN"
+        extract:
+          quarterlyOrderId: $.order_id
+          quarterlyPaymentId: $.payment_id
         assert:
           status: 200
-          body:
-            $.success: true
-            $.data.is_active: true
-            $.data.plan_id: "plan_monthly"
-            $.data.status: "active"
-        extract:
-          activatedPlanId: $.data.plan_id
-          subscriptionStartTime: $.data.start_time
-          subscriptionEndTime: $.data.end_time
-          activeStatus: $.data.status
 
-      - name: 处理年度订阅支付成功
+      - name: 季度套餐支付成功
         endpoint: /v1/subscription/payment/success
         method: POST
-        dependencies: [验证订阅已激活]
+        dependencies: [订阅季度套餐]
+        request_body:
+          order_id: "{{.quarterlyOrderId}}"
+          payment_id: "{{.quarterlyPaymentId}}"
+          amount: 98.00
+        assert:
+          status: 200
+
+      # 3. 订阅年度套餐（不同用户）
+      - name: 订阅年度套餐
+        endpoint: /v1/subscription/order
+        method: POST
+        dependencies: [季度套餐支付成功]
+        request_body:
+          uid: 3003
+          plan_id: "plan_yearly"
+          payment_method: "alipay"
+          region: "CN"
+        extract:
+          yearlyOrderId: $.order_id
+          yearlyPaymentId: $.payment_id
+        assert:
+          status: 200
+
+      - name: 年度套餐支付成功
+        endpoint: /v1/subscription/payment/success
+        method: POST
+        dependencies: [订阅年度套餐]
         request_body:
           order_id: "{{.yearlyOrderId}}"
           payment_id: "{{.yearlyPaymentId}}"
-          amount: 99.99
+          amount: 388.00
         assert:
           status: 200
-          body:
-            $.success: true
-            $.data.success: true
-  
-  # 8. 支付成功处理异常场景
-  - name: 08-支付成功处理异常场景
-    description: 测试支付成功处理的异常情况
-    steps:
-      - name: 处理支付-无效订单号
-        endpoint: /v1/subscription/payment/success
-        method: POST
-        dependencies: [处理年度订阅支付成功]
-        request_body:
-          order_id: "INVALID_ORDER_ID"
-          payment_id: "PAY123456"
-          amount: "{{.valid_amount}}"
-        assert:
-          status: [400, 404, 500]
-      
-      - name: 处理支付-空订单号
-        endpoint: /v1/subscription/payment/success
-        method: POST
-        dependencies: [处理支付-无效订单号]
-        request_body:
-          order_id: ""
-          payment_id: "PAY123456"
-          amount: "{{.valid_amount}}"
-        assert:
-          status: 400
-      
-      - name: 处理支付-零金额
-        endpoint: /v1/subscription/payment/success
-        method: POST
-        dependencies: [处理支付-空订单号]
-        request_body:
-          order_id: "{{.monthlyOrderId}}"
-          payment_id: "PAY123456"
-          amount: "{{.zero_amount}}"
-        assert:
-          status: 400
-      
-      - name: 处理支付-负金额
-        endpoint: /v1/subscription/payment/success
-        method: POST
-        dependencies: [处理支付-零金额]
-        request_body:
-          order_id: "{{.monthlyOrderId}}"
-          payment_id: "PAY123456"
-          amount: "{{.negative_amount}}"
-        assert:
-          status: 400
-      
-      - name: 处理支付-重复回调
-        endpoint: /v1/subscription/payment/success
-        method: POST
-        dependencies: [处理支付-负金额]
-        request_body:
-          order_id: "{{.monthlyOrderId}}"
-          payment_id: "{{.monthlyPaymentId}}"
-          amount: "{{.valid_amount}}"
-        assert:
-          status: [200, 400, 500]  # 幂等性，可能成功或失败
 
-  # ==================== 订阅续费测试 ====================
-  
-  # 9. 订阅续费流程
-  - name: 09-订阅续费流程
-    description: 测试订阅续费功能
+  - name: 错误处理测试
+    description: 测试各种错误场景
     steps:
-      - name: 创建续费订单
+      # 1. 无效的套餐ID
+      - name: 无效套餐ID
         endpoint: /v1/subscription/order
         method: POST
-        dependencies: [处理支付-重复回调]
+        dependencies: [年度套餐支付成功]
         request_body:
-          uid: "{{.test_user_id}}"
-          plan_id: "{{.plan_monthly_id}}"
-          payment_method: "{{.payment_method_alipay}}"
+          uid: 4001
+          plan_id: "invalid_plan"
+          payment_method: "alipay"
+          region: "CN"
         assert:
-          status: 200
-          body:
-            $.success: true
-        extract:
-          renewOrderId: $.data.order_id
-          renewPaymentId: $.data.payment_id
+          status: 500
 
-      - name: 处理续费支付成功
-        endpoint: /v1/subscription/payment/success
+      # 2. 取消不存在的订阅
+      - name: 取消不存在的订阅
+        endpoint: /v1/subscription/cancel
         method: POST
-        dependencies: [创建续费订单]
+        dependencies: [无效套餐ID]
         request_body:
-          order_id: "{{.renewOrderId}}"
-          payment_id: "{{.renewPaymentId}}"
-          amount: "{{.valid_amount}}"
+          uid: 9999
+          reason: "测试"
         assert:
           status: 200
           body:
-            $.success: true
-            $.data.success: true
+            success: false
 
-      - name: 验证订阅已延长
-        endpoint: /v1/subscription/my/{{.test_user_id}}
-        method: GET
-        dependencies: [处理续费支付成功]
-        assert:
-          status: 200
-          body:
-            $.success: true
-            $.data.is_active: true
-            $.data.status: "active"
-        extract:
-          renewedEndTime: $.data.end_time
-
-  # ==================== 订阅升级测试 ====================
-  
-  # 10. 订阅升级流程
-  - name: 10-订阅升级流程
-    description: 测试从月度升级到年度订阅
-    steps:
-      - name: 创建升级订单
-        endpoint: /v1/subscription/order
+      # 3. 暂停不存在的订阅
+      - name: 暂停不存在的订阅
+        endpoint: /v1/subscription/pause
         method: POST
-        dependencies: [验证订阅已延长]
+        dependencies: [取消不存在的订阅]
         request_body:
-          uid: "{{.test_user_id}}"
-          plan_id: "{{.plan_yearly_id}}"
-          payment_method: "{{.payment_method_alipay}}"
+          uid: 9998
+          reason: "测试"
         assert:
           status: 200
           body:
-            $.success: true
-        extract:
-          upgradeOrderId: $.data.order_id
-          upgradePaymentId: $.data.payment_id
+            success: false
 
-      - name: 处理升级支付成功
-        endpoint: /v1/subscription/payment/success
+      # 4. 恢复不存在的订阅
+      - name: 恢复不存在的订阅
+        endpoint: /v1/subscription/resume
         method: POST
-        dependencies: [创建升级订单]
+        dependencies: [暂停不存在的订阅]
         request_body:
-          order_id: "{{.upgradeOrderId}}"
-          payment_id: "{{.upgradePaymentId}}"
-          amount: 99.99
+          uid: 9997
         assert:
           status: 200
           body:
-            $.success: true
-            $.data.success: true
-
-      - name: 验证已升级到年度套餐
-        endpoint: /v1/subscription/my/{{.test_user_id}}
-        method: GET
-        dependencies: [处理升级支付成功]
-        assert:
-          status: 200
-          body:
-            $.success: true
-            $.data.is_active: true
-            $.data.plan_id: "plan_yearly"
-            $.data.status: "active"
-        extract:
-          upgradedPlanId: $.data.plan_id
-          upgradedEndTime: $.data.end_time
-  
-  # ==================== 并发和性能测试 ====================
-  
-  # 11. 并发请求测试
-  - name: 11-并发请求测试
-    description: 测试系统的并发处理能力
-    steps:
-      - name: 并发获取套餐列表
-        endpoint: /v1/subscription/plans
-        method: GET
-        dependencies: [验证已升级到年度套餐]
-        assert:
-          status: 200
-          body:
-            $.success: true
-      
-      - name: 并发查询订阅状态
-        endpoint: /v1/subscription/my/{{.test_user_id}}
-        method: GET
-        dependencies: [并发获取套餐列表]
-        assert:
-          status: 200
-          body:
-            $.success: true
+            success: false

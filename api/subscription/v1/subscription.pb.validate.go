@@ -663,6 +663,8 @@ func (m *CreateSubscriptionOrderRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	// no validation rules for Region
+
 	if len(errors) > 0 {
 		return CreateSubscriptionOrderRequestMultiError(errors)
 	}

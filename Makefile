@@ -25,6 +25,7 @@ api:
 	  --go-http_out=paths=source_relative:api/subscription/v1 \
 	  --go-grpc_out=paths=source_relative:api/subscription/v1 \
 	  --validate_out=paths=source_relative,lang=go:api/subscription/v1 \
+	  --openapi_out=fq_schema_naming=true,default_response=false:api/openapi/v1 \
 	  api/subscription/v1/subscription.proto
 
 .PHONY: wire

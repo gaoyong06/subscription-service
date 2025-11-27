@@ -1,11 +1,15 @@
 package data
 
 import (
+	"context"
+	"time"
+	"xinyuan_tech/subscription-service/internal/biz"
 	"xinyuan_tech/subscription-service/internal/conf"
 	"xinyuan_tech/subscription-service/internal/data/model"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
+	"github.com/redis/go-redis/v9" // Updated Redis import
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -14,24 +18,37 @@ import (
 var ProviderSet = wire.NewSet(
 	NewData,
 	NewDB,
+	NewRedis, // Added NewRedis
 	NewPlanRepo,
 	NewUserSubscriptionRepo,
 	NewSubscriptionOrderRepo,
 	NewSubscriptionHistoryRepo,
 	NewPaymentClient,
+	wire.Bind(new(biz.Transaction), new(*Data)),
 )
 
 // Data .
 type Data struct {
-	db *gorm.DB
+	db  *gorm.DB
+	rdb *redis.Client
+}
+
+type contextTxKey struct{}
+
+// Exec 执行事务
+func (d *Data) Exec(ctx context.Context, fn func(ctx context.Context) error) error {
+	return d.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		ctx = context.WithValue(ctx, contextTxKey{}, tx)
+		return fn(ctx)
+	})
 }
 
 // NewData .
-func NewData(c *conf.Bootstrap, logger log.Logger, db *gorm.DB) (*Data, func(), error) {
+func NewData(c *conf.Bootstrap, logger log.Logger, db *gorm.DB, rdb *redis.Client) (*Data, func(), error) {
 	cleanup := func() {
 		log.NewHelper(logger).Info("closing the data resources")
 	}
-	return &Data{db: db}, cleanup, nil
+	return &Data{db: db, rdb: rdb}, cleanup, nil
 }
 
 // NewDB .
@@ -46,6 +63,21 @@ func NewDB(c *conf.Bootstrap) *gorm.DB {
 	initPlans(db)
 	initPlanPricing(db)
 	return db
+}
+
+// NewRedis .
+func NewRedis(c *conf.Bootstrap) *redis.Client {
+	readTimeout, _ := time.ParseDuration(c.Data.Redis.ReadTimeout)
+	writeTimeout, _ := time.ParseDuration(c.Data.Redis.WriteTimeout)
+
+	rdb := redis.NewClient(&redis.Options{
+		Addr:         c.Data.Redis.Addr,
+		Password:     c.Data.Redis.Password,
+		DB:           int(c.Data.Redis.Db),
+		ReadTimeout:  readTimeout,
+		WriteTimeout: writeTimeout,
+	})
+	return rdb
 }
 
 func initPlans(db *gorm.DB) {
@@ -68,18 +100,15 @@ func initPlanPricing(db *gorm.DB) {
 	db.Model(&model.PlanPricing{}).Count(&count)
 	if count == 0 {
 		pricings := []model.PlanPricing{
-			// Monthly plan pricing
-			{PlanID: "plan_monthly", Region: "US", Price: 9.99, Currency: "USD"},
-			{PlanID: "plan_monthly", Region: "CN", Price: 68.00, Currency: "CNY"},
+			// 中国区域定价 - 人民币，价格更亲民
+			{PlanID: "plan_monthly", Region: "CN", Price: 38.00, Currency: "CNY"},
+			{PlanID: "plan_yearly", Region: "CN", Price: 388.00, Currency: "CNY"},
+			{PlanID: "plan_quarterly", Region: "CN", Price: 98.00, Currency: "CNY"},
+			// 欧洲区域定价 - 欧元
 			{PlanID: "plan_monthly", Region: "EU", Price: 8.99, Currency: "EUR"},
-			// Yearly plan pricing
-			{PlanID: "plan_yearly", Region: "US", Price: 99.99, Currency: "USD"},
-			{PlanID: "plan_yearly", Region: "CN", Price: 688.00, Currency: "CNY"},
 			{PlanID: "plan_yearly", Region: "EU", Price: 89.99, Currency: "EUR"},
-			// Quarterly plan pricing
-			{PlanID: "plan_quarterly", Region: "US", Price: 25.99, Currency: "USD"},
-			{PlanID: "plan_quarterly", Region: "CN", Price: 178.00, Currency: "CNY"},
 			{PlanID: "plan_quarterly", Region: "EU", Price: 23.99, Currency: "EUR"},
+			// 注意：US 和其他所有未配置的区域会自动使用 plan 表中的默认 USD 价格
 		}
 		if err := db.Create(&pricings).Error; err != nil {
 			panic(err)

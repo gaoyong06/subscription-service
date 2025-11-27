@@ -803,7 +803,7 @@ log:
 data:
   database:
     driver: mysql
-    source: root:root@tcp(localhost:3306)/subscription_service?charset=utf8mb4&parseTime=True&loc=Local
+    source: root:@tcp(localhost:3306)/subscription_service?charset=utf8mb4&parseTime=True&loc=Local
 ```
 
 **Docker 快速启动**:

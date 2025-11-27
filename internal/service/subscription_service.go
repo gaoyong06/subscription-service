@@ -66,8 +66,11 @@ func (s *SubscriptionService) GetMySubscription(ctx context.Context, req *pb.Get
 // CreateSubscriptionOrder 创建订阅订单
 // 为用户创建订阅订单，调用支付服务生成支付信息
 func (s *SubscriptionService) CreateSubscriptionOrder(ctx context.Context, req *pb.CreateSubscriptionOrderRequest) (*pb.CreateSubscriptionOrderReply, error) {
-	// TODO: 从请求或用户信息中获取 region，这里暂时使用 "default"
-	region := "default"
+	// 从请求中获取 region，如果为空则使用 "default"
+	region := req.Region
+	if region == "" {
+		region = "default"
+	}
 	order, paymentID, payUrl, payCode, payParams, err := s.uc.CreateSubscriptionOrder(ctx, req.Uid, req.PlanId, req.PaymentMethod, region)
 	if err != nil {
 		return nil, err

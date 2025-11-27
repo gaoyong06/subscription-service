@@ -1,6 +1,8 @@
 package conf
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Bootstrap struct {
 	Server       *Server       `yaml:"server" json:"server"`
@@ -26,6 +28,13 @@ type Data struct {
 		Driver string `yaml:"driver" json:"driver"`
 		Source string `yaml:"source" json:"source"`
 	} `yaml:"database" json:"database"`
+	Redis struct {
+		Addr         string `yaml:"addr" json:"addr"`
+		Password     string `yaml:"password" json:"password"`
+		Db           int32  `yaml:"db" json:"db"`
+		ReadTimeout  string `yaml:"read_timeout" json:"read_timeout"`
+		WriteTimeout string `yaml:"write_timeout" json:"write_timeout"`
+	} `yaml:"redis" json:"redis"`
 }
 
 type Client struct {

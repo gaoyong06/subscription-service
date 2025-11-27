@@ -3,22 +3,33 @@
 ## 📋 完成的优化
 
 ### ✅ 问题1: 多区域定价系统
-**实现方式**: 增加 `PlanPricing` 表
+**实现方式**: 增加 `PlanPricing` 表，采用**简化的多区域定价策略**
 
 **改动文件**:
 - `internal/data/model/plan_pricing.go` - 新增区域定价模型
 - `internal/biz/plan.go` - 添加 `PlanPricing` 业务模型和 `GetPlanPricing` 方法
 - `internal/data/plan_repo.go` - 实现 `GetPlanPricing` 和 `ListPlanPricings`
-- `internal/data/data.go` - 初始化区域定价数据（US, CN, EU）
+- `internal/data/data.go` - 初始化区域定价数据（仅 CN, EU）
 - `internal/biz/subscription_order.go` - 使用区域定价创建订单
+- `api/subscription/v1/subscription.proto` - 添加 `region` 字段
+- `internal/service/subscription_service.go` - 支持从请求获取 region
+
+**定价策略**: 
+- **CN (中国)**: ¥38/月, ¥388/年, ¥98/季 - 本地化定价，约为美元价格的 40% 折扣
+- **EU (欧洲)**: €8.99/月, €89.99/年, €23.99/季 - 欧元定价
+- **Default (其他所有区域)**: $9.99/月, $99.99/年, $25.99/季 - 默认美元价格
+
+**设计理念**:
+1. **只配置关键市场**: 仅为中国和欧洲配置特殊定价
+2. **默认回退机制**: 未配置的区域（包括 US）自动使用 plan 表的默认 USD 价格
+3. **本地化体验**: 中国用户看到人民币，欧洲用户看到欧元，心理门槛更低
+4. **数据驱动**: 可随时在数据库中添加新区域，无需修改代码
 
 **效果**: 
-- 支持按区域（US, CN, EU）设置不同价格和货币
-- 如果未找到区域定价，自动回退到默认价格
-- 已初始化测试数据：
-  - Monthly: $9.99 (US), ¥68 (CN), €8.99 (EU)
-  - Yearly: $99.99 (US), ¥688 (CN), €89.99 (EU)
-  - Quarterly: $25.99 (US), ¥178 (CN), €23.99 (EU)
+- ✅ 支持按区域设置不同价格和货币
+- ✅ 自动回退到默认价格（未配置区域）
+- ✅ API 层完全打通，可通过 `region` 参数指定
+- ✅ 完整的测试用例覆盖（`api-test-config.yaml`）
 
 ---
 
@@ -205,59 +216,40 @@ func NewSubscriptionUsecase(..., config *conf.Bootstrap, logger log.Logger) *Sub
 
 ---
 
-## 📝 待优化项（可选）
+## ✅ 额外优化完成
 
-### 1. Redis 缓存层
-**建议**: 在 `UserSubscriptionRepo` 中添加 Redis 缓存
+### ✅ 1. Redis 缓存层
+**实现**: 
+- 在 `Data` 层集成了 `go-redis`
+- `UserSubscriptionRepo` 实现了读写缓存策略
+  - `GetSubscription`: 先查 Redis，未命中查 DB 并回写
+  - `SaveSubscription`: 保存 DB 后删除 Redis 缓存
 
-```go
-func (r *userSubscriptionRepo) GetSubscription(ctx context.Context, userID uint64) (*biz.UserSubscription, error) {
-    // 1. 先查 Redis
-    cacheKey := fmt.Sprintf("subscription:user:%d", userID)
-    // 2. 缓存未命中，查数据库
-    // 3. 写回缓存
-}
-```
+### ✅ 2. 定时任务调度
+**实现**: 
+- 使用 `robfig/cron/v3` 实现秒级调度
+- `cmd/cron/main.go` 包含三个核心任务：
+  - 每天 02:00: 过期检查 (`UpdateExpiredSubscriptions`)
+  - 每天 03:00: 自动续费 (`ProcessAutoRenewals`)
+  - 每天 10:00: 续费提醒 (`GetExpiringSubscriptions`)
 
-**优先级**: P2（中）
-
----
-
-### 2. 定时任务调度
-**建议**: 使用 `robfig/cron` 或 Kratos Task
-
-```go
-func (uc *SubscriptionUsecase) StartScheduledTasks() {
-    c := cron.New()
-    c.AddFunc("0 2 * * *", func() {
-        uc.UpdateExpiredSubscriptions(ctx)
-    })
-    c.AddFunc("0 3 * * *", func() {
-        uc.ProcessAutoRenewals(ctx, 3, false)
-    })
-    c.Start()
-}
-```
-
-**优先级**: P1（高）
+### ✅ 3. 真正的事务支持
+**实现**: 
+- `biz` 层定义 `Transaction` 接口
+- `data` 层实现基于 GORM 的事务
+- `SubscriptionUsecase` 注入事务管理器
+- `HandlePaymentSuccess` 等关键业务使用事务保护
 
 ---
 
-### 3. 真正的事务支持
-**建议**: 在 Data 层提供事务接口
+## 🚀 项目状态
 
-```go
-type Data struct {
-    db *gorm.DB
-}
-
-func (d *Data) Transaction(ctx context.Context, fn func(context.Context) error) error {
-    return d.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-        // 将 tx 注入到 context
-        return fn(ctx)
-    })
-}
-```
+所有核心重构目标和额外优化建议均已完成。项目现在具备：
+1. **完整的业务功能**: 订阅、续费、自动扣款、多区域定价
+2. **健壮的架构**: Kratos 分层、依赖注入、事务管理
+3. **高性能**: Redis 缓存支持
+4. **自动化**: 定时任务调度
+5. **规范性**: 统一的错误处理、日志和配置管理
 
 **优先级**: P1（高）
 

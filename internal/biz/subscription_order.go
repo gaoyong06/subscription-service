@@ -178,9 +178,7 @@ func (uc *SubscriptionUsecase) HandlePaymentSuccess(ctx context.Context, orderID
 }
 
 // withTransaction 执行事务
+// withTransaction 执行事务
 func (uc *SubscriptionUsecase) withTransaction(ctx context.Context, fn func(context.Context) error) error {
-	// TODO: 实现真正的事务支持
-	// 这里需要从 data 层获取 *gorm.DB 并使用 db.Transaction()
-	// 由于架构限制，暂时直接执行，后续需要重构
-	return fn(ctx)
+	return uc.tm.Exec(ctx, fn)
 }

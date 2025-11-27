@@ -46,6 +46,7 @@ type SubscriptionUsecase struct {
 	orderRepo     SubscriptionOrderRepo
 	historyRepo   SubscriptionHistoryRepo
 	paymentClient PaymentClient
+	tm            Transaction // 事务管理器
 	config        *conf.Bootstrap
 	log           *log.Helper
 }
@@ -57,6 +58,7 @@ func NewSubscriptionUsecase(
 	orderRepo SubscriptionOrderRepo,
 	historyRepo SubscriptionHistoryRepo,
 	paymentClient PaymentClient,
+	tm Transaction,
 	config *conf.Bootstrap,
 	logger log.Logger,
 ) *SubscriptionUsecase {
@@ -66,6 +68,7 @@ func NewSubscriptionUsecase(
 		orderRepo:     orderRepo,
 		historyRepo:   historyRepo,
 		paymentClient: paymentClient,
+		tm:            tm,
 		config:        config,
 		log:           log.NewHelper(logger),
 	}

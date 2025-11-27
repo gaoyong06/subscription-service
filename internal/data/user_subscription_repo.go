@@ -2,7 +2,9 @@ package data
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 	"xinyuan_tech/subscription-service/internal/biz"
 	"xinyuan_tech/subscription-service/internal/data/model"
@@ -27,8 +29,19 @@ func NewUserSubscriptionRepo(data *Data, logger log.Logger) biz.UserSubscription
 
 // GetSubscription 获取用户订阅
 func (r *subscriptionRepo) GetSubscription(ctx context.Context, userID uint64) (*biz.UserSubscription, error) {
+	// 1. 尝试从 Redis 获取
+	cacheKey := fmt.Sprintf("subscription:user:%d", userID)
+	val, err := r.data.rdb.Get(ctx, cacheKey).Result()
+	if err == nil {
+		var sub biz.UserSubscription
+		if err := json.Unmarshal([]byte(val), &sub); err == nil {
+			return &sub, nil
+		}
+	}
+
+	// 2. 从数据库获取
 	var m model.UserSubscription
-	err := r.data.db.WithContext(ctx).Where("uid = ?", userID).First(&m).Error
+	err = r.data.db.WithContext(ctx).Where("uid = ?", userID).First(&m).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -36,7 +49,8 @@ func (r *subscriptionRepo) GetSubscription(ctx context.Context, userID uint64) (
 		r.log.Errorf("Failed to get subscription for user %d: %v", userID, err)
 		return nil, err
 	}
-	return &biz.UserSubscription{
+
+	sub := &biz.UserSubscription{
 		ID:        m.SubscriptionID,
 		UserID:    m.UID,
 		PlanID:    m.PlanID,
@@ -46,7 +60,14 @@ func (r *subscriptionRepo) GetSubscription(ctx context.Context, userID uint64) (
 		AutoRenew: m.AutoRenew,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
-	}, nil
+	}
+
+	// 3. 写入 Redis 缓存 (过期时间 1 小时)
+	if data, err := json.Marshal(sub); err == nil {
+		r.data.rdb.Set(ctx, cacheKey, data, time.Hour)
+	}
+
+	return sub, nil
 }
 
 // SaveSubscription 保存订阅
@@ -69,6 +90,11 @@ func (r *subscriptionRepo) SaveSubscription(ctx context.Context, sub *biz.UserSu
 	}
 	// 更新 biz 对象的 ID（如果是新创建的）
 	sub.ID = m.SubscriptionID
+
+	// 删除缓存
+	cacheKey := fmt.Sprintf("subscription:user:%d", sub.UserID)
+	r.data.rdb.Del(ctx, cacheKey)
+
 	return nil
 }
 

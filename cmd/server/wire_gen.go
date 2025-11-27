@@ -25,7 +25,8 @@ import (
 // wireApp init kratos application.
 func wireApp(bootstrap *conf.Bootstrap, logger log.Logger) (*kratos.App, func(), error) {
 	db := data.NewDB(bootstrap)
-	dataData, cleanup, err := data.NewData(bootstrap, logger, db)
+	client := data.NewRedis(bootstrap)
+	dataData, cleanup, err := data.NewData(bootstrap, logger, db, client)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -38,7 +39,7 @@ func wireApp(bootstrap *conf.Bootstrap, logger log.Logger) (*kratos.App, func(),
 		cleanup()
 		return nil, nil, err
 	}
-	subscriptionUsecase := biz.NewSubscriptionUsecase(planRepo, userSubscriptionRepo, subscriptionOrderRepo, subscriptionHistoryRepo, paymentClient, bootstrap, logger)
+	subscriptionUsecase := biz.NewSubscriptionUsecase(planRepo, userSubscriptionRepo, subscriptionOrderRepo, subscriptionHistoryRepo, paymentClient, dataData, bootstrap, logger)
 	subscriptionService := service.NewSubscriptionService(subscriptionUsecase)
 	grpcServer := server.NewGRPCServer(bootstrap, subscriptionService, logger)
 	httpServer := server.NewHTTPServer(bootstrap, subscriptionService, logger)

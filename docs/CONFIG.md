@@ -56,7 +56,7 @@ server:
 data:
   database:
     driver: mysql
-    source: root:root@tcp(localhost:3306)/subscription_service?charset=utf8mb4&parseTime=True&loc=Local
+    source: root:@tcp(localhost:3306)/subscription_service?charset=utf8mb4&parseTime=True&loc=Local
 
 client:
   payment:
@@ -202,7 +202,7 @@ services:
       - ./configs:/app/configs
       - ./logs:/app/logs
     environment:
-      - DB_SOURCE=root:root@tcp(mysql:3306)/subscription_service?charset=utf8mb4&parseTime=True&loc=Local
+      - DB_SOURCE=root:@tcp(mysql:3306)/subscription_service?charset=utf8mb4&parseTime=True&loc=Local
       - PAYMENT_ADDR=payment-service:9101
       - LOG_LEVEL=info
     depends_on:
