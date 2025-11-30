@@ -1,83 +1,23 @@
 #!/bin/bash
 
-# 设置颜色
-GREEN="\033[0;32m"
-YELLOW="\033[1;33m"
-RED="\033[0;31m"
-NC="\033[0m" # 恢复默认颜色
+# Subscription Service 重启脚本
+# 调用 devops-tools 统一管理
 
-echo -e "${GREEN}============================================${NC}"
-echo -e "${GREEN}   Subscription Service Restart (All)      ${NC}"
-echo -e "${GREEN}============================================${NC}"
+# 获取脚本所在目录
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SERVICE_DIR="$(cd "$SCRIPT_DIR/../" && pwd)"
+PROJECT_ROOT="$(cd "$SERVICE_DIR/../" && pwd)"
 
-# 要检查的端口列表
-PORTS=(8102 9102)
+# devops-tools 目录
+DEVOPS_TOOLS_DIR="$PROJECT_ROOT/devops-tools"
 
-# 检查并释放端口
-for PORT in "${PORTS[@]}"; do
-    echo -e "${YELLOW}检查端口 $PORT 是否被占用...${NC}"
-    
-    # 查找占用端口的进程
-    PID=$(lsof -ti :$PORT)
-    
-    if [ -n "$PID" ]; then
-        echo -e "${YELLOW}端口 $PORT 被进程 $PID 占用，正在终止...${NC}"
-        kill -9 $PID
-        sleep 1
-        echo -e "${GREEN}端口 $PORT 已释放${NC}"
-    else
-        echo -e "${GREEN}端口 $PORT 未被占用${NC}"
-    fi
-done
-
-# 停止可能运行的 cron 服务
-echo -e "${YELLOW}检查并停止 cron 服务...${NC}"
-CRON_PID=$(pgrep -f "bin/cron")
-if [ -n "$CRON_PID" ]; then
-    echo -e "${YELLOW}停止 cron 服务 (PID: $CRON_PID)...${NC}"
-    kill -9 $CRON_PID
-    sleep 1
-    echo -e "${GREEN}cron 服务已停止${NC}"
-else
-    echo -e "${GREEN}cron 服务未运行${NC}"
+# 检查 devops-tools 是否存在
+if [ ! -d "$DEVOPS_TOOLS_DIR" ] || [ ! -f "$DEVOPS_TOOLS_DIR/Makefile" ]; then
+    echo "错误: 找不到 devops-tools，请先安装:"
+    echo "  git clone https://github.com/gaoyong06/devops-tools.git $DEVOPS_TOOLS_DIR"
+    exit 1
 fi
 
-# 切换到项目根目录
-cd "$(dirname "$0")/../" || exit
-
-# 生成proto文件
-echo -e "${YELLOW}正在生成proto文件...${NC}"
-make api
-
-# 生成swagger文档
-echo -e "${YELLOW}正在生成swagger文档...${NC}"
-make swagger
-
-# 编译所有服务
-echo -e "${YELLOW}正在编译所有服务...${NC}"
-make build-all
-
-# 启动 cron 服务（后台运行）
-echo -e "${YELLOW}正在启动 cron 服务...${NC}"
-nohup ./bin/cron -conf ./configs/config.yaml > logs/cron.log 2>&1 &
-CRON_PID=$!
-sleep 1
-
-# 检查 cron 服务是否启动成功
-if ps -p $CRON_PID > /dev/null; then
-    echo -e "${GREEN}cron 服务已启动，PID: $CRON_PID${NC}"
-else
-    echo -e "${RED}cron 服务启动失败!${NC}"
-fi
-
-# 启动主服务器（前台运行）
-echo -e "${YELLOW}正在启动主服务器...${NC}"
-echo -e "${GREEN}============================================${NC}"
-./bin/server -conf ./configs/config.yaml
-
-# 如果主服务器退出，也停止 cron 服务
-echo -e "${YELLOW}主服务器已停止，正在停止 cron 服务...${NC}"
-if ps -p $CRON_PID > /dev/null; then
-    kill $CRON_PID
-    echo -e "${GREEN}cron 服务已停止${NC}"
-fi
+# 调用 devops-tools 统一管理
+cd "$DEVOPS_TOOLS_DIR"
+make restart SERVICE=subscription-service PROJECT_ROOT="$PROJECT_ROOT"

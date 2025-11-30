@@ -1,57 +1,31 @@
-GOPATH:=$(shell go env GOPATH)
-VERSION=$(shell git describe --tags --always)
+# Subscription Service Makefile
+# 使用 devops-tools 的通用 Makefile
+
 SERVICE_NAME=subscription-service
+API_PROTO_PATH=api/subscription/v1/subscription.proto
+API_PROTO_DIR=api/subscription/v1
 
-.PHONY: init
-# 初始化项目依赖
-init:
-	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-	go install github.com/go-kratos/kratos/cmd/kratos/v2@latest
-	go install github.com/go-kratos/kratos/cmd/protoc-gen-go-http/v2@latest
-	go install github.com/google/gnostic/cmd/protoc-gen-openapi@latest
-	go install github.com/google/wire/cmd/wire@latest
+# 服务特定配置
+SERVICE_DISPLAY_NAME=Subscription Service
+HTTP_PORT=8102
+TEST_CONFIG=test/api/api-test-config.yaml
+WIRE_DIRS=cmd/server cmd/cron
 
-.PHONY: api
-# 生成 API 代码
-api:
-	kratos proto client api/subscription/v1/subscription.proto
-	protoc \
-	  --proto_path=api/subscription/v1 \
-	  --proto_path=$(shell go env GOPATH)/pkg/mod \
-	  --proto_path=$(shell go env GOPATH)/pkg/mod/github.com/go-kratos/kratos/v2@v2.9.1/third_party \
-	  --proto_path=$(shell go list -m -f '{{.Dir}}' github.com/grpc-ecosystem/grpc-gateway)/third_party/googleapis \
-	  --go_out=paths=source_relative:api/subscription/v1 \
-	  --go-http_out=paths=source_relative:api/subscription/v1 \
-	  --go-grpc_out=paths=source_relative:api/subscription/v1 \
-	  --validate_out=paths=source_relative,lang=go:api/subscription/v1 \
-	  --openapi_out=fq_schema_naming=true,default_response=false:api/openapi/v1 \
-	  api/subscription/v1/subscription.proto
+# 引入通用 Makefile
+DEVOPS_TOOLS_DIR := $(shell cd .. && pwd)/devops-tools
+include $(DEVOPS_TOOLS_DIR)/Makefile.common
 
-.PHONY: wire
-# 生成依赖注入代码
-wire:
-	cd cmd/server && wire
-	cd cmd/cron && wire
-
-.PHONY: build
-# 构建项目
-build:
-	mkdir -p bin/ && go build -ldflags "-X main.Version=$(VERSION)" -o ./bin/server ./cmd/server
+# 服务特定的目标
 
 .PHONY: build-cron
 # 构建 cron 服务
 build-cron:
-	mkdir -p bin/ && go build -ldflags "-X main.Version=$(VERSION)" -o ./bin/cron ./cmd/cron
+	mkdir -p bin/
+	go build -ldflags "-X main.Version=$(VERSION)" -o ./bin/cron ./cmd/cron
 
 .PHONY: build-all
 # 构建所有服务
 build-all: build build-cron
-
-.PHONY: run
-# 运行主服务
-run:
-	go run cmd/server/main.go cmd/server/wire_gen.go -conf configs/config.yaml
 
 .PHONY: run-cron
 # 运行 cron 服务
@@ -62,6 +36,7 @@ run-cron:
 # 同时运行所有服务（cron 后台，server 前台）
 run-all:
 	@echo "启动 cron 服务（后台）..."
+	@mkdir -p logs
 	@nohup ./bin/cron -conf ./configs/config.yaml > logs/cron.log 2>&1 & echo $$! > logs/cron.pid
 	@sleep 1
 	@if [ -f logs/cron.pid ]; then \
@@ -93,58 +68,29 @@ stop-all:
 	@-rm -f logs/cron.pid
 	@echo "所有服务已停止"
 
-.PHONY: test
-# 运行 API 测试
-test:
-	@echo "========================================="
-	@echo "  Testing Subscription Service"
-	@echo "========================================="
-	@echo "检查服务状态..."
-	@curl -s http://localhost:8102/health || echo "Subscription Service 启动中..."
-	@echo "\nRunning API tests..."
-	../api-tester/bin/api-tester run --config test/api/api-test-config.yaml
-
-.PHONY: clean
-# 清理生成的文件
-clean:
-	rm -rf bin/
-	rm -f api/subscription/v1/*.pb.go
-	rm -f cmd/server/wire_gen.go
-	rm -f cmd/cron/wire_gen.go
-	rm -rf test-reports/
-
-.PHONY: docker-build
-# 构建 Docker 镜像
-docker-build:
-	docker build -t $(SERVICE_NAME):$(VERSION) .
-
-.PHONY: docker-run
-# 运行 Docker 容器
-docker-run:
-	docker run -p 8102:8102 -p 9102:9102 $(SERVICE_NAME):$(VERSION)
-
 .PHONY: all
-# 生成所有代码并构建
+# 生成所有代码并构建（覆盖通用版本）
 all: api wire build-all
 
-.PHONY: help
-# 显示帮助信息
+# 覆盖 help 目标（添加服务特定的目标）
 help:
-	@echo "Subscription Service Makefile"
+	@echo "$(SERVICE_DISPLAY_NAME) Makefile"
 	@echo ""
 	@echo "Usage:"
 	@echo "  make init         - 安装所需工具"
 	@echo "  make api          - 生成 API 代码"
-	@echo "  make wire         - 生成依赖注入代码"
+	@echo "  make swagger      - 生成 Swagger 文档"
+	@echo "  make wire         - 生成依赖注入代码（server + cron）"
 	@echo "  make build        - 编译主服务"
 	@echo "  make build-cron   - 编译 cron 服务"
 	@echo "  make build-all    - 编译所有服务"
 	@echo "  make run          - 运行主服务（前台）"
 	@echo "  make run-cron     - 运行 cron 服务（前台）"
 	@echo "  make run-all      - 运行所有服务（cron 后台 + server 前台）"
+	@echo "  make restart      - 重启服务（使用 devops-tools）"
 	@echo "  make stop-all     - 停止所有服务"
 	@echo "  make test         - 运行 API 测试"
 	@echo "  make clean        - 清理生成的文件"
 	@echo "  make docker-build - 构建 Docker 镜像"
-	@echo "  make docker-run   - 运行 Docker 容器"
+	@echo "  make docker-run   - 运行 Docker 容器（需要设置 DOCKER_PORTS）"
 	@echo "  make all          - 生成代码并构建所有服务"
