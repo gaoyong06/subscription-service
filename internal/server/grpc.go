@@ -24,8 +24,13 @@ func NewGRPCServer(c *conf.Bootstrap, sub *service.SubscriptionService, logger l
 			i18n.Middleware(),
 		),
 	}
-	if c.Server.Grpc.Addr != "" {
-		opts = append(opts, grpc.Address(c.Server.Grpc.Addr))
+	if c != nil && c.GetServer() != nil && c.GetServer().GetGrpc() != nil {
+		if addr := c.GetServer().GetGrpc().GetAddr(); addr != "" {
+			opts = append(opts, grpc.Address(addr))
+		}
+		if timeout := c.GetServer().GetGrpc().GetTimeout(); timeout != nil {
+			opts = append(opts, grpc.Timeout(timeout.AsDuration()))
+		}
 	}
 	srv := grpc.NewServer(opts...)
 	v1.RegisterSubscriptionServer(srv, sub)

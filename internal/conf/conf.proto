@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package subscription.conf;
+
+import "google/protobuf/duration.proto";
+
+option go_package = "xinyuan_tech/subscription-service/internal/conf;conf";
+
+// 启动配置
+message Bootstrap {
+  Server server = 1;
+  Data data = 2;
+  Client client = 3;
+  Log log = 4;
+}
+
+// 服务配置
+message Server {
+  message HTTP {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  message GRPC {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  HTTP http = 1;
+  GRPC grpc = 2;
+}
+
+// 数据配置
+message Data {
+  message Database {
+    string driver = 1;
+    string source = 2;
+    int32 max_idle_conns = 3;
+    int32 max_open_conns = 4;
+    google.protobuf.Duration conn_max_lifetime = 5;
+  }
+  message Redis {
+    string network = 1;
+    string addr = 2;
+    string password = 3;
+    int32 db = 4;
+    google.protobuf.Duration dial_timeout = 5;
+    google.protobuf.Duration read_timeout = 6;
+    google.protobuf.Duration write_timeout = 7;
+    int32 pool_size = 8;
+    int32 min_idle_conns = 9;
+  }
+  Database database = 1;
+  Redis redis = 2;
+}
+
+// 客户端配置
+message Client {
+  PaymentService payment_service = 1;
+  SubscriptionService subscription_service = 2;
+}
+
+// 支付服务配置
+message PaymentService {
+  string addr = 1;
+}
+
+// 订阅服务配置
+message SubscriptionService {
+  string return_url = 1;
+  int32 auto_renew_days_before = 2;
+  int32 expiry_check_days = 3;
+}
+
+// 日志配置
+message Log {
+  string level = 1;
+  string format = 2;
+  string output = 3;
+  string file_path = 4;
+  int32 max_size = 5;        // MB
+  int32 max_age = 6;         // 天
+  int32 max_backups = 7;
+  bool compress = 8;
+}
+

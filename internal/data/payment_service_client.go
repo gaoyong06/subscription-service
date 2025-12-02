@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"fmt"
 	"xinyuan_tech/subscription-service/internal/biz"
 	"xinyuan_tech/subscription-service/internal/conf"
 
@@ -16,7 +17,15 @@ type paymentServiceClient struct {
 }
 
 func NewPaymentClient(c *conf.Bootstrap) (biz.PaymentClient, error) {
-	conn, err := grpc.Dial(c.Client.PaymentService.Addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	addr := ""
+	if c != nil && c.GetClient() != nil && c.GetClient().GetPaymentService() != nil {
+		addr = c.GetClient().GetPaymentService().GetAddr()
+	}
+	if addr == "" {
+		return nil, fmt.Errorf("payment service address is required")
+	}
+
+	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}
@@ -25,13 +34,29 @@ func NewPaymentClient(c *conf.Bootstrap) (biz.PaymentClient, error) {
 	}, nil
 }
 
-func (c *paymentServiceClient) CreatePayment(ctx context.Context, orderID string, userID uint64, amount float64, method, subject, returnURL string) (string, string, string, string, error) {
+func (c *paymentServiceClient) CreatePayment(ctx context.Context, orderID string, userID uint64, amount float64, currency, method, subject, returnURL string) (string, string, string, string, error) {
+	// 验证必填参数
+	if currency == "" {
+		return "", "", "", "", fmt.Errorf("currency is required")
+	}
+
+	// 将字符串转换为 PaymentMethod 枚举
+	var paymentMethod paymentv1.PaymentMethod
+	switch method {
+	case "alipay":
+		paymentMethod = paymentv1.PaymentMethod_PAYMENT_METHOD_ALIPAY
+	case "wechatpay":
+		paymentMethod = paymentv1.PaymentMethod_PAYMENT_METHOD_WECHATPAY
+	default:
+		paymentMethod = paymentv1.PaymentMethod_PAYMENT_METHOD_UNSPECIFIED
+	}
+
 	req := &paymentv1.CreatePaymentRequest{
 		OrderId:   orderID,
 		UserId:    userID,
-		Amount:    amount,
-		Currency:  "CNY",
-		Method:    method,
+		Amount:    int64(amount),
+		Currency:  currency,
+		Method:    paymentMethod,
 		Subject:   subject,
 		ReturnUrl: returnURL,
 	}

@@ -30,8 +30,13 @@ func NewHTTPServer(c *conf.Bootstrap, sub *service.SubscriptionService, logger l
 		),
 		http.ErrorEncoder(customErrorEncoder),
 	}
-	if c.Server.Http.Addr != "" {
-		opts = append(opts, http.Address(c.Server.Http.Addr))
+	if c != nil && c.GetServer() != nil && c.GetServer().GetHttp() != nil {
+		if addr := c.GetServer().GetHttp().GetAddr(); addr != "" {
+			opts = append(opts, http.Address(addr))
+		}
+		if timeout := c.GetServer().GetHttp().GetTimeout(); timeout != nil {
+			opts = append(opts, http.Timeout(timeout.AsDuration()))
+		}
 	}
 	srv := http.NewServer(opts...)
 

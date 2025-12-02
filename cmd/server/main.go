@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"os"
 
 	"xinyuan_tech/subscription-service/internal/conf"
@@ -71,20 +70,45 @@ func main() {
 	}
 
 	// 验证配置
-	if err := bc.Validate(); err != nil {
-		panic(fmt.Sprintf("config validation failed: %v", err))
+	if bc.GetServer() == nil {
+		panic("server configuration is required")
+	}
+	if bc.GetServer().GetHttp() == nil || bc.GetServer().GetHttp().GetAddr() == "" {
+		panic("server.http.addr is required")
+	}
+	if bc.GetServer().GetGrpc() == nil || bc.GetServer().GetGrpc().GetAddr() == "" {
+		panic("server.grpc.addr is required")
+	}
+	if bc.GetData() == nil || bc.GetData().GetDatabase() == nil || bc.GetData().GetDatabase().GetSource() == "" {
+		panic("data.database.source is required")
+	}
+	if bc.GetClient() == nil || bc.GetClient().GetPaymentService() == nil || bc.GetClient().GetPaymentService().GetAddr() == "" {
+		panic("client.payment_service.addr is required")
+	}
+	if bc.GetClient().GetSubscriptionService() == nil {
+		panic("client.subscription_service configuration is required")
 	}
 
 	// 初始化日志 (使用 go-pkg/logger)
 	logConfig := &logger.Config{
-		Level:      bc.Log.Level,
-		Format:     bc.Log.Format,
-		Output:     bc.Log.Output,
-		FilePath:   bc.Log.FilePath,
-		MaxSize:    bc.Log.MaxSize,
-		MaxAge:     bc.Log.MaxAge,
-		MaxBackups: bc.Log.MaxBackups,
-		Compress:   bc.Log.Compress,
+		Level:      "info",
+		Format:     "json",
+		Output:     "stdout",
+		FilePath:   "",
+		MaxSize:    100,
+		MaxAge:     7,
+		MaxBackups: 3,
+		Compress:   false,
+	}
+	if bc.GetLog() != nil {
+		logConfig.Level = bc.GetLog().GetLevel()
+		logConfig.Format = bc.GetLog().GetFormat()
+		logConfig.Output = bc.GetLog().GetOutput()
+		logConfig.FilePath = bc.GetLog().GetFilePath()
+		logConfig.MaxSize = int(bc.GetLog().GetMaxSize())
+		logConfig.MaxAge = int(bc.GetLog().GetMaxAge())
+		logConfig.MaxBackups = int(bc.GetLog().GetMaxBackups())
+		logConfig.Compress = bc.GetLog().GetCompress()
 	}
 
 	loggerInstance := logger.NewLogger(logConfig)

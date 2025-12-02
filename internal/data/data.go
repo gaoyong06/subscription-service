@@ -53,7 +53,15 @@ func NewData(c *conf.Bootstrap, logger log.Logger, db *gorm.DB, rdb *redis.Clien
 
 // NewDB .
 func NewDB(c *conf.Bootstrap) *gorm.DB {
-	db, err := gorm.Open(mysql.Open(c.Data.Database.Source), &gorm.Config{})
+	source := ""
+	if c != nil && c.GetData() != nil && c.GetData().GetDatabase() != nil {
+		source = c.GetData().GetDatabase().GetSource()
+	}
+	if source == "" {
+		panic("database source is required")
+	}
+
+	db, err := gorm.Open(mysql.Open(source), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
@@ -67,13 +75,31 @@ func NewDB(c *conf.Bootstrap) *gorm.DB {
 
 // NewRedis .
 func NewRedis(c *conf.Bootstrap) *redis.Client {
-	readTimeout, _ := time.ParseDuration(c.Data.Redis.ReadTimeout)
-	writeTimeout, _ := time.ParseDuration(c.Data.Redis.WriteTimeout)
+	var readTimeout, writeTimeout time.Duration
+	var addr, password string
+	var db int32
+
+	if c != nil && c.GetData() != nil && c.GetData().GetRedis() != nil {
+		redisConf := c.GetData().GetRedis()
+		if redisConf.GetReadTimeout() != nil {
+			readTimeout = redisConf.GetReadTimeout().AsDuration()
+		}
+		if redisConf.GetWriteTimeout() != nil {
+			writeTimeout = redisConf.GetWriteTimeout().AsDuration()
+		}
+		addr = redisConf.GetAddr()
+		password = redisConf.GetPassword()
+		db = redisConf.GetDb()
+	}
+
+	if addr == "" {
+		addr = "localhost:6379"
+	}
 
 	rdb := redis.NewClient(&redis.Options{
-		Addr:         c.Data.Redis.Addr,
-		Password:     c.Data.Redis.Password,
-		DB:           int(c.Data.Redis.Db),
+		Addr:         addr,
+		Password:     password,
+		DB:           int(db),
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
 	})

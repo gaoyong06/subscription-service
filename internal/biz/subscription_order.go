@@ -62,11 +62,12 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrder(ctx context.Context, user
 	// 3. 调用支付服务
 	// 从配置中获取 ReturnURL
 	returnURL := ""
-	if uc.config.Client != nil && uc.config.Client.SubscriptionService != nil {
-		returnURL = uc.config.Client.SubscriptionService.ReturnURL
+	if uc.config != nil && uc.config.GetClient() != nil && uc.config.GetClient().GetSubscriptionService() != nil {
+		returnURL = uc.config.GetClient().GetSubscriptionService().GetReturnUrl()
 	}
 	if returnURL == "" {
-		returnURL = "http://localhost:8080/subscription/success" // 默认值
+		uc.log.Errorf("ReturnURL is not configured")
+		return nil, "", "", "", "", pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeOrderCreateFailed)
 	}
 
 	// 获取套餐信息用于支付主题
@@ -76,8 +77,8 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrder(ctx context.Context, user
 		subject = "Subscription: " + plan.Name
 	}
 
-	uc.log.Infof("Calling payment service: orderID=%s, amount=%.2f, method=%s", orderID, pricing.Price, method)
-	paymentID, payUrl, payCode, payParams, err := uc.paymentClient.CreatePayment(ctx, orderID, userID, pricing.Price, method, subject, returnURL)
+	uc.log.Infof("Calling payment service: orderID=%s, amount=%.2f %s, method=%s", orderID, pricing.Price, pricing.Currency, method)
+	paymentID, payUrl, payCode, payParams, err := uc.paymentClient.CreatePayment(ctx, orderID, userID, pricing.Price, pricing.Currency, method, subject, returnURL)
 	if err != nil {
 		uc.log.Errorf("Failed to create payment: %v", err)
 		return nil, "", "", "", "", pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodePaymentFailed)
