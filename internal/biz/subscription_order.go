@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"xinyuan_tech/subscription-service/internal/constants"
 	"xinyuan_tech/subscription-service/internal/errors"
 
 	pkgErrors "github.com/gaoyong06/go-pkg/errors"
@@ -30,6 +31,12 @@ type SubscriptionOrderRepo interface {
 // CreateSubscriptionOrder 创建订阅订单
 func (uc *SubscriptionUsecase) CreateSubscriptionOrder(ctx context.Context, userID uint64, planID, method, region string) (*SubscriptionOrder, string, string, string, string, error) {
 	uc.log.Infof("CreateSubscriptionOrder: userID=%d, planID=%s, method=%s, region=%s", userID, planID, method, region)
+
+	// 验证 region
+	if !constants.SupportedRegions[region] {
+		uc.log.Warnf("Unsupported region: %s, using default", region)
+		region = "default"
+	}
 
 	// 1. 获取套餐区域定价
 	pricing, err := uc.GetPlanPricing(ctx, planID, region)
@@ -133,7 +140,8 @@ func (uc *SubscriptionUsecase) HandlePaymentSuccess(ctx context.Context, orderID
 				PlanID:    order.PlanID,
 				StartTime: now,
 				EndTime:   now.AddDate(0, 0, plan.DurationDays),
-				Status:    "active",
+				Status:    constants.StatusActive,
+				OrderID:   order.ID,
 				CreatedAt: now,
 				UpdatedAt: now,
 			}
@@ -147,7 +155,8 @@ func (uc *SubscriptionUsecase) HandlePaymentSuccess(ctx context.Context, orderID
 				sub.EndTime = sub.EndTime.AddDate(0, 0, plan.DurationDays)
 			}
 			sub.PlanID = order.PlanID // 更新为最新购买的套餐
-			sub.Status = "active"
+			sub.Status = constants.StatusActive
+			sub.OrderID = order.ID // 更新为最新订单ID
 			sub.UpdatedAt = now
 		}
 
@@ -158,9 +167,9 @@ func (uc *SubscriptionUsecase) HandlePaymentSuccess(ctx context.Context, orderID
 		uc.log.Infof("Subscription saved successfully, new end time: %v", sub.EndTime)
 
 		// 记录历史
-		action := "created"
+		action := constants.ActionCreated
 		if sub.ID > 0 {
-			action = "renewed"
+			action = constants.ActionRenewed
 		}
 		history := &SubscriptionHistory{
 			UserID:    order.UserID,

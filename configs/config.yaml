@@ -9,13 +9,20 @@ server:
 data:
   database:
     driver: mysql
-    source: root:@tcp(localhost:3306)/subscription_service?charset=utf8mb4&parseTime=True&loc=Local
+    # 请确保替换为实际的数据库连接字符串
+    source: root:root@tcp(localhost:3306)/subscription_service?charset=utf8mb4&parseTime=True&loc=Local
+    max_idle_conns: 10
+    max_open_conns: 100
+    conn_max_lifetime: 3600s
   redis:
     addr: 127.0.0.1:6379
-    password: 
+    password: ""
     db: 1
     read_timeout: 0.2s
     write_timeout: 0.2s
+    dial_timeout: 1s
+    pool_size: 10
+    min_idle_conns: 1
 
 client:
   payment_service:
@@ -26,9 +33,9 @@ client:
     expiry_check_days: 7
 
 log:
-  level: info
-  format: json
-  output: both  # stdout, file, both
+  level: info  # debug, info, warn, error
+  format: json # json, console
+  output: both # stdout, file, both
   file_path: logs/subscription-service.log
   max_size: 100  # MB
   max_age: 30    # days

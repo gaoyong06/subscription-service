@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"time"
 	"xinyuan_tech/subscription-service/internal/biz"
+	"xinyuan_tech/subscription-service/internal/constants"
 	"xinyuan_tech/subscription-service/internal/data/model"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -33,6 +35,11 @@ func (r *subscriptionRepo) GetSubscription(ctx context.Context, userID uint64) (
 	cacheKey := fmt.Sprintf("subscription:user:%d", userID)
 	val, err := r.data.rdb.Get(ctx, cacheKey).Result()
 	if err == nil {
+		// 检查是否是空值缓存
+		if val == "null" {
+			return nil, nil
+		}
+
 		var sub biz.UserSubscription
 		if err := json.Unmarshal([]byte(val), &sub); err == nil {
 			return &sub, nil
@@ -43,6 +50,8 @@ func (r *subscriptionRepo) GetSubscription(ctx context.Context, userID uint64) (
 	var m model.UserSubscription
 	err = r.data.db.WithContext(ctx).Where("uid = ?", userID).First(&m).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
+		// 缓存空值,防止缓存穿透
+		r.data.rdb.Set(ctx, cacheKey, "null", constants.NullCacheExpiration)
 		return nil, nil
 	}
 	if err != nil {
@@ -57,14 +66,20 @@ func (r *subscriptionRepo) GetSubscription(ctx context.Context, userID uint64) (
 		StartTime: m.StartTime,
 		EndTime:   m.EndTime,
 		Status:    m.Status,
+		OrderID:   m.OrderID,
 		AutoRenew: m.AutoRenew,
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
 	}
 
-	// 3. 写入 Redis 缓存 (过期时间 1 小时)
+	// 3. 写入 Redis 缓存 (1小时 + 随机时间,防止缓存雪崩)
 	if data, err := json.Marshal(sub); err == nil {
-		r.data.rdb.Set(ctx, cacheKey, data, time.Hour)
+		// 添加随机过期时间
+		randomSeconds := time.Duration(rand.Intn(constants.CacheRandomMaxSeconds)) * time.Second
+		expiration := constants.DefaultCacheExpiration + randomSeconds
+		if err := r.data.rdb.Set(ctx, cacheKey, data, expiration).Err(); err != nil {
+			r.log.Warnf("Failed to cache subscription for user %d: %v", userID, err)
+		}
 	}
 
 	return sub, nil
@@ -79,7 +94,7 @@ func (r *subscriptionRepo) SaveSubscription(ctx context.Context, sub *biz.UserSu
 		StartTime:      sub.StartTime,
 		EndTime:        sub.EndTime,
 		Status:         sub.Status,
-		OrderID:        "", // 需要从 biz 层传递
+		OrderID:        sub.OrderID,
 		AutoRenew:      sub.AutoRenew,
 		CreatedAt:      sub.CreatedAt,
 		UpdatedAt:      sub.UpdatedAt,
@@ -93,7 +108,11 @@ func (r *subscriptionRepo) SaveSubscription(ctx context.Context, sub *biz.UserSu
 
 	// 删除缓存
 	cacheKey := fmt.Sprintf("subscription:user:%d", sub.UserID)
-	r.data.rdb.Del(ctx, cacheKey)
+	if err := r.data.rdb.Del(ctx, cacheKey).Err(); err != nil {
+		r.log.Warnf("Failed to delete cache for user %d: %v", sub.UserID, err)
+		// 缓存删除失败不影响主流程,但需要记录
+		// 缓存会在过期时间后自动失效
+	}
 
 	return nil
 }
@@ -136,6 +155,7 @@ func (r *subscriptionRepo) GetExpiringSubscriptions(ctx context.Context, daysBef
 			StartTime: m.StartTime,
 			EndTime:   m.EndTime,
 			Status:    m.Status,
+			OrderID:   m.OrderID,
 			AutoRenew: m.AutoRenew,
 			CreatedAt: m.CreatedAt,
 			UpdatedAt: m.UpdatedAt,
@@ -209,6 +229,7 @@ func (r *subscriptionRepo) GetAutoRenewSubscriptions(ctx context.Context, daysBe
 			StartTime: m.StartTime,
 			EndTime:   m.EndTime,
 			Status:    m.Status,
+			OrderID:   m.OrderID,
 			AutoRenew: m.AutoRenew,
 			CreatedAt: m.CreatedAt,
 			UpdatedAt: m.UpdatedAt,

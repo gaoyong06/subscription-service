@@ -14,6 +14,9 @@ timeout: 30
 request:
   headers:
     Content-Type: application/json
+    # 默认使用管理员权限，方便测试
+    X-User-ID: "1001"
+    X-User-Role: "admin"
 
 # 输出目录
 output_dir: ./reports
@@ -37,6 +40,39 @@ variables:
 
 # 测试场景
 scenarios:
+  - name: 权限验证测试
+    description: 测试权限控制机制
+    steps:
+      # 1. 未登录访问 (无 Header)
+      - name: 未登录访问
+        endpoint: /v1/subscription/my/1001
+        method: GET
+        headers:
+          X-User-ID: "" # 覆盖默认 header
+          X-User-Role: ""
+        assert:
+          status: 401 # Unauthorized
+
+      # 2. 访问他人资源 (普通用户)
+      - name: 访问他人资源
+        endpoint: /v1/subscription/my/1002
+        method: GET
+        headers:
+          X-User-ID: "1001"
+          X-User-Role: "user"
+        assert:
+          status: 403 # Forbidden
+
+      # 3. 管理员访问他人资源
+      - name: 管理员访问他人资源
+        endpoint: /v1/subscription/my/1002
+        method: GET
+        headers:
+          X-User-ID: "1001"
+          X-User-Role: "admin"
+        assert:
+          status: 200 # OK (即使返回空也是 200)
+
   - name: 基础功能测试
     description: 测试订阅服务的基本功能
     steps:
@@ -55,6 +91,9 @@ scenarios:
       - name: 创建订单(默认区域)
         endpoint: /v1/subscription/order
         method: POST
+        headers:
+          X-User-ID: "1001"
+          X-User-Role: "user"
         request_body:
           uid: 1001
           planId: "plan_monthly"
@@ -71,6 +110,9 @@ scenarios:
         endpoint: /v1/subscription/order
         method: POST
         dependencies: [创建订单(默认区域)]
+        headers:
+          X-User-ID: "1002"
+          X-User-Role: "user"
         request_body:
           uid: 1002
           planId: "plan_monthly"
@@ -87,6 +129,9 @@ scenarios:
         endpoint: /v1/subscription/order
         method: POST
         dependencies: [创建订单(中国区域)]
+        headers:
+          X-User-ID: "1003"
+          X-User-Role: "user"
         request_body:
           uid: 1003
           planId: "plan_yearly"
@@ -103,6 +148,9 @@ scenarios:
         endpoint: /v1/subscription/order
         method: POST
         dependencies: [创建订单(欧洲区域)]
+        headers:
+          X-User-ID: "1004"
+          X-User-Role: "user"
         request_body:
           uid: 1004
           planId: "plan_quarterly"
@@ -118,6 +166,9 @@ scenarios:
         endpoint: /v1/subscription/order
         method: POST
         dependencies: [创建订单(美国区域)]
+        headers:
+          X-User-ID: "1005"
+          X-User-Role: "user"
         request_body:
           uid: 1005
           planId: "plan_monthly"
@@ -133,6 +184,9 @@ scenarios:
         endpoint: /v1/subscription/order
         method: POST
         dependencies: [创建订单(未知区域)]
+        headers:
+          X-User-ID: "1006"
+          X-User-Role: "user"
         request_body:
           uid: 1006
           planId: "plan_monthly"
@@ -149,6 +203,9 @@ scenarios:
       - name: 创建新订单
         endpoint: /v1/subscription/order
         method: POST
+        headers:
+          X-User-ID: "2001"
+          X-User-Role: "user"
         request_body:
           uid: 2001
           planId: "plan_monthly"
@@ -165,16 +222,22 @@ scenarios:
         endpoint: /v1/subscription/my/2001
         method: GET
         dependencies: [创建新订单]
+        headers:
+          X-User-ID: "2001"
+          X-User-Role: "user"
         assert:
           status: 200
           body:
             isActive: false
 
-      # 3. 模拟支付成功
+      # 3. 模拟支付成功 (回调接口不需要权限验证，或者是系统内部调用)
       - name: 支付成功回调
         endpoint: /v1/subscription/payment/success
         method: POST
         dependencies: [查询订阅(支付前)]
+        headers:
+          X-User-ID: "admin" # 模拟系统调用
+          X-User-Role: "admin"
         request_body:
           order_id: "{{.newOrderId}}"
           payment_id: "{{.newPaymentId}}"
@@ -189,6 +252,9 @@ scenarios:
         endpoint: /v1/subscription/my/2001
         method: GET
         dependencies: [支付成功回调]
+        headers:
+          X-User-ID: "2001"
+          X-User-Role: "user"
         assert:
           status: 200
           body:
@@ -202,6 +268,9 @@ scenarios:
         endpoint: /v1/subscription/auto-renew
         method: POST
         dependencies: [查询订阅(支付后)]
+        headers:
+          X-User-ID: "2001"
+          X-User-Role: "user"
         request_body:
           uid: 2001
           autoRenew: true
@@ -215,6 +284,9 @@ scenarios:
         endpoint: /v1/subscription/my/2001
         method: GET
         dependencies: [开启自动续费]
+        headers:
+          X-User-ID: "2001"
+          X-User-Role: "user"
         assert:
           status: 200
           body:
@@ -225,6 +297,9 @@ scenarios:
         endpoint: /v1/subscription/pause
         method: POST
         dependencies: [验证自动续费状态]
+        headers:
+          X-User-ID: "2001"
+          X-User-Role: "user"
         request_body:
           uid: 2001
           reason: "测试暂停"
@@ -238,6 +313,9 @@ scenarios:
         endpoint: /v1/subscription/my/2001
         method: GET
         dependencies: [暂停订阅]
+        headers:
+          X-User-ID: "2001"
+          X-User-Role: "user"
         assert:
           status: 200
           body:
@@ -248,6 +326,9 @@ scenarios:
         endpoint: /v1/subscription/resume
         method: POST
         dependencies: [验证暂停状态]
+        headers:
+          X-User-ID: "2001"
+          X-User-Role: "user"
         request_body:
           uid: 2001
         assert:
@@ -260,6 +341,9 @@ scenarios:
         endpoint: /v1/subscription/my/2001
         method: GET
         dependencies: [恢复订阅]
+        headers:
+          X-User-ID: "2001"
+          X-User-Role: "user"
         assert:
           status: 200
           body:
@@ -270,6 +354,9 @@ scenarios:
         endpoint: /v1/subscription/auto-renew
         method: POST
         dependencies: [验证恢复状态]
+        headers:
+          X-User-ID: "2001"
+          X-User-Role: "user"
         request_body:
           uid: 2001
           autoRenew: false
@@ -283,6 +370,9 @@ scenarios:
         endpoint: /v1/subscription/cancel
         method: POST
         dependencies: [关闭自动续费]
+        headers:
+          X-User-ID: "2001"
+          X-User-Role: "user"
         request_body:
           uid: 2001
           reason: "测试取消"
@@ -296,6 +386,9 @@ scenarios:
         endpoint: /v1/subscription/my/2001
         method: GET
         dependencies: [取消订阅]
+        headers:
+          X-User-ID: "2001"
+          X-User-Role: "user"
         assert:
           status: 200
           body:
@@ -307,6 +400,9 @@ scenarios:
         endpoint: /v1/subscription/history/2001
         method: GET
         dependencies: [验证取消状态]
+        headers:
+          X-User-ID: "2001"
+          X-User-Role: "user"
         params:
           page: 1
           page_size: 10
@@ -320,6 +416,9 @@ scenarios:
       - name: 订阅月度套餐
         endpoint: /v1/subscription/order
         method: POST
+        headers:
+          X-User-ID: "3001"
+          X-User-Role: "user"
         request_body:
           uid: 3001
           planId: "plan_monthly"
@@ -335,6 +434,9 @@ scenarios:
         endpoint: /v1/subscription/payment/success
         method: POST
         dependencies: [订阅月度套餐]
+        headers:
+          X-User-ID: "admin"
+          X-User-Role: "admin"
         request_body:
           order_id: "{{.monthlyOrderId}}"
           payment_id: "{{.monthlyPaymentId}}"
@@ -347,6 +449,9 @@ scenarios:
         endpoint: /v1/subscription/order
         method: POST
         dependencies: [月度套餐支付成功]
+        headers:
+          X-User-ID: "3002"
+          X-User-Role: "user"
         request_body:
           uid: 3002
           planId: "plan_quarterly"
@@ -362,6 +467,9 @@ scenarios:
         endpoint: /v1/subscription/payment/success
         method: POST
         dependencies: [订阅季度套餐]
+        headers:
+          X-User-ID: "admin"
+          X-User-Role: "admin"
         request_body:
           order_id: "{{.quarterlyOrderId}}"
           payment_id: "{{.quarterlyPaymentId}}"
@@ -374,6 +482,9 @@ scenarios:
         endpoint: /v1/subscription/order
         method: POST
         dependencies: [季度套餐支付成功]
+        headers:
+          X-User-ID: "3003"
+          X-User-Role: "user"
         request_body:
           uid: 3003
           planId: "plan_yearly"
@@ -389,6 +500,9 @@ scenarios:
         endpoint: /v1/subscription/payment/success
         method: POST
         dependencies: [订阅年度套餐]
+        headers:
+          X-User-ID: "admin"
+          X-User-Role: "admin"
         request_body:
           order_id: "{{.yearlyOrderId}}"
           payment_id: "{{.yearlyPaymentId}}"
@@ -403,6 +517,9 @@ scenarios:
       - name: 无效套餐ID
         endpoint: /v1/subscription/order
         method: POST
+        headers:
+          X-User-ID: "4001"
+          X-User-Role: "user"
         request_body:
           uid: 4001
           planId: "invalid_plan"
@@ -416,6 +533,9 @@ scenarios:
         endpoint: /v1/subscription/cancel
         method: POST
         dependencies: [无效套餐ID]
+        headers:
+          X-User-ID: "9999"
+          X-User-Role: "user"
         request_body:
           uid: 9999
           reason: "测试"
@@ -429,6 +549,9 @@ scenarios:
         endpoint: /v1/subscription/pause
         method: POST
         dependencies: [取消不存在的订阅]
+        headers:
+          X-User-ID: "9998"
+          X-User-Role: "user"
         request_body:
           uid: 9998
           reason: "测试"
@@ -442,6 +565,9 @@ scenarios:
         endpoint: /v1/subscription/resume
         method: POST
         dependencies: [暂停不存在的订阅]
+        headers:
+          X-User-ID: "9997"
+          X-User-Role: "user"
         request_body:
           uid: 9997
         assert:

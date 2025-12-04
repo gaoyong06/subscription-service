@@ -2,7 +2,11 @@ package biz
 
 import (
 	"context"
+	"fmt"
 	"time"
+	"xinyuan_tech/subscription-service/internal/constants"
+
+	"github.com/go-redsync/redsync/v4"
 )
 
 // AutoRenewResult 自动续费结果
@@ -117,6 +121,48 @@ func (uc *SubscriptionUsecase) ProcessAutoRenewals(ctx context.Context, daysBefo
 		result := &AutoRenewResult{
 			UID:    sub.UserID,
 			PlanID: sub.PlanID,
+		}
+
+		// 使用分布式锁防止重复续费
+		lockKey := fmt.Sprintf("auto_renew_lock:user:%d", sub.UserID)
+		mutex := uc.rs.NewMutex(
+			lockKey,
+			redsync.WithExpiry(constants.AutoRenewLockExpiration),
+			redsync.WithTries(constants.AutoRenewLockRetries), // 只尝试一次,如果失败说明正在处理
+		)
+
+		// 尝试获取锁
+		if err := mutex.LockContext(ctx); err != nil {
+			result.Success = false
+			result.ErrorMessage = "failed to acquire lock or already processing"
+			uc.log.Infof("Skipping auto-renew for user %d: lock busy or already processing", sub.UserID)
+			results = append(results, result)
+			continue
+		}
+
+		// 确保释放锁
+		defer func(m *redsync.Mutex) {
+			if _, err := m.UnlockContext(ctx); err != nil {
+				uc.log.Warnf("Failed to unlock for user %d: %v", sub.UserID, err)
+			}
+		}(mutex)
+
+		// 再次检查订阅状态,防止重复处理
+		currentSub, err := uc.subRepo.GetSubscription(ctx, sub.UserID)
+		if err != nil {
+			result.Success = false
+			result.ErrorMessage = "failed to get current subscription: " + err.Error()
+			failedCount++
+			results = append(results, result)
+			continue
+		}
+		if currentSub != nil && currentSub.EndTime.After(sub.EndTime) {
+			// 已经被续费过了
+			result.Success = true
+			result.ErrorMessage = "already renewed"
+			uc.log.Infof("Subscription for user %d already renewed", sub.UserID)
+			results = append(results, result)
+			continue
 		}
 
 		if dryRun {

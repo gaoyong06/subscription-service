@@ -8,6 +8,8 @@ import (
 	"xinyuan_tech/subscription-service/internal/data/model"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-redsync/redsync/v4"
+	"github.com/go-redsync/redsync/v4/redis/goredis/v9"
 	"github.com/google/wire"
 	"github.com/redis/go-redis/v9" // Updated Redis import
 	"gorm.io/driver/mysql"
@@ -18,7 +20,8 @@ import (
 var ProviderSet = wire.NewSet(
 	NewData,
 	NewDB,
-	NewRedis, // Added NewRedis
+	NewRedis,
+	NewRedsync, // 添加 redsync
 	NewPlanRepo,
 	NewUserSubscriptionRepo,
 	NewSubscriptionOrderRepo,
@@ -104,6 +107,12 @@ func NewRedis(c *conf.Bootstrap) *redis.Client {
 		WriteTimeout: writeTimeout,
 	})
 	return rdb
+}
+
+// NewRedsync 创建 redsync 实例
+func NewRedsync(rdb *redis.Client) *redsync.Redsync {
+	pool := goredis.NewPool(rdb)
+	return redsync.New(pool)
 }
 
 func initPlans(db *gorm.DB) {

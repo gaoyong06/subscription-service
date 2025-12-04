@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	pb "xinyuan_tech/subscription-service/api/subscription/v1"
+	"xinyuan_tech/subscription-service/internal/auth"
 	"xinyuan_tech/subscription-service/internal/biz"
+	"xinyuan_tech/subscription-service/internal/constants"
 )
 
 // SubscriptionService 订阅服务
@@ -44,6 +46,11 @@ func (s *SubscriptionService) ListPlans(ctx context.Context, req *pb.ListPlansRe
 // GetMySubscription 获取用户当前订阅信息
 // 查询指定用户的当前订阅状态、套餐信息和有效期
 func (s *SubscriptionService) GetMySubscription(ctx context.Context, req *pb.GetMySubscriptionRequest) (*pb.GetMySubscriptionReply, error) {
+	// 权限验证: 只能查询自己的订阅或管理员可以查询所有
+	if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
+		return nil, err
+	}
+
 	sub, err := s.uc.GetMySubscription(ctx, req.Uid)
 	if err != nil {
 		return nil, err
@@ -66,9 +73,18 @@ func (s *SubscriptionService) GetMySubscription(ctx context.Context, req *pb.Get
 // CreateSubscriptionOrder 创建订阅订单
 // 为用户创建订阅订单，调用支付服务生成支付信息
 func (s *SubscriptionService) CreateSubscriptionOrder(ctx context.Context, req *pb.CreateSubscriptionOrderRequest) (*pb.CreateSubscriptionOrderReply, error) {
-	// 从请求中获取 region，如果为空则使用 "default"
+	// 权限验证
+	if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
+		return nil, err
+	}
+
+	// 从请求中获取 region，如果为空则使用默认值
 	region := req.Region
 	if region == "" {
+		region = "default"
+	}
+	// 验证 region
+	if !constants.SupportedRegions[region] {
 		region = "default"
 	}
 	order, paymentID, payUrl, payCode, payParams, err := s.uc.CreateSubscriptionOrder(ctx, req.Uid, req.PlanId, req.PaymentMethod, region)
@@ -98,6 +114,11 @@ func (s *SubscriptionService) HandlePaymentSuccess(ctx context.Context, req *pb.
 // CancelSubscription 取消订阅
 // 用户主动取消订阅，订阅状态变更为已取消
 func (s *SubscriptionService) CancelSubscription(ctx context.Context, req *pb.CancelSubscriptionRequest) (*pb.CancelSubscriptionReply, error) {
+	// 权限验证
+	if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
+		return &pb.CancelSubscriptionReply{Success: false, Message: err.Error()}, nil
+	}
+
 	err := s.uc.CancelSubscription(ctx, req.Uid, req.Reason)
 	if err != nil {
 		return &pb.CancelSubscriptionReply{Success: false, Message: err.Error()}, nil
@@ -108,6 +129,11 @@ func (s *SubscriptionService) CancelSubscription(ctx context.Context, req *pb.Ca
 // PauseSubscription 暂停订阅
 // 暂停用户订阅，订阅状态变更为已暂停
 func (s *SubscriptionService) PauseSubscription(ctx context.Context, req *pb.PauseSubscriptionRequest) (*pb.PauseSubscriptionReply, error) {
+	// 权限验证
+	if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
+		return &pb.PauseSubscriptionReply{Success: false, Message: err.Error()}, nil
+	}
+
 	err := s.uc.PauseSubscription(ctx, req.Uid, req.Reason)
 	if err != nil {
 		return &pb.PauseSubscriptionReply{Success: false, Message: err.Error()}, nil
@@ -118,6 +144,11 @@ func (s *SubscriptionService) PauseSubscription(ctx context.Context, req *pb.Pau
 // ResumeSubscription 恢复订阅
 // 恢复已暂停的订阅，订阅状态变更为激活
 func (s *SubscriptionService) ResumeSubscription(ctx context.Context, req *pb.ResumeSubscriptionRequest) (*pb.ResumeSubscriptionReply, error) {
+	// 权限验证
+	if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
+		return &pb.ResumeSubscriptionReply{Success: false, Message: err.Error()}, nil
+	}
+
 	err := s.uc.ResumeSubscription(ctx, req.Uid)
 	if err != nil {
 		return &pb.ResumeSubscriptionReply{Success: false, Message: err.Error()}, nil
@@ -128,13 +159,21 @@ func (s *SubscriptionService) ResumeSubscription(ctx context.Context, req *pb.Re
 // GetSubscriptionHistory 获取订阅历史记录
 // 查询用户的订阅历史记录，支持分页
 func (s *SubscriptionService) GetSubscriptionHistory(ctx context.Context, req *pb.GetSubscriptionHistoryRequest) (*pb.GetSubscriptionHistoryReply, error) {
+	// 权限验证
+	if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
+		return nil, err
+	}
+
 	page := int(req.Page)
 	pageSize := int(req.PageSize)
 	if page < 1 {
 		page = 1
 	}
 	if pageSize < 1 {
-		pageSize = 10
+		pageSize = constants.DefaultPageSize
+	}
+	if pageSize > constants.MaxPageSize {
+		pageSize = constants.MaxPageSize
 	}
 
 	items, total, err := s.uc.GetSubscriptionHistory(ctx, req.Uid, page, pageSize)
@@ -167,6 +206,11 @@ func (s *SubscriptionService) GetSubscriptionHistory(ctx context.Context, req *p
 // SetAutoRenew 设置自动续费
 // 开启或关闭用户订阅的自动续费功能
 func (s *SubscriptionService) SetAutoRenew(ctx context.Context, req *pb.SetAutoRenewRequest) (*pb.SetAutoRenewReply, error) {
+	// 权限验证
+	if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
+		return &pb.SetAutoRenewReply{Success: false, Message: err.Error()}, nil
+	}
+
 	err := s.uc.SetAutoRenew(ctx, req.Uid, req.AutoRenew)
 	if err != nil {
 		return &pb.SetAutoRenewReply{Success: false, Message: err.Error()}, nil
@@ -183,7 +227,7 @@ func (s *SubscriptionService) SetAutoRenew(ctx context.Context, req *pb.SetAutoR
 func (s *SubscriptionService) GetExpiringSubscriptions(ctx context.Context, req *pb.GetExpiringSubscriptionsRequest) (*pb.GetExpiringSubscriptionsReply, error) {
 	daysBeforeExpiry := int(req.DaysBeforeExpiry)
 	if daysBeforeExpiry == 0 {
-		daysBeforeExpiry = 7
+		daysBeforeExpiry = constants.DefaultExpiryDays
 	}
 	page := int(req.Page)
 	if page < 1 {
@@ -191,7 +235,7 @@ func (s *SubscriptionService) GetExpiringSubscriptions(ctx context.Context, req 
 	}
 	pageSize := int(req.PageSize)
 	if pageSize < 1 {
-		pageSize = 10
+		pageSize = constants.DefaultPageSize
 	}
 
 	subscriptions, total, err := s.uc.GetExpiringSubscriptions(ctx, daysBeforeExpiry, page, pageSize)
@@ -199,10 +243,19 @@ func (s *SubscriptionService) GetExpiringSubscriptions(ctx context.Context, req 
 		return nil, err
 	}
 
+	// 批量获取所有套餐信息，避免 N+1 查询
+	allPlans, err := s.uc.ListPlans(ctx)
+	planMap := make(map[string]*biz.Plan)
+	if err == nil {
+		for _, p := range allPlans {
+			planMap[p.ID] = p
+		}
+	}
+
 	pbSubscriptions := make([]*pb.SubscriptionInfo, len(subscriptions))
 	for i, sub := range subscriptions {
-		// 获取套餐信息
-		plan, _ := s.uc.GetPlan(ctx, sub.PlanID)
+		// 从内存 Map 中获取套餐信息
+		plan := planMap[sub.PlanID]
 		planName := sub.PlanID
 		amount := 0.0
 		if plan != nil {

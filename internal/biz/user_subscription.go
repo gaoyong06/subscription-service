@@ -5,10 +5,12 @@ import (
 	"time"
 
 	"xinyuan_tech/subscription-service/internal/conf"
+	"xinyuan_tech/subscription-service/internal/constants"
 	"xinyuan_tech/subscription-service/internal/errors"
 
 	pkgErrors "github.com/gaoyong06/go-pkg/errors"
 	"github.com/go-kratos/kratos/v2/log"
+	"github.com/go-redsync/redsync/v4"
 )
 
 // UserSubscription 用户订阅记录
@@ -19,6 +21,7 @@ type UserSubscription struct {
 	StartTime time.Time
 	EndTime   time.Time
 	Status    string // active, expired, paused, cancelled
+	OrderID   string
 	AutoRenew bool
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -47,6 +50,7 @@ type SubscriptionUsecase struct {
 	historyRepo   SubscriptionHistoryRepo
 	paymentClient PaymentClient
 	tm            Transaction // 事务管理器
+	rs            *redsync.Redsync
 	config        *conf.Bootstrap
 	log           *log.Helper
 }
@@ -59,6 +63,7 @@ func NewSubscriptionUsecase(
 	historyRepo SubscriptionHistoryRepo,
 	paymentClient PaymentClient,
 	tm Transaction,
+	rs *redsync.Redsync,
 	config *conf.Bootstrap,
 	logger log.Logger,
 ) *SubscriptionUsecase {
@@ -69,6 +74,7 @@ func NewSubscriptionUsecase(
 		historyRepo:   historyRepo,
 		paymentClient: paymentClient,
 		tm:            tm,
+		rs:            rs,
 		config:        config,
 		log:           log.NewHelper(logger),
 	}
@@ -94,139 +100,151 @@ func (uc *SubscriptionUsecase) GetMySubscription(ctx context.Context, userID uin
 func (uc *SubscriptionUsecase) CancelSubscription(ctx context.Context, userID uint64, reason string) error {
 	uc.log.Infof("CancelSubscription: userID=%d, reason=%s", userID, reason)
 
-	// 获取当前订阅
-	sub, err := uc.subRepo.GetSubscription(ctx, userID)
-	if err != nil {
-		uc.log.Errorf("Failed to get subscription: %v", err)
-		return err
-	}
-	if sub == nil {
-		return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeSubscriptionNotFound)
-	}
+	// 使用事务确保数据一致性
+	return uc.withTransaction(ctx, func(ctx context.Context) error {
+		// 获取当前订阅
+		sub, err := uc.subRepo.GetSubscription(ctx, userID)
+		if err != nil {
+			uc.log.Errorf("Failed to get subscription: %v", err)
+			return err
+		}
+		if sub == nil {
+			return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeSubscriptionNotFound)
+		}
 
-	// 只能取消 active 或 paused 状态的订阅
-	if sub.Status != "active" && sub.Status != "paused" {
-		return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeCannotCancelStatus)
-	}
+		// 只能取消 active 或 paused 状态的订阅
+		if sub.Status != constants.StatusActive && sub.Status != constants.StatusPaused {
+			return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeCannotCancelStatus)
+		}
 
-	now := time.Now().UTC()
-	sub.Status = "cancelled"
-	sub.AutoRenew = false // 取消时关闭自动续费
-	sub.UpdatedAt = now
+		now := time.Now().UTC()
+		sub.Status = constants.StatusCancelled
+		sub.AutoRenew = false // 取消时关闭自动续费
+		sub.UpdatedAt = now
 
-	if err := uc.subRepo.SaveSubscription(ctx, sub); err != nil {
-		uc.log.Errorf("Failed to save subscription: %v", err)
-		return err
-	}
+		if err := uc.subRepo.SaveSubscription(ctx, sub); err != nil {
+			uc.log.Errorf("Failed to save subscription: %v", err)
+			return err
+		}
 
-	// 记录历史
-	history := &SubscriptionHistory{
-		UserID:    userID,
-		PlanID:    sub.PlanID,
-		StartTime: sub.StartTime,
-		EndTime:   sub.EndTime,
-		Status:    sub.Status,
-		Action:    "cancelled",
-		CreatedAt: now,
-	}
-	if err := uc.historyRepo.AddSubscriptionHistory(ctx, history); err != nil {
-		uc.log.Errorf("Failed to add subscription history: %v", err)
-	}
+		// 记录历史
+		history := &SubscriptionHistory{
+			UserID:    userID,
+			PlanID:    sub.PlanID,
+			StartTime: sub.StartTime,
+			EndTime:   sub.EndTime,
+			Status:    sub.Status,
+			Action:    constants.ActionCancelled,
+			CreatedAt: now,
+		}
+		if err := uc.historyRepo.AddSubscriptionHistory(ctx, history); err != nil {
+			uc.log.Errorf("Failed to add subscription history: %v", err)
+			return err // 事务会回滚
+		}
 
-	uc.log.Infof("Subscription cancelled successfully for user %d", userID)
-	return nil
+		uc.log.Infof("Subscription cancelled successfully for user %d", userID)
+		return nil
+	})
 }
 
 // PauseSubscription 暂停订阅
 func (uc *SubscriptionUsecase) PauseSubscription(ctx context.Context, userID uint64, reason string) error {
 	uc.log.Infof("PauseSubscription: userID=%d, reason=%s", userID, reason)
 
-	// 获取当前订阅
-	sub, err := uc.subRepo.GetSubscription(ctx, userID)
-	if err != nil {
-		uc.log.Errorf("Failed to get subscription: %v", err)
-		return err
-	}
-	if sub == nil {
-		return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeSubscriptionNotFound)
-	}
+	// 使用事务确保数据一致性
+	return uc.withTransaction(ctx, func(ctx context.Context) error {
+		// 获取当前订阅
+		sub, err := uc.subRepo.GetSubscription(ctx, userID)
+		if err != nil {
+			uc.log.Errorf("Failed to get subscription: %v", err)
+			return err
+		}
+		if sub == nil {
+			return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeSubscriptionNotFound)
+		}
 
-	// 只能暂停 active 状态的订阅
-	if sub.Status != "active" {
-		return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeCannotPauseStatus)
-	}
+		// 只能暂停 active 状态的订阅
+		if sub.Status != constants.StatusActive {
+			return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeCannotPauseStatus)
+		}
 
-	now := time.Now().UTC()
-	sub.Status = "paused"
-	sub.UpdatedAt = now
+		now := time.Now().UTC()
+		sub.Status = constants.StatusPaused
+		sub.UpdatedAt = now
 
-	if err := uc.subRepo.SaveSubscription(ctx, sub); err != nil {
-		uc.log.Errorf("Failed to save subscription: %v", err)
-		return err
-	}
+		if err := uc.subRepo.SaveSubscription(ctx, sub); err != nil {
+			uc.log.Errorf("Failed to save subscription: %v", err)
+			return err
+		}
 
-	// 记录历史
-	history := &SubscriptionHistory{
-		UserID:    userID,
-		PlanID:    sub.PlanID,
-		StartTime: sub.StartTime,
-		EndTime:   sub.EndTime,
-		Status:    sub.Status,
-		Action:    "paused",
-		CreatedAt: now,
-	}
-	if err := uc.historyRepo.AddSubscriptionHistory(ctx, history); err != nil {
-		uc.log.Errorf("Failed to add subscription history: %v", err)
-	}
+		// 记录历史
+		history := &SubscriptionHistory{
+			UserID:    userID,
+			PlanID:    sub.PlanID,
+			StartTime: sub.StartTime,
+			EndTime:   sub.EndTime,
+			Status:    sub.Status,
+			Action:    constants.ActionPaused,
+			CreatedAt: now,
+		}
+		if err := uc.historyRepo.AddSubscriptionHistory(ctx, history); err != nil {
+			uc.log.Errorf("Failed to add subscription history: %v", err)
+			return err // 事务会回滚
+		}
 
-	uc.log.Infof("Subscription paused successfully for user %d", userID)
-	return nil
+		uc.log.Infof("Subscription paused successfully for user %d", userID)
+		return nil
+	})
 }
 
 // ResumeSubscription 恢复订阅
 func (uc *SubscriptionUsecase) ResumeSubscription(ctx context.Context, userID uint64) error {
 	uc.log.Infof("ResumeSubscription: userID=%d", userID)
 
-	// 获取当前订阅
-	sub, err := uc.subRepo.GetSubscription(ctx, userID)
-	if err != nil {
-		uc.log.Errorf("Failed to get subscription: %v", err)
-		return err
-	}
-	if sub == nil {
-		return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeSubscriptionNotFound)
-	}
+	// 使用事务确保数据一致性
+	return uc.withTransaction(ctx, func(ctx context.Context) error {
+		// 获取当前订阅
+		sub, err := uc.subRepo.GetSubscription(ctx, userID)
+		if err != nil {
+			uc.log.Errorf("Failed to get subscription: %v", err)
+			return err
+		}
+		if sub == nil {
+			return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeSubscriptionNotFound)
+		}
 
-	// 只能恢复 paused 状态的订阅
-	if sub.Status != "paused" {
-		return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeCannotResumeStatus)
-	}
+		// 只能恢复 paused 状态的订阅
+		if sub.Status != constants.StatusPaused {
+			return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeCannotResumeStatus)
+		}
 
-	now := time.Now().UTC()
-	sub.Status = "active"
-	sub.UpdatedAt = now
+		now := time.Now().UTC()
+		sub.Status = constants.StatusActive
+		sub.UpdatedAt = now
 
-	if err := uc.subRepo.SaveSubscription(ctx, sub); err != nil {
-		uc.log.Errorf("Failed to save subscription: %v", err)
-		return err
-	}
+		if err := uc.subRepo.SaveSubscription(ctx, sub); err != nil {
+			uc.log.Errorf("Failed to save subscription: %v", err)
+			return err
+		}
 
-	// 记录历史
-	history := &SubscriptionHistory{
-		UserID:    userID,
-		PlanID:    sub.PlanID,
-		StartTime: sub.StartTime,
-		EndTime:   sub.EndTime,
-		Status:    sub.Status,
-		Action:    "resumed",
-		CreatedAt: now,
-	}
-	if err := uc.historyRepo.AddSubscriptionHistory(ctx, history); err != nil {
-		uc.log.Errorf("Failed to add subscription history: %v", err)
-	}
+		// 记录历史
+		history := &SubscriptionHistory{
+			UserID:    userID,
+			PlanID:    sub.PlanID,
+			StartTime: sub.StartTime,
+			EndTime:   sub.EndTime,
+			Status:    sub.Status,
+			Action:    constants.ActionResumed,
+			CreatedAt: now,
+		}
+		if err := uc.historyRepo.AddSubscriptionHistory(ctx, history); err != nil {
+			uc.log.Errorf("Failed to add subscription history: %v", err)
+			return err // 事务会回滚
+		}
 
-	uc.log.Infof("Subscription resumed successfully for user %d", userID)
-	return nil
+		uc.log.Infof("Subscription resumed successfully for user %d", userID)
+		return nil
+	})
 }
 
 // SetAutoRenew 设置自动续费
