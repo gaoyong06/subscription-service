@@ -69,8 +69,8 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrder(ctx context.Context, user
 	// 3. 调用支付服务
 	// 从配置中获取 ReturnURL
 	returnURL := ""
-	if uc.config != nil && uc.config.GetClient() != nil && uc.config.GetClient().GetSubscriptionService() != nil {
-		returnURL = uc.config.GetClient().GetSubscriptionService().GetReturnUrl()
+	if uc.config != nil && uc.config.GetSubscription() != nil {
+		returnURL = uc.config.GetSubscription().GetReturnUrl()
 	}
 	if returnURL == "" {
 		uc.log.Errorf("ReturnURL is not configured")

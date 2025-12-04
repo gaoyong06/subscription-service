@@ -68,6 +68,26 @@ func NewDB(c *conf.Bootstrap) *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
+
+	// Configure connection pool
+	sqlDB, err := db.DB()
+	if err != nil {
+		panic(err)
+	}
+
+	if c != nil && c.GetData() != nil && c.GetData().GetDatabase() != nil {
+		dbConf := c.GetData().GetDatabase()
+		if dbConf.GetMaxIdleConns() > 0 {
+			sqlDB.SetMaxIdleConns(int(dbConf.GetMaxIdleConns()))
+		}
+		if dbConf.GetMaxOpenConns() > 0 {
+			sqlDB.SetMaxOpenConns(int(dbConf.GetMaxOpenConns()))
+		}
+		if dbConf.GetConnMaxLifetime() != nil {
+			sqlDB.SetConnMaxLifetime(dbConf.GetConnMaxLifetime().AsDuration())
+		}
+	}
+
 	if err := db.AutoMigrate(&model.Plan{}, &model.UserSubscription{}, &model.SubscriptionOrder{}, &model.SubscriptionHistory{}, &model.PlanPricing{}); err != nil {
 		panic(err)
 	}
@@ -78,9 +98,9 @@ func NewDB(c *conf.Bootstrap) *gorm.DB {
 
 // NewRedis .
 func NewRedis(c *conf.Bootstrap) *redis.Client {
-	var readTimeout, writeTimeout time.Duration
+	var readTimeout, writeTimeout, dialTimeout time.Duration
 	var addr, password string
-	var db int32
+	var db, poolSize, minIdleConns int32
 
 	if c != nil && c.GetData() != nil && c.GetData().GetRedis() != nil {
 		redisConf := c.GetData().GetRedis()
@@ -90,9 +110,14 @@ func NewRedis(c *conf.Bootstrap) *redis.Client {
 		if redisConf.GetWriteTimeout() != nil {
 			writeTimeout = redisConf.GetWriteTimeout().AsDuration()
 		}
+		if redisConf.GetDialTimeout() != nil {
+			dialTimeout = redisConf.GetDialTimeout().AsDuration()
+		}
 		addr = redisConf.GetAddr()
 		password = redisConf.GetPassword()
 		db = redisConf.GetDb()
+		poolSize = redisConf.GetPoolSize()
+		minIdleConns = redisConf.GetMinIdleConns()
 	}
 
 	if addr == "" {
@@ -105,6 +130,9 @@ func NewRedis(c *conf.Bootstrap) *redis.Client {
 		DB:           int(db),
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
+		DialTimeout:  dialTimeout,
+		PoolSize:     int(poolSize),
+		MinIdleConns: int(minIdleConns),
 	})
 	return rdb
 }

@@ -11,7 +11,9 @@ message Bootstrap {
   Server server = 1;
   Data data = 2;
   Client client = 3;
-  Log log = 4;
+  Subscription subscription = 4;  // 订阅业务配置
+  Cron cron = 5;                  // 定时任务配置
+  Log log = 6;
 }
 
 // 服务配置
@@ -54,10 +56,9 @@ message Data {
   Redis redis = 2;
 }
 
-// 客户端配置
+// 客户端配置（外部依赖服务）
 message Client {
   PaymentService payment_service = 1;
-  SubscriptionService subscription_service = 2;
 }
 
 // 支付服务配置
@@ -65,11 +66,18 @@ message PaymentService {
   string addr = 1;
 }
 
-// 订阅服务配置
-message SubscriptionService {
-  string return_url = 1;
-  int32 auto_renew_days_before = 2;
-  int32 expiry_check_days = 3;
+// 订阅业务配置
+message Subscription {
+  string return_url = 1;                 // 支付成功返回 URL
+  int32 auto_renew_days_before = 2;      // 自动续费提前天数
+  int32 expiry_check_days = 3;           // 过期检查天数
+}
+
+// 定时任务配置
+message Cron {
+  string expiry_check = 1;          // 过期检查 cron 表达式，默认: "0 0 2 * * *" (每天凌晨2点)
+  string renewal_reminder = 2;      // 续费提醒 cron 表达式，默认: "0 0 10 * * *" (每天上午10点)
+  string auto_renewal = 3;          // 自动续费 cron 表达式，默认: "0 0 3 * * *" (每天凌晨3点)
 }
 
 // 日志配置

@@ -85,8 +85,8 @@ func main() {
 	if bc.GetClient() == nil || bc.GetClient().GetPaymentService() == nil || bc.GetClient().GetPaymentService().GetAddr() == "" {
 		panic("client.payment_service.addr is required")
 	}
-	if bc.GetClient().GetSubscriptionService() == nil {
-		panic("client.subscription_service configuration is required")
+	if bc.GetSubscription() == nil {
+		panic("subscription configuration is required")
 	}
 
 	// 初始化日志 (使用 go-pkg/logger)

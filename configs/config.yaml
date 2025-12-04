@@ -9,8 +9,7 @@ server:
 data:
   database:
     driver: mysql
-    # 请确保替换为实际的数据库连接字符串
-    source: root:root@tcp(localhost:3306)/subscription_service?charset=utf8mb4&parseTime=True&loc=Local
+    source: root:@tcp(localhost:3306)/subscription_service?charset=utf8mb4&parseTime=True&loc=Local
     max_idle_conns: 10
     max_open_conns: 100
     conn_max_lifetime: 3600s
@@ -27,10 +26,16 @@ data:
 client:
   payment_service:
     addr: localhost:9101
-  subscription_service:
-    return_url: "http://localhost:8080/subscription/success"
-    auto_renew_days_before: 3
-    expiry_check_days: 7
+
+subscription:
+  return_url: "http://localhost:8080/subscription/success"
+  auto_renew_days_before: 3
+  expiry_check_days: 7
+
+cron:
+  expiry_check: "0 0 2 * * *"      # 每天凌晨 2 点执行过期检查
+  renewal_reminder: "0 0 10 * * *" # 每天上午 10 点发送续费提醒
+  auto_renewal: "0 0 3 * * *"      # 每天凌晨 3 点执行自动续费
 
 log:
   level: info  # debug, info, warn, error
