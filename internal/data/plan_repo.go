@@ -23,9 +23,13 @@ func NewPlanRepo(data *Data, logger log.Logger) biz.PlanRepo {
 }
 
 // ListPlans 获取所有套餐列表
-func (r *planRepo) ListPlans(ctx context.Context) ([]*biz.Plan, error) {
+func (r *planRepo) ListPlans(ctx context.Context, appID string) ([]*biz.Plan, error) {
 	var models []model.Plan
-	if err := r.data.db.WithContext(ctx).Find(&models).Error; err != nil {
+	query := r.data.db.WithContext(ctx)
+	if appID != "" {
+		query = query.Where("app_id = ?", appID)
+	}
+	if err := query.Find(&models).Error; err != nil {
 		r.log.Errorf("Failed to list plans: %v", err)
 		return nil, err
 	}
@@ -34,6 +38,7 @@ func (r *planRepo) ListPlans(ctx context.Context) ([]*biz.Plan, error) {
 	for i, m := range models {
 		plans[i] = &biz.Plan{
 			ID:           m.ID,
+			AppID:        m.AppID,
 			Name:         m.Name,
 			Description:  m.Description,
 			Price:        m.Price,
@@ -54,6 +59,7 @@ func (r *planRepo) GetPlan(ctx context.Context, id string) (*biz.Plan, error) {
 	}
 	return &biz.Plan{
 		ID:           m.ID,
+		AppID:        m.AppID,
 		Name:         m.Name,
 		Description:  m.Description,
 		Price:        m.Price,
@@ -61,6 +67,53 @@ func (r *planRepo) GetPlan(ctx context.Context, id string) (*biz.Plan, error) {
 		DurationDays: m.DurationDays,
 		Type:         m.Type,
 	}, nil
+}
+
+// CreatePlan 创建套餐
+func (r *planRepo) CreatePlan(ctx context.Context, plan *biz.Plan) error {
+	m := &model.Plan{
+		ID:           plan.ID,
+		AppID:        plan.AppID,
+		Name:         plan.Name,
+		Description:  plan.Description,
+		Price:        plan.Price,
+		Currency:     plan.Currency,
+		DurationDays: plan.DurationDays,
+		Type:         plan.Type,
+	}
+	if err := r.data.db.WithContext(ctx).Create(m).Error; err != nil {
+		r.log.Errorf("Failed to create plan: %v", err)
+		return err
+	}
+	return nil
+}
+
+// UpdatePlan 更新套餐
+func (r *planRepo) UpdatePlan(ctx context.Context, plan *biz.Plan) error {
+	m := &model.Plan{
+		ID:           plan.ID,
+		AppID:        plan.AppID,
+		Name:         plan.Name,
+		Description:  plan.Description,
+		Price:        plan.Price,
+		Currency:     plan.Currency,
+		DurationDays: plan.DurationDays,
+		Type:         plan.Type,
+	}
+	if err := r.data.db.WithContext(ctx).Model(&model.Plan{}).Where("plan_id = ?", plan.ID).Updates(m).Error; err != nil {
+		r.log.Errorf("Failed to update plan: %v", err)
+		return err
+	}
+	return nil
+}
+
+// DeletePlan 删除套餐
+func (r *planRepo) DeletePlan(ctx context.Context, id string) error {
+	if err := r.data.db.WithContext(ctx).Delete(&model.Plan{}, "plan_id = ?", id).Error; err != nil {
+		r.log.Errorf("Failed to delete plan: %v", err)
+		return err
+	}
+	return nil
 }
 
 // GetPlanPricing 根据套餐ID和区域获取定价

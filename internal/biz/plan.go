@@ -5,6 +5,7 @@ import "context"
 // Plan 订阅套餐
 type Plan struct {
 	ID           string
+	AppID        string // 应用ID
 	Name         string
 	Description  string
 	Price        float64 // 默认价格
@@ -24,15 +25,33 @@ type PlanPricing struct {
 
 // PlanRepo 套餐仓库接口
 type PlanRepo interface {
-	ListPlans(ctx context.Context) ([]*Plan, error)
+	ListPlans(ctx context.Context, appID string) ([]*Plan, error)
 	GetPlan(ctx context.Context, id string) (*Plan, error)
+	CreatePlan(ctx context.Context, plan *Plan) error
+	UpdatePlan(ctx context.Context, plan *Plan) error
+	DeletePlan(ctx context.Context, id string) error
 	GetPlanPricing(ctx context.Context, planID, region string) (*PlanPricing, error)
 	ListPlanPricings(ctx context.Context, planID string) ([]*PlanPricing, error)
 }
 
 // ListPlans 获取所有订阅套餐列表
-func (uc *SubscriptionUsecase) ListPlans(ctx context.Context) ([]*Plan, error) {
-	return uc.planRepo.ListPlans(ctx)
+func (uc *SubscriptionUsecase) ListPlans(ctx context.Context, appID string) ([]*Plan, error) {
+	return uc.planRepo.ListPlans(ctx, appID)
+}
+
+// CreatePlan 创建套餐
+func (uc *SubscriptionUsecase) CreatePlan(ctx context.Context, plan *Plan) error {
+	return uc.planRepo.CreatePlan(ctx, plan)
+}
+
+// UpdatePlan 更新套餐
+func (uc *SubscriptionUsecase) UpdatePlan(ctx context.Context, plan *Plan) error {
+	return uc.planRepo.UpdatePlan(ctx, plan)
+}
+
+// DeletePlan 删除套餐
+func (uc *SubscriptionUsecase) DeletePlan(ctx context.Context, id string) error {
+	return uc.planRepo.DeletePlan(ctx, id)
 }
 
 // GetPlan 获取套餐信息

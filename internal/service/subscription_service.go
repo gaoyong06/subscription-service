@@ -6,6 +6,8 @@ import (
 	"xinyuan_tech/subscription-service/internal/auth"
 	"xinyuan_tech/subscription-service/internal/biz"
 	"xinyuan_tech/subscription-service/internal/constants"
+
+	"github.com/google/uuid"
 )
 
 // SubscriptionService 订阅服务
@@ -22,7 +24,7 @@ func NewSubscriptionService(uc *biz.SubscriptionUsecase) *SubscriptionService {
 // ListPlans 获取所有订阅套餐列表
 // 返回系统中所有可用的订阅套餐信息
 func (s *SubscriptionService) ListPlans(ctx context.Context, req *pb.ListPlansRequest) (*pb.ListPlansReply, error) {
-	plans, err := s.uc.ListPlans(ctx)
+	plans, err := s.uc.ListPlans(ctx, req.AppId)
 	if err != nil {
 		return nil, err
 	}
@@ -31,6 +33,7 @@ func (s *SubscriptionService) ListPlans(ctx context.Context, req *pb.ListPlansRe
 	for i, p := range plans {
 		pbPlans[i] = &pb.Plan{
 			Id:           p.ID,
+			AppId:        p.AppID,
 			Name:         p.Name,
 			Description:  p.Description,
 			Price:        p.Price,
@@ -41,6 +44,78 @@ func (s *SubscriptionService) ListPlans(ctx context.Context, req *pb.ListPlansRe
 	}
 
 	return &pb.ListPlansReply{Plans: pbPlans}, nil
+}
+
+// CreatePlan 创建订阅套餐
+func (s *SubscriptionService) CreatePlan(ctx context.Context, req *pb.CreatePlanRequest) (*pb.CreatePlanReply, error) {
+	plan := &biz.Plan{
+		ID:           uuid.New().String(),
+		AppID:        req.AppId,
+		Name:         req.Name,
+		Description:  req.Description,
+		Price:        req.Price,
+		Currency:     req.Currency,
+		DurationDays: int(req.DurationDays),
+		Type:         req.Type,
+	}
+	if err := s.uc.CreatePlan(ctx, plan); err != nil {
+		return nil, err
+	}
+	return &pb.CreatePlanReply{
+		Plan: &pb.Plan{
+			Id:           plan.ID,
+			AppId:        plan.AppID,
+			Name:         plan.Name,
+			Description:  plan.Description,
+			Price:        plan.Price,
+			Currency:     plan.Currency,
+			DurationDays: int32(plan.DurationDays),
+			Type:         plan.Type,
+		},
+	}, nil
+}
+
+// UpdatePlan 更新订阅套餐
+func (s *SubscriptionService) UpdatePlan(ctx context.Context, req *pb.UpdatePlanRequest) (*pb.UpdatePlanReply, error) {
+	// 先获取现有套餐以保留 AppID 等未修改字段
+	existing, err := s.uc.GetPlan(ctx, req.PlanId)
+	if err != nil {
+		return nil, err
+	}
+
+	plan := &biz.Plan{
+		ID:           req.PlanId,
+		AppID:        existing.AppID, // 保留原有的 AppID
+		Name:         req.Name,
+		Description:  req.Description,
+		Price:        req.Price,
+		Currency:     req.Currency,
+		DurationDays: int(req.DurationDays),
+		Type:         req.Type,
+	}
+	if err := s.uc.UpdatePlan(ctx, plan); err != nil {
+		return nil, err
+	}
+	return &pb.UpdatePlanReply{
+		Plan: &pb.Plan{
+			Id:           plan.ID,
+			AppId:        plan.AppID,
+			Name:         plan.Name,
+			Description:  plan.Description,
+			Price:        plan.Price,
+			Currency:     plan.Currency,
+			DurationDays: int32(plan.DurationDays),
+			Type:         plan.Type,
+		},
+	}, nil
+}
+
+// DeletePlan 删除订阅套餐
+func (s *SubscriptionService) DeletePlan(ctx context.Context, req *pb.DeletePlanRequest) (*pb.DeletePlanReply, error) {
+	if err := s.uc.DeletePlan(ctx, req.PlanId); err != nil {
+		return &pb.DeletePlanReply{Success: false}, err
+	}
+	return &pb.DeletePlanReply{Success: true}, nil
 }
 
 // GetMySubscription 获取用户当前订阅信息
@@ -244,7 +319,7 @@ func (s *SubscriptionService) GetExpiringSubscriptions(ctx context.Context, req 
 	}
 
 	// 批量获取所有套餐信息，避免 N+1 查询
-	allPlans, err := s.uc.ListPlans(ctx)
+	allPlans, err := s.uc.ListPlans(ctx, "")
 	planMap := make(map[string]*biz.Plan)
 	if err == nil {
 		for _, p := range allPlans {

@@ -222,6 +222,11 @@ paths:
                 - Subscription
             description: 获取所有订阅套餐
             operationId: Subscription_ListPlans
+            parameters:
+                - name: appId
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
@@ -229,6 +234,67 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/subscription.v1.ListPlansReply'
+        post:
+            tags:
+                - Subscription
+            description: 创建订阅套餐
+            operationId: Subscription_CreatePlan
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/subscription.v1.CreatePlanRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/subscription.v1.CreatePlanReply'
+    /v1/subscription/plans/{planId}:
+        put:
+            tags:
+                - Subscription
+            description: 更新订阅套餐
+            operationId: Subscription_UpdatePlan
+            parameters:
+                - name: planId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/subscription.v1.UpdatePlanRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/subscription.v1.UpdatePlanReply'
+        delete:
+            tags:
+                - Subscription
+            description: 删除订阅套餐
+            operationId: Subscription_DeletePlan
+            parameters:
+                - name: planId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/subscription.v1.DeletePlanReply'
     /v1/subscription/resume:
         post:
             tags:
@@ -280,6 +346,30 @@ components:
                 reason:
                     type: string
             description: 取消订阅
+        subscription.v1.CreatePlanReply:
+            type: object
+            properties:
+                plan:
+                    $ref: '#/components/schemas/subscription.v1.Plan'
+        subscription.v1.CreatePlanRequest:
+            type: object
+            properties:
+                appId:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type: string
+                price:
+                    type: number
+                    format: double
+                currency:
+                    type: string
+                durationDays:
+                    type: integer
+                    format: int32
+                type:
+                    type: string
         subscription.v1.CreateSubscriptionOrderReply:
             type: object
             properties:
@@ -304,6 +394,11 @@ components:
                     type: string
                 region:
                     type: string
+        subscription.v1.DeletePlanReply:
+            type: object
+            properties:
+                success:
+                    type: boolean
         subscription.v1.GetExpiringSubscriptionsReply:
             type: object
             properties:
@@ -406,6 +501,8 @@ components:
                     type: integer
                     format: int32
                 type:
+                    type: string
+                appId:
                     type: string
         subscription.v1.ProcessAutoRenewalsReply:
             type: object
@@ -512,5 +609,29 @@ components:
             type: object
             properties: {}
             description: 批量更新过期订阅
+        subscription.v1.UpdatePlanReply:
+            type: object
+            properties:
+                plan:
+                    $ref: '#/components/schemas/subscription.v1.Plan'
+        subscription.v1.UpdatePlanRequest:
+            type: object
+            properties:
+                planId:
+                    type: string
+                name:
+                    type: string
+                description:
+                    type: string
+                price:
+                    type: number
+                    format: double
+                currency:
+                    type: string
+                durationDays:
+                    type: integer
+                    format: int32
+                type:
+                    type: string
 tags:
     - name: Subscription

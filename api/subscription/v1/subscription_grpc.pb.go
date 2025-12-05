@@ -31,6 +31,9 @@ const (
 	Subscription_GetExpiringSubscriptions_FullMethodName   = "/subscription.v1.Subscription/GetExpiringSubscriptions"
 	Subscription_UpdateExpiredSubscriptions_FullMethodName = "/subscription.v1.Subscription/UpdateExpiredSubscriptions"
 	Subscription_ProcessAutoRenewals_FullMethodName        = "/subscription.v1.Subscription/ProcessAutoRenewals"
+	Subscription_CreatePlan_FullMethodName                 = "/subscription.v1.Subscription/CreatePlan"
+	Subscription_UpdatePlan_FullMethodName                 = "/subscription.v1.Subscription/UpdatePlan"
+	Subscription_DeletePlan_FullMethodName                 = "/subscription.v1.Subscription/DeletePlan"
 )
 
 // SubscriptionClient is the client API for Subscription service.
@@ -61,6 +64,12 @@ type SubscriptionClient interface {
 	UpdateExpiredSubscriptions(ctx context.Context, in *UpdateExpiredSubscriptionsRequest, opts ...grpc.CallOption) (*UpdateExpiredSubscriptionsReply, error)
 	// 处理自动续费（用于定时任务）
 	ProcessAutoRenewals(ctx context.Context, in *ProcessAutoRenewalsRequest, opts ...grpc.CallOption) (*ProcessAutoRenewalsReply, error)
+	// 创建订阅套餐
+	CreatePlan(ctx context.Context, in *CreatePlanRequest, opts ...grpc.CallOption) (*CreatePlanReply, error)
+	// 更新订阅套餐
+	UpdatePlan(ctx context.Context, in *UpdatePlanRequest, opts ...grpc.CallOption) (*UpdatePlanReply, error)
+	// 删除订阅套餐
+	DeletePlan(ctx context.Context, in *DeletePlanRequest, opts ...grpc.CallOption) (*DeletePlanReply, error)
 }
 
 type subscriptionClient struct {
@@ -191,6 +200,36 @@ func (c *subscriptionClient) ProcessAutoRenewals(ctx context.Context, in *Proces
 	return out, nil
 }
 
+func (c *subscriptionClient) CreatePlan(ctx context.Context, in *CreatePlanRequest, opts ...grpc.CallOption) (*CreatePlanReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreatePlanReply)
+	err := c.cc.Invoke(ctx, Subscription_CreatePlan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subscriptionClient) UpdatePlan(ctx context.Context, in *UpdatePlanRequest, opts ...grpc.CallOption) (*UpdatePlanReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdatePlanReply)
+	err := c.cc.Invoke(ctx, Subscription_UpdatePlan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subscriptionClient) DeletePlan(ctx context.Context, in *DeletePlanRequest, opts ...grpc.CallOption) (*DeletePlanReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeletePlanReply)
+	err := c.cc.Invoke(ctx, Subscription_DeletePlan_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SubscriptionServer is the server API for Subscription service.
 // All implementations must embed UnimplementedSubscriptionServer
 // for forward compatibility.
@@ -219,6 +258,12 @@ type SubscriptionServer interface {
 	UpdateExpiredSubscriptions(context.Context, *UpdateExpiredSubscriptionsRequest) (*UpdateExpiredSubscriptionsReply, error)
 	// 处理自动续费（用于定时任务）
 	ProcessAutoRenewals(context.Context, *ProcessAutoRenewalsRequest) (*ProcessAutoRenewalsReply, error)
+	// 创建订阅套餐
+	CreatePlan(context.Context, *CreatePlanRequest) (*CreatePlanReply, error)
+	// 更新订阅套餐
+	UpdatePlan(context.Context, *UpdatePlanRequest) (*UpdatePlanReply, error)
+	// 删除订阅套餐
+	DeletePlan(context.Context, *DeletePlanRequest) (*DeletePlanReply, error)
 	mustEmbedUnimplementedSubscriptionServer()
 }
 
@@ -264,6 +309,15 @@ func (UnimplementedSubscriptionServer) UpdateExpiredSubscriptions(context.Contex
 }
 func (UnimplementedSubscriptionServer) ProcessAutoRenewals(context.Context, *ProcessAutoRenewalsRequest) (*ProcessAutoRenewalsReply, error) {
 	return nil, status.Error(codes.Unimplemented, "method ProcessAutoRenewals not implemented")
+}
+func (UnimplementedSubscriptionServer) CreatePlan(context.Context, *CreatePlanRequest) (*CreatePlanReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreatePlan not implemented")
+}
+func (UnimplementedSubscriptionServer) UpdatePlan(context.Context, *UpdatePlanRequest) (*UpdatePlanReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdatePlan not implemented")
+}
+func (UnimplementedSubscriptionServer) DeletePlan(context.Context, *DeletePlanRequest) (*DeletePlanReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeletePlan not implemented")
 }
 func (UnimplementedSubscriptionServer) mustEmbedUnimplementedSubscriptionServer() {}
 func (UnimplementedSubscriptionServer) testEmbeddedByValue()                      {}
@@ -502,6 +556,60 @@ func _Subscription_ProcessAutoRenewals_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Subscription_CreatePlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePlanRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubscriptionServer).CreatePlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Subscription_CreatePlan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubscriptionServer).CreatePlan(ctx, req.(*CreatePlanRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Subscription_UpdatePlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePlanRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubscriptionServer).UpdatePlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Subscription_UpdatePlan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubscriptionServer).UpdatePlan(ctx, req.(*UpdatePlanRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Subscription_DeletePlan_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeletePlanRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubscriptionServer).DeletePlan(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Subscription_DeletePlan_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubscriptionServer).DeletePlan(ctx, req.(*DeletePlanRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Subscription_ServiceDesc is the grpc.ServiceDesc for Subscription service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -556,6 +664,18 @@ var Subscription_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ProcessAutoRenewals",
 			Handler:    _Subscription_ProcessAutoRenewals_Handler,
+		},
+		{
+			MethodName: "CreatePlan",
+			Handler:    _Subscription_CreatePlan_Handler,
+		},
+		{
+			MethodName: "UpdatePlan",
+			Handler:    _Subscription_UpdatePlan_Handler,
+		},
+		{
+			MethodName: "DeletePlan",
+			Handler:    _Subscription_DeletePlan_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

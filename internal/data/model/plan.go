@@ -3,6 +3,7 @@ package model
 // Plan 套餐模型
 type Plan struct {
 	ID           string  `gorm:"primaryKey;column:plan_id"`
+	AppID        string  `gorm:"column:app_id;default:'default'"`
 	Name         string  `gorm:"column:name"`
 	Description  string  `gorm:"column:description"`
 	Price        float64 `gorm:"column:price"`

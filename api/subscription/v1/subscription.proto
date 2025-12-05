@@ -88,6 +88,26 @@ service Subscription {
       body: "*"
     };
   }
+  // 创建订阅套餐
+  rpc CreatePlan (CreatePlanRequest) returns (CreatePlanReply) {
+    option (google.api.http) = {
+      post: "/v1/subscription/plans"
+      body: "*"
+    };
+  }
+  // 更新订阅套餐
+  rpc UpdatePlan (UpdatePlanRequest) returns (UpdatePlanReply) {
+    option (google.api.http) = {
+      put: "/v1/subscription/plans/{plan_id}"
+      body: "*"
+    };
+  }
+  // 删除订阅套餐
+  rpc DeletePlan (DeletePlanRequest) returns (DeletePlanReply) {
+    option (google.api.http) = {
+      delete: "/v1/subscription/plans/{plan_id}"
+    };
+  }
 }
 
 message Plan {
@@ -98,9 +118,48 @@ message Plan {
   string currency = 5;
   int32 duration_days = 6; // 持续天数
   string type = 7;         // free, pro, enterprise
+  string app_id = 8;       // 应用ID
 }
 
-message ListPlansRequest {}
+message ListPlansRequest {
+  string app_id = 1; // 可选，按应用ID筛选
+}
+
+message CreatePlanRequest {
+  string app_id = 1 [(validate.rules).string = {min_len: 1}];
+  string name = 2 [(validate.rules).string = {min_len: 1, max_len: 100}];
+  string description = 3;
+  double price = 4 [(validate.rules).double = {gte: 0}];
+  string currency = 5 [(validate.rules).string = {len: 3}];
+  int32 duration_days = 6 [(validate.rules).int32 = {gt: 0}];
+  string type = 7 [(validate.rules).string = {min_len: 1}];
+}
+
+message CreatePlanReply {
+  Plan plan = 1;
+}
+
+message UpdatePlanRequest {
+  string plan_id = 1 [(validate.rules).string = {min_len: 1}];
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  string currency = 5;
+  int32 duration_days = 6;
+  string type = 7;
+}
+
+message UpdatePlanReply {
+  Plan plan = 1;
+}
+
+message DeletePlanRequest {
+  string plan_id = 1 [(validate.rules).string = {min_len: 1}];
+}
+
+message DeletePlanReply {
+  bool success = 1;
+}
 
 message ListPlansReply {
   repeated Plan plans = 1;
