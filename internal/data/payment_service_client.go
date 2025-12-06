@@ -34,7 +34,7 @@ func NewPaymentClient(c *conf.Bootstrap) (biz.PaymentClient, error) {
 	}, nil
 }
 
-func (c *paymentServiceClient) CreatePayment(ctx context.Context, orderID string, userID uint64, amount float64, currency, method, subject, returnURL string) (string, string, string, string, error) {
+func (c *paymentServiceClient) CreatePayment(ctx context.Context, orderID string, userID uint64, appID string, amount float64, currency, method, subject, returnURL string) (string, string, string, string, error) {
 	// 验证必填参数
 	if currency == "" {
 		return "", "", "", "", fmt.Errorf("currency is required")
@@ -54,6 +54,8 @@ func (c *paymentServiceClient) CreatePayment(ctx context.Context, orderID string
 	req := &paymentv1.CreatePaymentRequest{
 		OrderId:   orderID,
 		UserId:    userID,
+		AppId:     appID, // 传递应用ID
+		Source:    "subscription", // 标记来源为订阅
 		Amount:    int64(amount),
 		Currency:  currency,
 		Method:    paymentMethod,

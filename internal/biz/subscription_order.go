@@ -16,6 +16,7 @@ type SubscriptionOrder struct {
 	ID            string
 	UserID        uint64
 	PlanID        string
+	AppID         string // 应用ID
 	Amount        float64
 	PaymentStatus string // pending, paid
 	CreatedAt     time.Time
@@ -50,12 +51,24 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrder(ctx context.Context, user
 	}
 	uc.log.Infof("Found plan pricing: region=%s, price=%.2f %s", pricing.Region, pricing.Price, pricing.Currency)
 
-	// 2. 创建本地订单
+	// 2. 获取套餐信息（用于获取 app_id 和名称）
+	plan, err := uc.planRepo.GetPlan(ctx, planID)
+	if err != nil {
+		uc.log.Errorf("Failed to get plan: %v", err)
+		return nil, "", "", "", "", pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodePlanNotFound)
+	}
+	if plan == nil {
+		uc.log.Errorf("Plan not found: %s", planID)
+		return nil, "", "", "", "", pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodePlanNotFound)
+	}
+
+	// 3. 创建本地订单
 	orderID := fmt.Sprintf("SUB%d%d", time.Now().UnixNano(), userID)
 	order := &SubscriptionOrder{
 		ID:            orderID,
 		UserID:        userID,
 		PlanID:        planID,
+		AppID:         plan.AppID, // 保存 app_id
 		Amount:        pricing.Price,
 		PaymentStatus: "pending",
 		CreatedAt:     time.Now().UTC(),
@@ -66,7 +79,7 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrder(ctx context.Context, user
 	}
 	uc.log.Infof("Created order: %s", orderID)
 
-	// 3. 调用支付服务
+	// 4. 调用支付服务
 	// 从配置中获取 ReturnURL
 	returnURL := ""
 	if uc.config != nil && uc.config.GetSubscription() != nil {
@@ -77,15 +90,19 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrder(ctx context.Context, user
 		return nil, "", "", "", "", pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeOrderCreateFailed)
 	}
 
-	// 获取套餐信息用于支付主题
-	plan, _ := uc.planRepo.GetPlan(ctx, planID)
 	subject := "Subscription"
-	if plan != nil {
+	if plan.Name != "" {
 		subject = "Subscription: " + plan.Name
 	}
 
-	uc.log.Infof("Calling payment service: orderID=%s, amount=%.2f %s, method=%s", orderID, pricing.Price, pricing.Currency, method)
-	paymentID, payUrl, payCode, payParams, err := uc.paymentClient.CreatePayment(ctx, orderID, userID, pricing.Price, pricing.Currency, method, subject, returnURL)
+	// 使用 plan 中的 app_id
+	appID := plan.AppID
+	if appID == "" {
+		uc.log.Warnf("Plan %s has no app_id, using empty string", planID)
+	}
+
+	uc.log.Infof("Calling payment service: orderID=%s, appID=%s, amount=%.2f %s, method=%s", orderID, appID, pricing.Price, pricing.Currency, method)
+	paymentID, payUrl, payCode, payParams, err := uc.paymentClient.CreatePayment(ctx, orderID, userID, appID, pricing.Price, pricing.Currency, method, subject, returnURL)
 	if err != nil {
 		uc.log.Errorf("Failed to create payment: %v", err)
 		return nil, "", "", "", "", pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodePaymentFailed)

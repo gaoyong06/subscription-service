@@ -39,7 +39,7 @@ type UserSubscriptionRepo interface {
 
 // PaymentClient 支付服务客户端接口 (防腐层)
 type PaymentClient interface {
-	CreatePayment(ctx context.Context, orderID string, userID uint64, amount float64, currency, method, subject, returnURL string) (paymentID, payUrl, payCode, payParams string, err error)
+	CreatePayment(ctx context.Context, orderID string, userID uint64, appID string, amount float64, currency, method, subject, returnURL string) (paymentID, payUrl, payCode, payParams string, err error)
 }
 
 // SubscriptionUsecase 订阅业务逻辑

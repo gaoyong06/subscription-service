@@ -27,11 +27,13 @@ CREATE TABLE `subscription_order` (
   `order_id` varchar(64) NOT NULL COMMENT '订单号',
   `user_id` bigint unsigned NOT NULL COMMENT '用户ID',
   `plan_id` varchar(50) NOT NULL COMMENT '套餐ID',
+  `app_id` varchar(50) DEFAULT '' COMMENT '应用ID',
   `amount` decimal(10,2) NOT NULL COMMENT '金额',
   `payment_status` varchar(20) NOT NULL COMMENT '支付状态',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`order_id`),
-  KEY `idx_user_id` (`user_id`)
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_app_id` (`app_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订阅订单表';
 
 -- 初始化数据
