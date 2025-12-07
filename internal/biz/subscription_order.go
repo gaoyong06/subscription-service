@@ -18,6 +18,8 @@ type SubscriptionOrder struct {
 	PlanID        string
 	AppID         string // 应用ID
 	Amount        float64
+	CouponCode    string // 优惠券码（可选）
+	DiscountAmount float64 // 折扣金额（可选）
 	PaymentStatus string // pending, paid
 	CreatedAt     time.Time
 }
@@ -30,8 +32,8 @@ type SubscriptionOrderRepo interface {
 }
 
 // CreateSubscriptionOrder 创建订阅订单
-func (uc *SubscriptionUsecase) CreateSubscriptionOrder(ctx context.Context, userID uint64, planID, method, region string) (*SubscriptionOrder, string, string, string, string, error) {
-	uc.log.Infof("CreateSubscriptionOrder: userID=%d, planID=%s, method=%s, region=%s", userID, planID, method, region)
+func (uc *SubscriptionUsecase) CreateSubscriptionOrder(ctx context.Context, userID uint64, planID, method, region, couponCode string) (*SubscriptionOrder, string, string, string, string, error) {
+	uc.log.Infof("CreateSubscriptionOrder: userID=%d, planID=%s, method=%s, region=%s, couponCode=%s", userID, planID, method, region, couponCode)
 
 	// 验证 region
 	if !constants.SupportedRegions[region] {
@@ -62,16 +64,40 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrder(ctx context.Context, user
 		return nil, "", "", "", "", pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodePlanNotFound)
 	}
 
-	// 3. 创建本地订单
+	// 3. 验证优惠券（如果提供）
+	finalAmount := pricing.Price
+	discountAmount := 0.0
+	if couponCode != "" {
+		uc.log.Infof("Validating coupon: code=%s, appID=%s, amount=%.2f", couponCode, plan.AppID, pricing.Price)
+		// 将金额转换为分（int64）
+		amountInCents := int64(pricing.Price * 100)
+		couponValidation, err := uc.marketingClient.ValidateCoupon(ctx, couponCode, plan.AppID, amountInCents)
+		if err != nil {
+			uc.log.Errorf("Failed to validate coupon: %v", err)
+			return nil, "", "", "", "", pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeCouponInvalid)
+		}
+		if !couponValidation.Valid {
+			uc.log.Warnf("Coupon validation failed: %s", couponValidation.Message)
+			return nil, "", "", "", "", pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeCouponInvalid)
+		}
+		// 将折扣金额从分转换为元
+		discountAmount = float64(couponValidation.DiscountAmount) / 100.0
+		finalAmount = float64(couponValidation.FinalAmount) / 100.0
+		uc.log.Infof("Coupon validated: discount=%.2f, finalAmount=%.2f", discountAmount, finalAmount)
+	}
+
+	// 4. 创建本地订单
 	orderID := fmt.Sprintf("SUB%d%d", time.Now().UnixNano(), userID)
 	order := &SubscriptionOrder{
-		ID:            orderID,
-		UserID:        userID,
-		PlanID:        planID,
-		AppID:         plan.AppID, // 保存 app_id
-		Amount:        pricing.Price,
-		PaymentStatus: "pending",
-		CreatedAt:     time.Now().UTC(),
+		ID:             orderID,
+		UserID:         userID,
+		PlanID:         planID,
+		AppID:          plan.AppID, // 保存 app_id
+		Amount:         pricing.Price,
+		CouponCode:     couponCode,
+		DiscountAmount: discountAmount,
+		PaymentStatus:  "pending",
+		CreatedAt:      time.Now().UTC(),
 	}
 	if err := uc.orderRepo.CreateOrder(ctx, order); err != nil {
 		uc.log.Errorf("Failed to create order: %v", err)
@@ -79,7 +105,7 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrder(ctx context.Context, user
 	}
 	uc.log.Infof("Created order: %s", orderID)
 
-	// 4. 调用支付服务
+	// 5. 调用支付服务
 	// 从配置中获取 ReturnURL
 	returnURL := ""
 	if uc.config != nil && uc.config.GetSubscription() != nil {
@@ -101,8 +127,9 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrder(ctx context.Context, user
 		uc.log.Warnf("Plan %s has no app_id, using empty string", planID)
 	}
 
-	uc.log.Infof("Calling payment service: orderID=%s, appID=%s, amount=%.2f %s, method=%s", orderID, appID, pricing.Price, pricing.Currency, method)
-	paymentID, payUrl, payCode, payParams, err := uc.paymentClient.CreatePayment(ctx, orderID, userID, appID, pricing.Price, pricing.Currency, method, subject, returnURL)
+	uc.log.Infof("Calling payment service: orderID=%s, appID=%s, amount=%.2f %s, method=%s, finalAmount=%.2f", orderID, appID, pricing.Price, pricing.Currency, method, finalAmount)
+	// 使用折扣后的金额创建支付
+	paymentID, payUrl, payCode, payParams, err := uc.paymentClient.CreatePayment(ctx, orderID, userID, appID, finalAmount, pricing.Currency, method, subject, returnURL)
 	if err != nil {
 		uc.log.Errorf("Failed to create payment: %v", err)
 		return nil, "", "", "", "", pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodePaymentFailed)
@@ -113,8 +140,8 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrder(ctx context.Context, user
 }
 
 // HandlePaymentSuccess 处理支付成功回调
-func (uc *SubscriptionUsecase) HandlePaymentSuccess(ctx context.Context, orderID string, amount float64) error {
-	uc.log.Infof("HandlePaymentSuccess: orderID=%s, amount=%.2f", orderID, amount)
+func (uc *SubscriptionUsecase) HandlePaymentSuccess(ctx context.Context, orderID, paymentID string, amount float64) error {
+	uc.log.Infof("HandlePaymentSuccess: orderID=%s, paymentID=%s, amount=%.2f", orderID, paymentID, amount)
 
 	// 使用事务确保数据一致性
 	return uc.withTransaction(ctx, func(ctx context.Context) error {
@@ -137,7 +164,23 @@ func (uc *SubscriptionUsecase) HandlePaymentSuccess(ctx context.Context, orderID
 		}
 		uc.log.Infof("Order updated to paid status")
 
-		// 3. 获取套餐时长
+		// 3. 使用优惠券（如果订单使用了优惠券）
+		if order.CouponCode != "" {
+			// 将金额转换为分（int64）
+			originalAmount := int64(order.Amount * 100)
+			discountAmount := int64(order.DiscountAmount * 100)
+			finalAmount := int64(amount * 100)
+			uc.log.Infof("Using coupon: code=%s, originalAmount=%d, discountAmount=%d, finalAmount=%d", order.CouponCode, originalAmount, discountAmount, finalAmount)
+			if err := uc.marketingClient.UseCoupon(ctx, order.CouponCode, order.UserID, orderID, paymentID, originalAmount, discountAmount, finalAmount); err != nil {
+				uc.log.Errorf("Failed to use coupon: %v", err)
+				// 优惠券使用失败不影响订阅激活，只记录日志
+				// 可以考虑发送告警或记录到失败表
+			} else {
+				uc.log.Infof("Coupon used successfully: code=%s", order.CouponCode)
+			}
+		}
+
+		// 4. 获取套餐时长
 		plan, err := uc.planRepo.GetPlan(ctx, order.PlanID)
 		if err != nil {
 			uc.log.Errorf("Failed to get plan: %v", err)
@@ -145,7 +188,7 @@ func (uc *SubscriptionUsecase) HandlePaymentSuccess(ctx context.Context, orderID
 		}
 		uc.log.Infof("Found plan: %s, duration: %d days", plan.Name, plan.DurationDays)
 
-		// 4. 更新或创建用户订阅
+		// 5. 更新或创建用户订阅
 		sub, err := uc.subRepo.GetSubscription(ctx, order.UserID)
 		now := time.Now().UTC()
 

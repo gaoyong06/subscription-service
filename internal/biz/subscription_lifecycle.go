@@ -172,7 +172,7 @@ func (uc *SubscriptionUsecase) ProcessAutoRenewals(ctx context.Context, daysBefo
 			uc.log.Infof("[DRY RUN] Would renew subscription for user %d, plan %s", sub.UserID, sub.PlanID)
 		} else {
 			// 实际执行续费（使用默认区域定价）
-			order, paymentID, _, _, _, err := uc.CreateSubscriptionOrder(ctx, sub.UserID, sub.PlanID, "auto", "default")
+			order, paymentID, _, _, _, err := uc.CreateSubscriptionOrder(ctx, sub.UserID, sub.PlanID, "auto", "default", "")
 			if err != nil {
 				result.Success = false
 				result.ErrorMessage = err.Error()
@@ -189,7 +189,7 @@ func (uc *SubscriptionUsecase) ProcessAutoRenewals(ctx context.Context, daysBefo
 				// 如果是自动续费，直接处理支付成功（模拟自动扣款）
 				// 实际生产环境中，这里应该调用支付服务的自动扣款接口
 				// 这里简化处理，假设自动扣款成功
-				if err := uc.HandlePaymentSuccess(ctx, order.ID, order.Amount); err != nil {
+				if err := uc.HandlePaymentSuccess(ctx, order.ID, paymentID, order.Amount); err != nil {
 					uc.log.Errorf("Failed to handle payment success for order %s: %v", order.ID, err)
 					result.ErrorMessage = "order created but payment failed: " + err.Error()
 					result.Success = false

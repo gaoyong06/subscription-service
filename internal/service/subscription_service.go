@@ -162,7 +162,7 @@ func (s *SubscriptionService) CreateSubscriptionOrder(ctx context.Context, req *
 	if !constants.SupportedRegions[region] {
 		region = "default"
 	}
-	order, paymentID, payUrl, payCode, payParams, err := s.uc.CreateSubscriptionOrder(ctx, req.Uid, req.PlanId, req.PaymentMethod, region)
+	order, paymentID, payUrl, payCode, payParams, err := s.uc.CreateSubscriptionOrder(ctx, req.Uid, req.PlanId, req.PaymentMethod, region, req.CouponCode)
 	if err != nil {
 		return nil, err
 	}
@@ -179,7 +179,7 @@ func (s *SubscriptionService) CreateSubscriptionOrder(ctx context.Context, req *
 // HandlePaymentSuccess 处理支付成功回调
 // 接收支付成功通知，更新订单状态，激活或续费用户订阅
 func (s *SubscriptionService) HandlePaymentSuccess(ctx context.Context, req *pb.HandlePaymentSuccessRequest) (*pb.HandlePaymentSuccessReply, error) {
-	err := s.uc.HandlePaymentSuccess(ctx, req.OrderId, req.Amount)
+	err := s.uc.HandlePaymentSuccess(ctx, req.OrderId, req.PaymentId, req.Amount)
 	if err != nil {
 		return &pb.HandlePaymentSuccessReply{Success: false}, err
 	}

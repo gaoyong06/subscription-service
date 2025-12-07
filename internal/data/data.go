@@ -27,6 +27,7 @@ var ProviderSet = wire.NewSet(
 	NewSubscriptionOrderRepo,
 	NewSubscriptionHistoryRepo,
 	NewPaymentClient,
+	NewMarketingClient,
 	wire.Bind(new(biz.Transaction), new(*Data)),
 )
 

@@ -1438,6 +1438,8 @@ func (m *CreateSubscriptionOrderRequest) validate(all bool) error {
 
 	// no validation rules for Region
 
+	// no validation rules for CouponCode
+
 	if len(errors) > 0 {
 		return CreateSubscriptionOrderRequestMultiError(errors)
 	}

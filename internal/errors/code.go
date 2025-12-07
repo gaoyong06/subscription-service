@@ -67,3 +67,13 @@ const (
 	// ErrCodePaymentInvalidAmount 支付金额无效错误
 	ErrCodePaymentInvalidAmount = 130402
 )
+
+// 优惠券模块 (130500-130599)
+const (
+	// ErrCodeCouponInvalid 优惠券无效错误
+	ErrCodeCouponInvalid = 130501
+	// ErrCodeCouponExpired 优惠券已过期错误
+	ErrCodeCouponExpired = 130502
+	// ErrCodeCouponUsed 优惠券已使用错误
+	ErrCodeCouponUsed = 130503
+)

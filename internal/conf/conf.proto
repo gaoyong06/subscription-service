@@ -59,10 +59,16 @@ message Data {
 // 客户端配置（外部依赖服务）
 message Client {
   PaymentService payment_service = 1;
+  MarketingService marketing_service = 2;
 }
 
 // 支付服务配置
 message PaymentService {
+  string addr = 1;
+}
+
+// 营销服务配置
+message MarketingService {
   string addr = 1;
 }
 
