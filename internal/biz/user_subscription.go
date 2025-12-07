@@ -42,33 +42,17 @@ type PaymentClient interface {
 	CreatePayment(ctx context.Context, orderID string, userID uint64, appID string, amount float64, currency, method, subject, returnURL string) (paymentID, payUrl, payCode, payParams string, err error)
 }
 
-// MarketingClient 营销服务客户端接口 (防腐层)
-type MarketingClient interface {
-	ValidateCoupon(ctx context.Context, code, appID string, amount int64) (*CouponValidation, error)
-	UseCoupon(ctx context.Context, code string, userID uint64, orderID, paymentID string, originalAmount, discountAmount, finalAmount int64) error
-}
-
-// CouponValidation 优惠券验证结果
-type CouponValidation struct {
-	Valid          bool
-	Message        string
-	DiscountAmount int64 // 折扣金额(分)
-	FinalAmount    int64 // 最终金额(分)
-	CouponCode     string
-}
-
 // SubscriptionUsecase 订阅业务逻辑
 type SubscriptionUsecase struct {
-	planRepo        PlanRepo
-	subRepo         UserSubscriptionRepo
-	orderRepo       SubscriptionOrderRepo
-	historyRepo     SubscriptionHistoryRepo
-	paymentClient   PaymentClient
-	marketingClient MarketingClient
-	tm              Transaction // 事务管理器
-	rs              *redsync.Redsync
-	config          *conf.Bootstrap
-	log             *log.Helper
+	planRepo      PlanRepo
+	subRepo       UserSubscriptionRepo
+	orderRepo     SubscriptionOrderRepo
+	historyRepo   SubscriptionHistoryRepo
+	paymentClient PaymentClient
+	tm            Transaction // 事务管理器
+	rs            *redsync.Redsync
+	config        *conf.Bootstrap
+	log           *log.Helper
 }
 
 // NewSubscriptionUsecase 创建订阅业务用例
@@ -78,23 +62,21 @@ func NewSubscriptionUsecase(
 	orderRepo SubscriptionOrderRepo,
 	historyRepo SubscriptionHistoryRepo,
 	paymentClient PaymentClient,
-	marketingClient MarketingClient,
 	tm Transaction,
 	rs *redsync.Redsync,
 	config *conf.Bootstrap,
 	logger log.Logger,
 ) *SubscriptionUsecase {
 	return &SubscriptionUsecase{
-		planRepo:        planRepo,
-		subRepo:         subRepo,
-		orderRepo:       orderRepo,
-		historyRepo:     historyRepo,
-		paymentClient:   paymentClient,
-		marketingClient: marketingClient,
-		tm:              tm,
-		rs:              rs,
-		config:          config,
-		log:             log.NewHelper(logger),
+		planRepo:      planRepo,
+		subRepo:       subRepo,
+		orderRepo:     orderRepo,
+		historyRepo:   historyRepo,
+		paymentClient: paymentClient,
+		tm:            tm,
+		rs:            rs,
+		config:        config,
+		log:           log.NewHelper(logger),
 	}
 }
 

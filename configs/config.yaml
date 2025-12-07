@@ -26,8 +26,6 @@ data:
 client:
   payment_service:
     addr: localhost:9101
-  marketing_service:
-    addr: localhost:9105
 
 subscription:
   return_url: "http://localhost:8080/subscription/success"

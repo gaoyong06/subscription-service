@@ -183,7 +183,6 @@ message CreateSubscriptionOrderRequest {
   string plan_id = 2 [(validate.rules).string = {min_len: 1, max_len: 50}];
   string payment_method = 3 [(validate.rules).string = {in: ["alipay", "wechatpay"]}]; // alipay, wechatpay
   string region = 4; // 区域代码 (e.g., "CN", "US", "EU")，可选，默认 "default"
-  string coupon_code = 5; // 优惠券码（可选）
 }
 
 message CreateSubscriptionOrderReply {
