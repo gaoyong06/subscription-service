@@ -705,7 +705,6 @@ type CreateSubscriptionOrderRequest struct {
 	PlanId        string                 `protobuf:"bytes,2,opt,name=plan_id,json=planId,proto3" json:"plan_id,omitempty"`
 	PaymentMethod string                 `protobuf:"bytes,3,opt,name=payment_method,json=paymentMethod,proto3" json:"payment_method,omitempty"` // alipay, wechatpay
 	Region        string                 `protobuf:"bytes,4,opt,name=region,proto3" json:"region,omitempty"`                                    // 区域代码 (e.g., "CN", "US", "EU")，可选，默认 "default"
-	CouponCode    string                 `protobuf:"bytes,5,opt,name=coupon_code,json=couponCode,proto3" json:"coupon_code,omitempty"`          // 优惠券码（可选）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -764,13 +763,6 @@ func (x *CreateSubscriptionOrderRequest) GetPaymentMethod() string {
 func (x *CreateSubscriptionOrderRequest) GetRegion() string {
 	if x != nil {
 		return x.Region
-	}
-	return ""
-}
-
-func (x *CreateSubscriptionOrderRequest) GetCouponCode() string {
-	if x != nil {
-		return x.CouponCode
 	}
 	return ""
 }
@@ -2163,14 +2155,12 @@ const file_subscription_proto_rawDesc = "" +
 	"\bend_time\x18\x04 \x01(\x03R\aendTime\x12\x16\n" +
 	"\x06status\x18\x05 \x01(\tR\x06status\x12\x1d\n" +
 	"\n" +
-	"auto_renew\x18\x06 \x01(\bR\tautoRenew\"\xd9\x01\n" +
+	"auto_renew\x18\x06 \x01(\bR\tautoRenew\"\xb8\x01\n" +
 	"\x1eCreateSubscriptionOrderRequest\x12\x19\n" +
 	"\x03uid\x18\x01 \x01(\x04B\a\xfaB\x042\x02 \x00R\x03uid\x12\"\n" +
 	"\aplan_id\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x182R\x06planId\x12?\n" +
 	"\x0epayment_method\x18\x03 \x01(\tB\x18\xfaB\x15r\x13R\x06alipayR\twechatpayR\rpaymentMethod\x12\x16\n" +
-	"\x06region\x18\x04 \x01(\tR\x06region\x12\x1f\n" +
-	"\vcoupon_code\x18\x05 \x01(\tR\n" +
-	"couponCode\"\xab\x01\n" +
+	"\x06region\x18\x04 \x01(\tR\x06region\"\xab\x01\n" +
 	"\x1cCreateSubscriptionOrderReply\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\tR\aorderId\x12\x1d\n" +
 	"\n" +

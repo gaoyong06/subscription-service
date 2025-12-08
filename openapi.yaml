@@ -484,8 +484,6 @@ components:
                     type: string
                 region:
                     type: string
-                couponCode:
-                    type: string
         DeletePlanReply:
             type: object
             properties:

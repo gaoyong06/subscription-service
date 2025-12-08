@@ -394,8 +394,6 @@ components:
                     type: string
                 region:
                     type: string
-                couponCode:
-                    type: string
         subscription.v1.DeletePlanReply:
             type: object
             properties:
