@@ -171,8 +171,6 @@ func (m *ListPlansRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for AppId
-
 	if len(errors) > 0 {
 		return ListPlansRequestMultiError(errors)
 	}
@@ -272,17 +270,6 @@ func (m *CreatePlanRequest) validate(all bool) error {
 	}
 
 	var errors []error
-
-	if utf8.RuneCountInString(m.GetAppId()) < 1 {
-		err := CreatePlanRequestValidationError{
-			field:  "AppId",
-			reason: "value length must be at least 1 runes",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
 
 	if l := utf8.RuneCountInString(m.GetName()); l < 1 || l > 100 {
 		err := CreatePlanRequestValidationError{
