@@ -35,7 +35,7 @@ func NewPaymentClient(c *conf.Bootstrap) (biz.PaymentClient, error) {
 	}, nil
 }
 
-func (c *paymentServiceClient) CreatePayment(ctx context.Context, orderID string, userID uint64, appID string, amount float64, currency, method, subject, returnURL string) (string, string, string, string, error) {
+func (c *paymentServiceClient) CreatePayment(ctx context.Context, orderID string, userID uint64, amount float64, currency, method, subject, returnURL string) (string, string, string, string, error) {
 	// 验证必填参数
 	if currency == "" {
 		return "", "", "", "", fmt.Errorf("currency is required")
@@ -53,9 +53,9 @@ func (c *paymentServiceClient) CreatePayment(ctx context.Context, orderID string
 	}
 
 	req := &paymentv1.CreatePaymentRequest{
-		OrderId:   orderID,
-		UserId:    userID,
-		AppId:     appID, // 传递应用ID（注意：此字段已从 proto 移除，但生成的代码可能仍存在，需要重新生成 proto）
+		OrderId: orderID,
+		UserId:  userID,
+		// 注意：appId 现在只从 Context 获取（由中间件从 Header/metadata 提取），不再从请求体传递
 		Source:    constants.PaymentSourceSubscription, // 标记来源为订阅
 		Amount:    int64(amount),
 		Currency:  currency,

@@ -139,7 +139,8 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrderWithContext(ctx context.Co
 	}
 
 	uc.log.Infof("Calling payment service: orderID=%s, appID=%s, amount=%.2f %s, method=%s", orderID, appID, pricing.Price, pricing.Currency, method)
-	paymentID, payUrl, payCode, payParams, err := uc.paymentClient.CreatePayment(ctx, orderID, userID, appID, pricing.Price, pricing.Currency, method, subject, returnURL)
+	// 注意：appId 现在只从 Context 获取（由中间件从 Header/metadata 提取），不再作为参数传递
+	paymentID, payUrl, payCode, payParams, err := uc.paymentClient.CreatePayment(ctx, orderID, userID, pricing.Price, pricing.Currency, method, subject, returnURL)
 	if err != nil {
 		uc.log.Errorf("Failed to create payment: %v", err)
 		return nil, "", "", "", "", pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodePaymentFailed)
