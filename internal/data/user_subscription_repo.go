@@ -60,16 +60,17 @@ func (r *subscriptionRepo) GetSubscription(ctx context.Context, userID uint64) (
 	}
 
 	sub := &biz.UserSubscription{
-		ID:        m.SubscriptionID,
-		UserID:    m.UID,
-		PlanID:    m.PlanID,
-		StartTime: m.StartTime,
-		EndTime:   m.EndTime,
-		Status:    m.Status,
-		OrderID:   m.OrderID,
-		AutoRenew: m.AutoRenew,
-		CreatedAt: m.CreatedAt,
-		UpdatedAt: m.UpdatedAt,
+		SubscriptionID: m.SubscriptionID,
+		UserID:         m.UID,
+		PlanID:         m.PlanID,
+		AppID:          m.AppID,
+		StartTime:      m.StartTime,
+		EndTime:        m.EndTime,
+		Status:         m.Status,
+		OrderID:        m.OrderID,
+		IsAutoRenew:    m.IsAutoRenew,
+		CreatedAt:      m.CreatedAt,
+		UpdatedAt:      m.UpdatedAt,
 	}
 
 	// 3. 写入 Redis 缓存 (1小时 + 随机时间,防止缓存雪崩)
@@ -87,15 +88,28 @@ func (r *subscriptionRepo) GetSubscription(ctx context.Context, userID uint64) (
 
 // SaveSubscription 保存订阅
 func (r *subscriptionRepo) SaveSubscription(ctx context.Context, sub *biz.UserSubscription) error {
+	// 如果 AppID 为空，从 plan 表获取
+	appID := sub.AppID
+	if appID == "" && sub.PlanID != "" {
+		// 通过 plan_id 查询 plan 表获取 app_id
+		var plan model.Plan
+		if err := r.data.db.WithContext(ctx).Where("plan_id = ?", sub.PlanID).First(&plan).Error; err == nil {
+			appID = plan.AppID
+		} else {
+			r.log.Warnf("Failed to get plan for app_id: %v, will use empty string", err)
+		}
+	}
+
 	m := &model.UserSubscription{
-		SubscriptionID: sub.ID,
+		SubscriptionID: sub.SubscriptionID,
 		UID:            sub.UserID,
 		PlanID:         sub.PlanID,
+		AppID:          appID,
 		StartTime:      sub.StartTime,
 		EndTime:        sub.EndTime,
 		Status:         sub.Status,
 		OrderID:        sub.OrderID,
-		AutoRenew:      sub.AutoRenew,
+		IsAutoRenew:    sub.IsAutoRenew,
 		CreatedAt:      sub.CreatedAt,
 		UpdatedAt:      sub.UpdatedAt,
 	}
@@ -103,8 +117,8 @@ func (r *subscriptionRepo) SaveSubscription(ctx context.Context, sub *biz.UserSu
 		r.log.Errorf("Failed to save subscription for user %d: %v", sub.UserID, err)
 		return err
 	}
-	// 更新 biz 对象的 ID（如果是新创建的）
-	sub.ID = m.SubscriptionID
+	// 更新 biz 对象的 SubscriptionID（如果是新创建的）
+	sub.SubscriptionID = m.SubscriptionID
 
 	// 删除缓存
 	cacheKey := fmt.Sprintf("subscription:user:%d", sub.UserID)
@@ -127,7 +141,7 @@ func (r *subscriptionRepo) GetExpiringSubscriptions(ctx context.Context, daysBef
 
 	// 获取总数
 	if err := r.data.db.WithContext(ctx).Model(&model.UserSubscription{}).
-		Where("end_time BETWEEN ? AND ? AND status = ?", now, expiryDate, "active").
+		Where("end_time BETWEEN ? AND ? AND status = ?", now, expiryDate, constants.StatusActive).
 		Count(&total).Error; err != nil {
 		r.log.Errorf("Failed to count expiring subscriptions: %v", err)
 		return nil, 0, err
@@ -136,7 +150,7 @@ func (r *subscriptionRepo) GetExpiringSubscriptions(ctx context.Context, daysBef
 	// 分页查询
 	offset := (page - 1) * pageSize
 	if err := r.data.db.WithContext(ctx).
-		Where("end_time BETWEEN ? AND ? AND status = ?", now, expiryDate, "active").
+		Where("end_time BETWEEN ? AND ? AND status = ?", now, expiryDate, constants.StatusActive).
 		Order("end_time ASC").
 		Limit(pageSize).
 		Offset(offset).
@@ -149,16 +163,16 @@ func (r *subscriptionRepo) GetExpiringSubscriptions(ctx context.Context, daysBef
 	subscriptions := make([]*biz.UserSubscription, len(models))
 	for i, m := range models {
 		subscriptions[i] = &biz.UserSubscription{
-			ID:        m.SubscriptionID,
-			UserID:    m.UID,
-			PlanID:    m.PlanID,
-			StartTime: m.StartTime,
-			EndTime:   m.EndTime,
-			Status:    m.Status,
-			OrderID:   m.OrderID,
-			AutoRenew: m.AutoRenew,
-			CreatedAt: m.CreatedAt,
-			UpdatedAt: m.UpdatedAt,
+			SubscriptionID: m.SubscriptionID,
+			UserID:         m.UID,
+			PlanID:         m.PlanID,
+			StartTime:      m.StartTime,
+			EndTime:        m.EndTime,
+			Status:         m.Status,
+			OrderID:        m.OrderID,
+			IsAutoRenew:    m.IsAutoRenew,
+			CreatedAt:      m.CreatedAt,
+			UpdatedAt:      m.UpdatedAt,
 		}
 	}
 
@@ -172,7 +186,7 @@ func (r *subscriptionRepo) UpdateExpiredSubscriptions(ctx context.Context) (int,
 	// 先查询需要更新的订阅
 	var subscriptions []model.UserSubscription
 	if err := r.data.db.WithContext(ctx).
-		Where("end_time < ? AND status = ?", now, "active").
+		Where("end_time < ? AND status = ?", now, constants.StatusActive).
 		Find(&subscriptions).Error; err != nil {
 		r.log.Errorf("Failed to query expired subscriptions: %v", err)
 		return 0, nil, err
@@ -190,8 +204,8 @@ func (r *subscriptionRepo) UpdateExpiredSubscriptions(ctx context.Context) (int,
 
 	// 批量更新状态
 	result := r.data.db.WithContext(ctx).Model(&model.UserSubscription{}).
-		Where("end_time < ? AND status = ?", now, "active").
-		Update("status", "expired")
+		Where("end_time < ? AND status = ?", now, constants.StatusActive).
+		Update("status", constants.StatusExpired)
 
 	if result.Error != nil {
 		r.log.Errorf("Failed to update expired subscriptions: %v", result.Error)
@@ -211,7 +225,7 @@ func (r *subscriptionRepo) GetAutoRenewSubscriptions(ctx context.Context, daysBe
 
 	// 查询即将过期且开启了自动续费的订阅
 	if err := r.data.db.WithContext(ctx).
-		Where("end_time BETWEEN ? AND ? AND status = ? AND auto_renew = ?",
+		Where("end_time BETWEEN ? AND ? AND status = ? AND is_auto_renew = ?",
 			now, expiryDate, "active", true).
 		Order("end_time ASC").
 		Find(&models).Error; err != nil {
@@ -223,16 +237,16 @@ func (r *subscriptionRepo) GetAutoRenewSubscriptions(ctx context.Context, daysBe
 	subscriptions := make([]*biz.UserSubscription, len(models))
 	for i, m := range models {
 		subscriptions[i] = &biz.UserSubscription{
-			ID:        m.SubscriptionID,
-			UserID:    m.UID,
-			PlanID:    m.PlanID,
-			StartTime: m.StartTime,
-			EndTime:   m.EndTime,
-			Status:    m.Status,
-			OrderID:   m.OrderID,
-			AutoRenew: m.AutoRenew,
-			CreatedAt: m.CreatedAt,
-			UpdatedAt: m.UpdatedAt,
+			SubscriptionID: m.SubscriptionID,
+			UserID:         m.UID,
+			PlanID:         m.PlanID,
+			StartTime:      m.StartTime,
+			EndTime:        m.EndTime,
+			Status:         m.Status,
+			OrderID:        m.OrderID,
+			IsAutoRenew:    m.IsAutoRenew,
+			CreatedAt:      m.CreatedAt,
+			UpdatedAt:      m.UpdatedAt,
 		}
 	}
 

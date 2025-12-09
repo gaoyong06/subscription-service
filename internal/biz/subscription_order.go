@@ -13,12 +13,13 @@ import (
 
 // SubscriptionOrder 简易订单记录 (用于记录订阅购买请求)
 type SubscriptionOrder struct {
-	ID            string
-	UserID        uint64
+	OrderID       string
+	PaymentID     string // 支付流水号(payment-service返回的payment_id，用于追溯支付记录)
+	UID           uint64
 	PlanID        string
 	AppID         string // 应用ID
 	Amount        float64
-	PaymentStatus string // pending, paid
+	PaymentStatus string // pending, success, failed, closed, refunded, partially_refunded (与payment-service保持一致)
 	CreatedAt     time.Time
 }
 
@@ -29,17 +30,44 @@ type SubscriptionOrderRepo interface {
 	UpdateOrder(ctx context.Context, order *SubscriptionOrder) error
 }
 
-// CreateSubscriptionOrder 创建订阅订单
+// CreateSubscriptionOrder 创建订阅订单（保持向后兼容）
+// region 参数为可选，如果为空则使用默认值
 func (uc *SubscriptionUsecase) CreateSubscriptionOrder(ctx context.Context, userID uint64, planID, method, region string) (*SubscriptionOrder, string, string, string, string, error) {
+	return uc.CreateSubscriptionOrderWithContext(ctx, userID, planID, method, region, "", "", "")
+}
+
+// CreateSubscriptionOrderWithContext 创建订阅订单（支持自动地区推断）
+// region 参数为可选，如果为空则自动推断
+// clientIP, acceptLanguage, xLanguage 用于地区推断
+func (uc *SubscriptionUsecase) CreateSubscriptionOrderWithContext(ctx context.Context, userID uint64, planID, method, region, clientIP, acceptLanguage, xLanguage string) (*SubscriptionOrder, string, string, string, string, error) {
 	uc.log.Infof("CreateSubscriptionOrder: userID=%d, planID=%s, method=%s, region=%s", userID, planID, method, region)
 
-	// 验证 region
-	if !constants.SupportedRegions[region] {
-		uc.log.Warnf("Unsupported region: %s, using default", region)
-		region = "default"
+	// 如果 region 为空，自动推断
+	if region == "" {
+		if uc.regionDetectionSvc != nil {
+			detectedRegion, err := uc.regionDetectionSvc.DetectRegion(ctx, userID, clientIP, acceptLanguage, xLanguage)
+			if err != nil {
+				uc.log.Warnf("Failed to detect region, using default: %v", err)
+				region = "default"
+			} else {
+				region = detectedRegion
+				uc.log.Infof("Auto-detected region: %s", region)
+			}
+		} else {
+			// 如果没有配置地区推断服务，使用默认值
+			region = "default"
+			uc.log.Infof("Region detection service not configured, using default region")
+		}
+	} else {
+		// 如果提供了 region，验证是否支持
+		if !constants.SupportedRegions[region] {
+			uc.log.Warnf("Unsupported region: %s, using default", region)
+			region = "default"
+		}
 	}
 
-	// 1. 获取套餐区域定价
+	// 1. 获取套餐区域定价（从数据库查询，所有价格都在数据库中配置）
+	// region 是国家代码（ISO 3166-1 alpha-2），如 CN, US, DE 等
 	pricing, err := uc.GetPlanPricing(ctx, planID, region)
 	if err != nil {
 		uc.log.Errorf("Failed to get plan pricing: %v", err)
@@ -49,7 +77,7 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrder(ctx context.Context, user
 		uc.log.Errorf("Plan pricing not found: %s", planID)
 		return nil, "", "", "", "", pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodePlanNotFound)
 	}
-	uc.log.Infof("Found plan pricing: region=%s, price=%.2f %s", pricing.Region, pricing.Price, pricing.Currency)
+	uc.log.Infof("Found plan pricing: countryCode=%s, price=%.2f %s", pricing.CountryCode, pricing.Price, pricing.Currency)
 
 	// 2. 获取套餐信息（用于获取 app_id 和名称）
 	plan, err := uc.planRepo.GetPlan(ctx, planID)
@@ -65,12 +93,13 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrder(ctx context.Context, user
 	// 3. 创建本地订单
 	orderID := fmt.Sprintf("SUB%d%d", time.Now().UnixNano(), userID)
 	order := &SubscriptionOrder{
-		ID:            orderID,
-		UserID:        userID,
+		OrderID:       orderID,
+		PaymentID:     "", // 初始为空，调用支付服务后更新
+		UID:           userID,
 		PlanID:        planID,
 		AppID:         plan.AppID, // 保存 app_id
 		Amount:        pricing.Price,
-		PaymentStatus: "pending",
+		PaymentStatus: constants.PaymentStatusPending,
 		CreatedAt:     time.Now().UTC(),
 	}
 	if err := uc.orderRepo.CreateOrder(ctx, order); err != nil {
@@ -109,6 +138,13 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrder(ctx context.Context, user
 	}
 	uc.log.Infof("Payment created: paymentID=%s", paymentID)
 
+	// 5. 更新订单，保存 payment_id
+	order.PaymentID = paymentID
+	if err := uc.orderRepo.UpdateOrder(ctx, order); err != nil {
+		uc.log.Errorf("Failed to update order with payment_id: %v", err)
+		// 不影响主流程，只记录日志
+	}
+
 	return order, paymentID, payUrl, payCode, payParams, nil
 }
 
@@ -124,13 +160,13 @@ func (uc *SubscriptionUsecase) HandlePaymentSuccess(ctx context.Context, orderID
 			uc.log.Errorf("Failed to get order: %v", err)
 			return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodeOrderNotFound)
 		}
-		if order.PaymentStatus == "paid" {
+		if order.PaymentStatus == constants.PaymentStatusSuccess {
 			uc.log.Infof("Order already paid, skipping (idempotent)")
 			return nil // 幂等
 		}
 
 		// 2. 更新订单状态
-		order.PaymentStatus = "paid"
+		order.PaymentStatus = constants.PaymentStatusSuccess
 		if err := uc.orderRepo.UpdateOrder(ctx, order); err != nil {
 			uc.log.Errorf("Failed to update order: %v", err)
 			return err
@@ -146,25 +182,30 @@ func (uc *SubscriptionUsecase) HandlePaymentSuccess(ctx context.Context, orderID
 		uc.log.Infof("Found plan: %s, duration: %d days", plan.Name, plan.DurationDays)
 
 		// 4. 更新或创建用户订阅
-		sub, err := uc.subRepo.GetSubscription(ctx, order.UserID)
+		sub, err := uc.subRepo.GetSubscription(ctx, order.UID)
 		now := time.Now().UTC()
 
 		if sub == nil {
 			// 新订阅
-			uc.log.Infof("Creating new subscription for user %d", order.UserID)
+			uc.log.Infof("Creating new subscription for user %d", order.UID)
 			sub = &UserSubscription{
-				UserID:    order.UserID,
+				UserID:    order.UID,
 				PlanID:    order.PlanID,
+				AppID:     order.AppID, // 从订单中获取 app_id
 				StartTime: now,
 				EndTime:   now.AddDate(0, 0, plan.DurationDays),
 				Status:    constants.StatusActive,
-				OrderID:   order.ID,
+				OrderID:   order.OrderID,
 				CreatedAt: now,
 				UpdatedAt: now,
 			}
 		} else {
 			// 续费
-			uc.log.Infof("Renewing subscription for user %d, current end time: %v", order.UserID, sub.EndTime)
+			uc.log.Infof("Renewing subscription for user %d, current end time: %v", order.UID, sub.EndTime)
+			// 更新 app_id（如果为空或需要更新）
+			if sub.AppID == "" || sub.AppID != order.AppID {
+				sub.AppID = order.AppID
+			}
 			if sub.EndTime.Before(now) {
 				sub.StartTime = now
 				sub.EndTime = now.AddDate(0, 0, plan.DurationDays)
@@ -173,7 +214,7 @@ func (uc *SubscriptionUsecase) HandlePaymentSuccess(ctx context.Context, orderID
 			}
 			sub.PlanID = order.PlanID // 更新为最新购买的套餐
 			sub.Status = constants.StatusActive
-			sub.OrderID = order.ID // 更新为最新订单ID
+			sub.OrderID = order.OrderID // 更新为最新订单ID
 			sub.UpdatedAt = now
 		}
 
@@ -185,13 +226,14 @@ func (uc *SubscriptionUsecase) HandlePaymentSuccess(ctx context.Context, orderID
 
 		// 记录历史
 		action := constants.ActionCreated
-		if sub.ID > 0 {
+		if sub.SubscriptionID > 0 {
 			action = constants.ActionRenewed
 		}
 		history := &SubscriptionHistory{
-			UserID:    order.UserID,
-			PlanID:    plan.ID,
+			UID:       order.UID,
+			PlanID:    plan.PlanID,
 			PlanName:  plan.Name,
+			AppID:     plan.AppID,
 			StartTime: sub.StartTime,
 			EndTime:   sub.EndTime,
 			Status:    sub.Status,

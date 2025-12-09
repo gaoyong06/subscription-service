@@ -25,9 +25,10 @@ func NewSubscriptionHistoryRepo(data *Data, logger log.Logger) biz.SubscriptionH
 // AddSubscriptionHistory 添加订阅历史记录
 func (r *historyRepo) AddSubscriptionHistory(ctx context.Context, history *biz.SubscriptionHistory) error {
 	m := &model.SubscriptionHistory{
-		UserID:    history.UserID,
+		UID:       history.UID,
 		PlanID:    history.PlanID,
 		PlanName:  history.PlanName,
+		AppID:     history.AppID,
 		StartTime: history.StartTime,
 		EndTime:   history.EndTime,
 		Status:    history.Status,
@@ -35,7 +36,7 @@ func (r *historyRepo) AddSubscriptionHistory(ctx context.Context, history *biz.S
 		CreatedAt: history.CreatedAt,
 	}
 	if err := r.data.db.WithContext(ctx).Create(m).Error; err != nil {
-		r.log.Errorf("Failed to add subscription history for user %d: %v", history.UserID, err)
+		r.log.Errorf("Failed to add subscription history for user %d: %v", history.UID, err)
 		return err
 	}
 	return nil
@@ -47,7 +48,7 @@ func (r *historyRepo) GetSubscriptionHistory(ctx context.Context, userID uint64,
 	var total int64
 
 	// 获取总数
-	if err := r.data.db.WithContext(ctx).Model(&model.SubscriptionHistory{}).Where("user_id = ?", userID).Count(&total).Error; err != nil {
+	if err := r.data.db.WithContext(ctx).Model(&model.SubscriptionHistory{}).Where("uid = ?", userID).Count(&total).Error; err != nil {
 		r.log.Errorf("Failed to count subscription history for user %d: %v", userID, err)
 		return nil, 0, err
 	}
@@ -55,7 +56,7 @@ func (r *historyRepo) GetSubscriptionHistory(ctx context.Context, userID uint64,
 	// 分页查询
 	offset := (page - 1) * pageSize
 	if err := r.data.db.WithContext(ctx).
-		Where("user_id = ?", userID).
+		Where("uid = ?", userID).
 		Order("created_at DESC").
 		Limit(pageSize).
 		Offset(offset).
@@ -68,15 +69,16 @@ func (r *historyRepo) GetSubscriptionHistory(ctx context.Context, userID uint64,
 	items := make([]*biz.SubscriptionHistory, len(models))
 	for i, m := range models {
 		items[i] = &biz.SubscriptionHistory{
-			ID:        m.ID,
-			UserID:    m.UserID,
-			PlanID:    m.PlanID,
-			PlanName:  m.PlanName,
-			StartTime: m.StartTime,
-			EndTime:   m.EndTime,
-			Status:    m.Status,
-			Action:    m.Action,
-			CreatedAt: m.CreatedAt,
+			SubscriptionHistoryID: m.SubscriptionHistoryID,
+			UID:                   m.UID,
+			PlanID:                m.PlanID,
+			PlanName:              m.PlanName,
+			AppID:                 m.AppID,
+			StartTime:             m.StartTime,
+			EndTime:               m.EndTime,
+			Status:                m.Status,
+			Action:                m.Action,
+			CreatedAt:             m.CreatedAt,
 		}
 	}
 

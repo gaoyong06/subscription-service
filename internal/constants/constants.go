@@ -66,3 +66,13 @@ const (
 	ActionEnabledAutoRenew  = "enabled_auto_renew"
 	ActionDisabledAutoRenew = "disabled_auto_renew"
 )
+
+// 支付状态(与payment-service保持一致)
+const (
+	PaymentStatusPending           = "pending"            // 待支付(订单已创建，等待支付)
+	PaymentStatusSuccess           = "success"            // 支付成功
+	PaymentStatusFailed            = "failed"             // 支付失败
+	PaymentStatusClosed            = "closed"             // 订单关闭
+	PaymentStatusRefunded          = "refunded"           // 已全额退款
+	PaymentStatusPartiallyRefunded = "partially_refunded" // 部分退款
+)

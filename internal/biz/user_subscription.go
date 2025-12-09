@@ -15,16 +15,17 @@ import (
 
 // UserSubscription 用户订阅记录
 type UserSubscription struct {
-	ID        uint64
-	UserID    uint64
-	PlanID    string
-	StartTime time.Time
-	EndTime   time.Time
-	Status    string // active, expired, paused, cancelled
-	OrderID   string
-	AutoRenew bool
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	SubscriptionID uint64
+	UserID         uint64
+	PlanID         string
+	AppID          string // 应用ID（冗余字段，便于按app统计和查询）
+	StartTime      time.Time
+	EndTime        time.Time
+	Status         string // active, expired, paused, cancelled
+	OrderID        string
+	IsAutoRenew    bool
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
 }
 
 // UserSubscriptionRepo 用户订阅仓库接口
@@ -44,15 +45,16 @@ type PaymentClient interface {
 
 // SubscriptionUsecase 订阅业务逻辑
 type SubscriptionUsecase struct {
-	planRepo      PlanRepo
-	subRepo       UserSubscriptionRepo
-	orderRepo     SubscriptionOrderRepo
-	historyRepo   SubscriptionHistoryRepo
-	paymentClient PaymentClient
-	tm            Transaction // 事务管理器
-	rs            *redsync.Redsync
-	config        *conf.Bootstrap
-	log           *log.Helper
+	planRepo           PlanRepo
+	subRepo            UserSubscriptionRepo
+	orderRepo          SubscriptionOrderRepo
+	historyRepo        SubscriptionHistoryRepo
+	paymentClient      PaymentClient
+	regionDetectionSvc RegionDetectionService // 地区推断服务
+	tm                 Transaction            // 事务管理器
+	rs                 *redsync.Redsync
+	config             *conf.Bootstrap
+	log                *log.Helper
 }
 
 // NewSubscriptionUsecase 创建订阅业务用例
@@ -62,21 +64,23 @@ func NewSubscriptionUsecase(
 	orderRepo SubscriptionOrderRepo,
 	historyRepo SubscriptionHistoryRepo,
 	paymentClient PaymentClient,
+	regionDetectionSvc RegionDetectionService,
 	tm Transaction,
 	rs *redsync.Redsync,
 	config *conf.Bootstrap,
 	logger log.Logger,
 ) *SubscriptionUsecase {
 	return &SubscriptionUsecase{
-		planRepo:      planRepo,
-		subRepo:       subRepo,
-		orderRepo:     orderRepo,
-		historyRepo:   historyRepo,
-		paymentClient: paymentClient,
-		tm:            tm,
-		rs:            rs,
-		config:        config,
-		log:           log.NewHelper(logger),
+		planRepo:           planRepo,
+		subRepo:            subRepo,
+		orderRepo:          orderRepo,
+		historyRepo:        historyRepo,
+		paymentClient:      paymentClient,
+		regionDetectionSvc: regionDetectionSvc,
+		tm:                 tm,
+		rs:                 rs,
+		config:             config,
+		log:                log.NewHelper(logger),
 	}
 }
 
@@ -119,7 +123,7 @@ func (uc *SubscriptionUsecase) CancelSubscription(ctx context.Context, userID ui
 
 		now := time.Now().UTC()
 		sub.Status = constants.StatusCancelled
-		sub.AutoRenew = false // 取消时关闭自动续费
+		sub.IsAutoRenew = false // 取消时关闭自动续费
 		sub.UpdatedAt = now
 
 		if err := uc.subRepo.SaveSubscription(ctx, sub); err != nil {
@@ -129,8 +133,9 @@ func (uc *SubscriptionUsecase) CancelSubscription(ctx context.Context, userID ui
 
 		// 记录历史
 		history := &SubscriptionHistory{
-			UserID:    userID,
+			UID:       userID,
 			PlanID:    sub.PlanID,
+			AppID:     sub.AppID,
 			StartTime: sub.StartTime,
 			EndTime:   sub.EndTime,
 			Status:    sub.Status,
@@ -179,8 +184,9 @@ func (uc *SubscriptionUsecase) PauseSubscription(ctx context.Context, userID uin
 
 		// 记录历史
 		history := &SubscriptionHistory{
-			UserID:    userID,
+			UID:       userID,
 			PlanID:    sub.PlanID,
+			AppID:     sub.AppID,
 			StartTime: sub.StartTime,
 			EndTime:   sub.EndTime,
 			Status:    sub.Status,
@@ -229,8 +235,9 @@ func (uc *SubscriptionUsecase) ResumeSubscription(ctx context.Context, userID ui
 
 		// 记录历史
 		history := &SubscriptionHistory{
-			UserID:    userID,
+			UID:       userID,
 			PlanID:    sub.PlanID,
+			AppID:     sub.AppID,
 			StartTime: sub.StartTime,
 			EndTime:   sub.EndTime,
 			Status:    sub.Status,
@@ -267,7 +274,7 @@ func (uc *SubscriptionUsecase) SetAutoRenew(ctx context.Context, userID uint64, 
 	}
 
 	now := time.Now().UTC()
-	sub.AutoRenew = autoRenew
+	sub.IsAutoRenew = autoRenew
 	sub.UpdatedAt = now
 
 	if err := uc.subRepo.SaveSubscription(ctx, sub); err != nil {

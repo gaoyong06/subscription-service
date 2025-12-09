@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -34,6 +35,10 @@ const (
 	Subscription_CreatePlan_FullMethodName                 = "/subscription.v1.Subscription/CreatePlan"
 	Subscription_UpdatePlan_FullMethodName                 = "/subscription.v1.Subscription/UpdatePlan"
 	Subscription_DeletePlan_FullMethodName                 = "/subscription.v1.Subscription/DeletePlan"
+	Subscription_ListPlanPricings_FullMethodName           = "/subscription.v1.Subscription/ListPlanPricings"
+	Subscription_CreatePlanPricing_FullMethodName          = "/subscription.v1.Subscription/CreatePlanPricing"
+	Subscription_UpdatePlanPricing_FullMethodName          = "/subscription.v1.Subscription/UpdatePlanPricing"
+	Subscription_DeletePlanPricing_FullMethodName          = "/subscription.v1.Subscription/DeletePlanPricing"
 )
 
 // SubscriptionClient is the client API for Subscription service.
@@ -47,17 +52,17 @@ type SubscriptionClient interface {
 	// 创建订阅订单 (调用 Payment Service)
 	CreateSubscriptionOrder(ctx context.Context, in *CreateSubscriptionOrderRequest, opts ...grpc.CallOption) (*CreateSubscriptionOrderReply, error)
 	// 支付回调处理 (通常由 Payment Service 或 MQ 调用)
-	HandlePaymentSuccess(ctx context.Context, in *HandlePaymentSuccessRequest, opts ...grpc.CallOption) (*HandlePaymentSuccessReply, error)
+	HandlePaymentSuccess(ctx context.Context, in *HandlePaymentSuccessRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// 取消订阅
-	CancelSubscription(ctx context.Context, in *CancelSubscriptionRequest, opts ...grpc.CallOption) (*CancelSubscriptionReply, error)
+	CancelSubscription(ctx context.Context, in *CancelSubscriptionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// 暂停订阅
-	PauseSubscription(ctx context.Context, in *PauseSubscriptionRequest, opts ...grpc.CallOption) (*PauseSubscriptionReply, error)
+	PauseSubscription(ctx context.Context, in *PauseSubscriptionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// 恢复订阅
-	ResumeSubscription(ctx context.Context, in *ResumeSubscriptionRequest, opts ...grpc.CallOption) (*ResumeSubscriptionReply, error)
+	ResumeSubscription(ctx context.Context, in *ResumeSubscriptionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// 获取订阅历史记录
 	GetSubscriptionHistory(ctx context.Context, in *GetSubscriptionHistoryRequest, opts ...grpc.CallOption) (*GetSubscriptionHistoryReply, error)
 	// 设置自动续费
-	SetAutoRenew(ctx context.Context, in *SetAutoRenewRequest, opts ...grpc.CallOption) (*SetAutoRenewReply, error)
+	SetAutoRenew(ctx context.Context, in *SetAutoRenewRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// 获取即将过期的订阅（用于定时任务）
 	GetExpiringSubscriptions(ctx context.Context, in *GetExpiringSubscriptionsRequest, opts ...grpc.CallOption) (*GetExpiringSubscriptionsReply, error)
 	// 批量更新过期订阅状态（用于定时任务）
@@ -70,6 +75,14 @@ type SubscriptionClient interface {
 	UpdatePlan(ctx context.Context, in *UpdatePlanRequest, opts ...grpc.CallOption) (*UpdatePlanReply, error)
 	// 删除订阅套餐
 	DeletePlan(ctx context.Context, in *DeletePlanRequest, opts ...grpc.CallOption) (*DeletePlanReply, error)
+	// 获取套餐的区域定价列表
+	ListPlanPricings(ctx context.Context, in *ListPlanPricingsRequest, opts ...grpc.CallOption) (*ListPlanPricingsReply, error)
+	// 创建区域定价
+	CreatePlanPricing(ctx context.Context, in *CreatePlanPricingRequest, opts ...grpc.CallOption) (*CreatePlanPricingReply, error)
+	// 更新区域定价
+	UpdatePlanPricing(ctx context.Context, in *UpdatePlanPricingRequest, opts ...grpc.CallOption) (*UpdatePlanPricingReply, error)
+	// 删除区域定价
+	DeletePlanPricing(ctx context.Context, in *DeletePlanPricingRequest, opts ...grpc.CallOption) (*DeletePlanPricingReply, error)
 }
 
 type subscriptionClient struct {
@@ -110,9 +123,9 @@ func (c *subscriptionClient) CreateSubscriptionOrder(ctx context.Context, in *Cr
 	return out, nil
 }
 
-func (c *subscriptionClient) HandlePaymentSuccess(ctx context.Context, in *HandlePaymentSuccessRequest, opts ...grpc.CallOption) (*HandlePaymentSuccessReply, error) {
+func (c *subscriptionClient) HandlePaymentSuccess(ctx context.Context, in *HandlePaymentSuccessRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(HandlePaymentSuccessReply)
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, Subscription_HandlePaymentSuccess_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -120,9 +133,9 @@ func (c *subscriptionClient) HandlePaymentSuccess(ctx context.Context, in *Handl
 	return out, nil
 }
 
-func (c *subscriptionClient) CancelSubscription(ctx context.Context, in *CancelSubscriptionRequest, opts ...grpc.CallOption) (*CancelSubscriptionReply, error) {
+func (c *subscriptionClient) CancelSubscription(ctx context.Context, in *CancelSubscriptionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(CancelSubscriptionReply)
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, Subscription_CancelSubscription_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -130,9 +143,9 @@ func (c *subscriptionClient) CancelSubscription(ctx context.Context, in *CancelS
 	return out, nil
 }
 
-func (c *subscriptionClient) PauseSubscription(ctx context.Context, in *PauseSubscriptionRequest, opts ...grpc.CallOption) (*PauseSubscriptionReply, error) {
+func (c *subscriptionClient) PauseSubscription(ctx context.Context, in *PauseSubscriptionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PauseSubscriptionReply)
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, Subscription_PauseSubscription_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -140,9 +153,9 @@ func (c *subscriptionClient) PauseSubscription(ctx context.Context, in *PauseSub
 	return out, nil
 }
 
-func (c *subscriptionClient) ResumeSubscription(ctx context.Context, in *ResumeSubscriptionRequest, opts ...grpc.CallOption) (*ResumeSubscriptionReply, error) {
+func (c *subscriptionClient) ResumeSubscription(ctx context.Context, in *ResumeSubscriptionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ResumeSubscriptionReply)
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, Subscription_ResumeSubscription_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -160,9 +173,9 @@ func (c *subscriptionClient) GetSubscriptionHistory(ctx context.Context, in *Get
 	return out, nil
 }
 
-func (c *subscriptionClient) SetAutoRenew(ctx context.Context, in *SetAutoRenewRequest, opts ...grpc.CallOption) (*SetAutoRenewReply, error) {
+func (c *subscriptionClient) SetAutoRenew(ctx context.Context, in *SetAutoRenewRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(SetAutoRenewReply)
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, Subscription_SetAutoRenew_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -230,6 +243,46 @@ func (c *subscriptionClient) DeletePlan(ctx context.Context, in *DeletePlanReque
 	return out, nil
 }
 
+func (c *subscriptionClient) ListPlanPricings(ctx context.Context, in *ListPlanPricingsRequest, opts ...grpc.CallOption) (*ListPlanPricingsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPlanPricingsReply)
+	err := c.cc.Invoke(ctx, Subscription_ListPlanPricings_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subscriptionClient) CreatePlanPricing(ctx context.Context, in *CreatePlanPricingRequest, opts ...grpc.CallOption) (*CreatePlanPricingReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreatePlanPricingReply)
+	err := c.cc.Invoke(ctx, Subscription_CreatePlanPricing_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subscriptionClient) UpdatePlanPricing(ctx context.Context, in *UpdatePlanPricingRequest, opts ...grpc.CallOption) (*UpdatePlanPricingReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdatePlanPricingReply)
+	err := c.cc.Invoke(ctx, Subscription_UpdatePlanPricing_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subscriptionClient) DeletePlanPricing(ctx context.Context, in *DeletePlanPricingRequest, opts ...grpc.CallOption) (*DeletePlanPricingReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeletePlanPricingReply)
+	err := c.cc.Invoke(ctx, Subscription_DeletePlanPricing_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SubscriptionServer is the server API for Subscription service.
 // All implementations must embed UnimplementedSubscriptionServer
 // for forward compatibility.
@@ -241,17 +294,17 @@ type SubscriptionServer interface {
 	// 创建订阅订单 (调用 Payment Service)
 	CreateSubscriptionOrder(context.Context, *CreateSubscriptionOrderRequest) (*CreateSubscriptionOrderReply, error)
 	// 支付回调处理 (通常由 Payment Service 或 MQ 调用)
-	HandlePaymentSuccess(context.Context, *HandlePaymentSuccessRequest) (*HandlePaymentSuccessReply, error)
+	HandlePaymentSuccess(context.Context, *HandlePaymentSuccessRequest) (*emptypb.Empty, error)
 	// 取消订阅
-	CancelSubscription(context.Context, *CancelSubscriptionRequest) (*CancelSubscriptionReply, error)
+	CancelSubscription(context.Context, *CancelSubscriptionRequest) (*emptypb.Empty, error)
 	// 暂停订阅
-	PauseSubscription(context.Context, *PauseSubscriptionRequest) (*PauseSubscriptionReply, error)
+	PauseSubscription(context.Context, *PauseSubscriptionRequest) (*emptypb.Empty, error)
 	// 恢复订阅
-	ResumeSubscription(context.Context, *ResumeSubscriptionRequest) (*ResumeSubscriptionReply, error)
+	ResumeSubscription(context.Context, *ResumeSubscriptionRequest) (*emptypb.Empty, error)
 	// 获取订阅历史记录
 	GetSubscriptionHistory(context.Context, *GetSubscriptionHistoryRequest) (*GetSubscriptionHistoryReply, error)
 	// 设置自动续费
-	SetAutoRenew(context.Context, *SetAutoRenewRequest) (*SetAutoRenewReply, error)
+	SetAutoRenew(context.Context, *SetAutoRenewRequest) (*emptypb.Empty, error)
 	// 获取即将过期的订阅（用于定时任务）
 	GetExpiringSubscriptions(context.Context, *GetExpiringSubscriptionsRequest) (*GetExpiringSubscriptionsReply, error)
 	// 批量更新过期订阅状态（用于定时任务）
@@ -264,6 +317,14 @@ type SubscriptionServer interface {
 	UpdatePlan(context.Context, *UpdatePlanRequest) (*UpdatePlanReply, error)
 	// 删除订阅套餐
 	DeletePlan(context.Context, *DeletePlanRequest) (*DeletePlanReply, error)
+	// 获取套餐的区域定价列表
+	ListPlanPricings(context.Context, *ListPlanPricingsRequest) (*ListPlanPricingsReply, error)
+	// 创建区域定价
+	CreatePlanPricing(context.Context, *CreatePlanPricingRequest) (*CreatePlanPricingReply, error)
+	// 更新区域定价
+	UpdatePlanPricing(context.Context, *UpdatePlanPricingRequest) (*UpdatePlanPricingReply, error)
+	// 删除区域定价
+	DeletePlanPricing(context.Context, *DeletePlanPricingRequest) (*DeletePlanPricingReply, error)
 	mustEmbedUnimplementedSubscriptionServer()
 }
 
@@ -283,22 +344,22 @@ func (UnimplementedSubscriptionServer) GetMySubscription(context.Context, *GetMy
 func (UnimplementedSubscriptionServer) CreateSubscriptionOrder(context.Context, *CreateSubscriptionOrderRequest) (*CreateSubscriptionOrderReply, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateSubscriptionOrder not implemented")
 }
-func (UnimplementedSubscriptionServer) HandlePaymentSuccess(context.Context, *HandlePaymentSuccessRequest) (*HandlePaymentSuccessReply, error) {
+func (UnimplementedSubscriptionServer) HandlePaymentSuccess(context.Context, *HandlePaymentSuccessRequest) (*emptypb.Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method HandlePaymentSuccess not implemented")
 }
-func (UnimplementedSubscriptionServer) CancelSubscription(context.Context, *CancelSubscriptionRequest) (*CancelSubscriptionReply, error) {
+func (UnimplementedSubscriptionServer) CancelSubscription(context.Context, *CancelSubscriptionRequest) (*emptypb.Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method CancelSubscription not implemented")
 }
-func (UnimplementedSubscriptionServer) PauseSubscription(context.Context, *PauseSubscriptionRequest) (*PauseSubscriptionReply, error) {
+func (UnimplementedSubscriptionServer) PauseSubscription(context.Context, *PauseSubscriptionRequest) (*emptypb.Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method PauseSubscription not implemented")
 }
-func (UnimplementedSubscriptionServer) ResumeSubscription(context.Context, *ResumeSubscriptionRequest) (*ResumeSubscriptionReply, error) {
+func (UnimplementedSubscriptionServer) ResumeSubscription(context.Context, *ResumeSubscriptionRequest) (*emptypb.Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method ResumeSubscription not implemented")
 }
 func (UnimplementedSubscriptionServer) GetSubscriptionHistory(context.Context, *GetSubscriptionHistoryRequest) (*GetSubscriptionHistoryReply, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetSubscriptionHistory not implemented")
 }
-func (UnimplementedSubscriptionServer) SetAutoRenew(context.Context, *SetAutoRenewRequest) (*SetAutoRenewReply, error) {
+func (UnimplementedSubscriptionServer) SetAutoRenew(context.Context, *SetAutoRenewRequest) (*emptypb.Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method SetAutoRenew not implemented")
 }
 func (UnimplementedSubscriptionServer) GetExpiringSubscriptions(context.Context, *GetExpiringSubscriptionsRequest) (*GetExpiringSubscriptionsReply, error) {
@@ -318,6 +379,18 @@ func (UnimplementedSubscriptionServer) UpdatePlan(context.Context, *UpdatePlanRe
 }
 func (UnimplementedSubscriptionServer) DeletePlan(context.Context, *DeletePlanRequest) (*DeletePlanReply, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeletePlan not implemented")
+}
+func (UnimplementedSubscriptionServer) ListPlanPricings(context.Context, *ListPlanPricingsRequest) (*ListPlanPricingsReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListPlanPricings not implemented")
+}
+func (UnimplementedSubscriptionServer) CreatePlanPricing(context.Context, *CreatePlanPricingRequest) (*CreatePlanPricingReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreatePlanPricing not implemented")
+}
+func (UnimplementedSubscriptionServer) UpdatePlanPricing(context.Context, *UpdatePlanPricingRequest) (*UpdatePlanPricingReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdatePlanPricing not implemented")
+}
+func (UnimplementedSubscriptionServer) DeletePlanPricing(context.Context, *DeletePlanPricingRequest) (*DeletePlanPricingReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeletePlanPricing not implemented")
 }
 func (UnimplementedSubscriptionServer) mustEmbedUnimplementedSubscriptionServer() {}
 func (UnimplementedSubscriptionServer) testEmbeddedByValue()                      {}
@@ -610,6 +683,78 @@ func _Subscription_DeletePlan_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Subscription_ListPlanPricings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPlanPricingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubscriptionServer).ListPlanPricings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Subscription_ListPlanPricings_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubscriptionServer).ListPlanPricings(ctx, req.(*ListPlanPricingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Subscription_CreatePlanPricing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePlanPricingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubscriptionServer).CreatePlanPricing(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Subscription_CreatePlanPricing_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubscriptionServer).CreatePlanPricing(ctx, req.(*CreatePlanPricingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Subscription_UpdatePlanPricing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePlanPricingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubscriptionServer).UpdatePlanPricing(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Subscription_UpdatePlanPricing_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubscriptionServer).UpdatePlanPricing(ctx, req.(*UpdatePlanPricingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Subscription_DeletePlanPricing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeletePlanPricingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubscriptionServer).DeletePlanPricing(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Subscription_DeletePlanPricing_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubscriptionServer).DeletePlanPricing(ctx, req.(*DeletePlanPricingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Subscription_ServiceDesc is the grpc.ServiceDesc for Subscription service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -676,6 +821,22 @@ var Subscription_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeletePlan",
 			Handler:    _Subscription_DeletePlan_Handler,
+		},
+		{
+			MethodName: "ListPlanPricings",
+			Handler:    _Subscription_ListPlanPricings_Handler,
+		},
+		{
+			MethodName: "CreatePlanPricing",
+			Handler:    _Subscription_CreatePlanPricing_Handler,
+		},
+		{
+			MethodName: "UpdatePlanPricing",
+			Handler:    _Subscription_UpdatePlanPricing_Handler,
+		},
+		{
+			MethodName: "DeletePlanPricing",
+			Handler:    _Subscription_DeletePlanPricing_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

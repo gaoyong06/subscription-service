@@ -56,7 +56,7 @@ func (m *Plan) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Id
+	// no validation rules for PlanId
 
 	// no validation rules for Name
 
@@ -940,7 +940,7 @@ func (m *DeletePlanReply) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Success
+	// no validation rules for PlanId
 
 	if len(errors) > 0 {
 		return DeletePlanReplyMultiError(errors)
@@ -1773,110 +1773,6 @@ var _ interface {
 	ErrorName() string
 } = HandlePaymentSuccessRequestValidationError{}
 
-// Validate checks the field values on HandlePaymentSuccessReply with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *HandlePaymentSuccessReply) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on HandlePaymentSuccessReply with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// HandlePaymentSuccessReplyMultiError, or nil if none found.
-func (m *HandlePaymentSuccessReply) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *HandlePaymentSuccessReply) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Success
-
-	if len(errors) > 0 {
-		return HandlePaymentSuccessReplyMultiError(errors)
-	}
-
-	return nil
-}
-
-// HandlePaymentSuccessReplyMultiError is an error wrapping multiple validation
-// errors returned by HandlePaymentSuccessReply.ValidateAll() if the
-// designated constraints aren't met.
-type HandlePaymentSuccessReplyMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m HandlePaymentSuccessReplyMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m HandlePaymentSuccessReplyMultiError) AllErrors() []error { return m }
-
-// HandlePaymentSuccessReplyValidationError is the validation error returned by
-// HandlePaymentSuccessReply.Validate if the designated constraints aren't met.
-type HandlePaymentSuccessReplyValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e HandlePaymentSuccessReplyValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e HandlePaymentSuccessReplyValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e HandlePaymentSuccessReplyValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e HandlePaymentSuccessReplyValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e HandlePaymentSuccessReplyValidationError) ErrorName() string {
-	return "HandlePaymentSuccessReplyValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e HandlePaymentSuccessReplyValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sHandlePaymentSuccessReply.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = HandlePaymentSuccessReplyValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = HandlePaymentSuccessReplyValidationError{}
-
 // Validate checks the field values on CancelSubscriptionRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -1991,112 +1887,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = CancelSubscriptionRequestValidationError{}
-
-// Validate checks the field values on CancelSubscriptionReply with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *CancelSubscriptionReply) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on CancelSubscriptionReply with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// CancelSubscriptionReplyMultiError, or nil if none found.
-func (m *CancelSubscriptionReply) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *CancelSubscriptionReply) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Success
-
-	// no validation rules for Message
-
-	if len(errors) > 0 {
-		return CancelSubscriptionReplyMultiError(errors)
-	}
-
-	return nil
-}
-
-// CancelSubscriptionReplyMultiError is an error wrapping multiple validation
-// errors returned by CancelSubscriptionReply.ValidateAll() if the designated
-// constraints aren't met.
-type CancelSubscriptionReplyMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m CancelSubscriptionReplyMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m CancelSubscriptionReplyMultiError) AllErrors() []error { return m }
-
-// CancelSubscriptionReplyValidationError is the validation error returned by
-// CancelSubscriptionReply.Validate if the designated constraints aren't met.
-type CancelSubscriptionReplyValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e CancelSubscriptionReplyValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e CancelSubscriptionReplyValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e CancelSubscriptionReplyValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e CancelSubscriptionReplyValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e CancelSubscriptionReplyValidationError) ErrorName() string {
-	return "CancelSubscriptionReplyValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e CancelSubscriptionReplyValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sCancelSubscriptionReply.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = CancelSubscriptionReplyValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = CancelSubscriptionReplyValidationError{}
 
 // Validate checks the field values on PauseSubscriptionRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -2213,112 +2003,6 @@ var _ interface {
 	ErrorName() string
 } = PauseSubscriptionRequestValidationError{}
 
-// Validate checks the field values on PauseSubscriptionReply with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *PauseSubscriptionReply) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on PauseSubscriptionReply with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// PauseSubscriptionReplyMultiError, or nil if none found.
-func (m *PauseSubscriptionReply) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *PauseSubscriptionReply) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Success
-
-	// no validation rules for Message
-
-	if len(errors) > 0 {
-		return PauseSubscriptionReplyMultiError(errors)
-	}
-
-	return nil
-}
-
-// PauseSubscriptionReplyMultiError is an error wrapping multiple validation
-// errors returned by PauseSubscriptionReply.ValidateAll() if the designated
-// constraints aren't met.
-type PauseSubscriptionReplyMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m PauseSubscriptionReplyMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m PauseSubscriptionReplyMultiError) AllErrors() []error { return m }
-
-// PauseSubscriptionReplyValidationError is the validation error returned by
-// PauseSubscriptionReply.Validate if the designated constraints aren't met.
-type PauseSubscriptionReplyValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e PauseSubscriptionReplyValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e PauseSubscriptionReplyValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e PauseSubscriptionReplyValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e PauseSubscriptionReplyValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e PauseSubscriptionReplyValidationError) ErrorName() string {
-	return "PauseSubscriptionReplyValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e PauseSubscriptionReplyValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sPauseSubscriptionReply.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = PauseSubscriptionReplyValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = PauseSubscriptionReplyValidationError{}
-
 // Validate checks the field values on ResumeSubscriptionRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.
@@ -2431,112 +2115,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ResumeSubscriptionRequestValidationError{}
-
-// Validate checks the field values on ResumeSubscriptionReply with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the first error encountered is returned, or nil if there are no violations.
-func (m *ResumeSubscriptionReply) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on ResumeSubscriptionReply with the
-// rules defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// ResumeSubscriptionReplyMultiError, or nil if none found.
-func (m *ResumeSubscriptionReply) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *ResumeSubscriptionReply) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Success
-
-	// no validation rules for Message
-
-	if len(errors) > 0 {
-		return ResumeSubscriptionReplyMultiError(errors)
-	}
-
-	return nil
-}
-
-// ResumeSubscriptionReplyMultiError is an error wrapping multiple validation
-// errors returned by ResumeSubscriptionReply.ValidateAll() if the designated
-// constraints aren't met.
-type ResumeSubscriptionReplyMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ResumeSubscriptionReplyMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ResumeSubscriptionReplyMultiError) AllErrors() []error { return m }
-
-// ResumeSubscriptionReplyValidationError is the validation error returned by
-// ResumeSubscriptionReply.Validate if the designated constraints aren't met.
-type ResumeSubscriptionReplyValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e ResumeSubscriptionReplyValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e ResumeSubscriptionReplyValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e ResumeSubscriptionReplyValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e ResumeSubscriptionReplyValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e ResumeSubscriptionReplyValidationError) ErrorName() string {
-	return "ResumeSubscriptionReplyValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e ResumeSubscriptionReplyValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sResumeSubscriptionReply.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = ResumeSubscriptionReplyValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = ResumeSubscriptionReplyValidationError{}
 
 // Validate checks the field values on SubscriptionHistoryItem with the rules
 // defined in the proto definition for this message. If any rules are
@@ -3031,112 +2609,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = SetAutoRenewRequestValidationError{}
-
-// Validate checks the field values on SetAutoRenewReply with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *SetAutoRenewReply) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on SetAutoRenewReply with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// SetAutoRenewReplyMultiError, or nil if none found.
-func (m *SetAutoRenewReply) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *SetAutoRenewReply) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Success
-
-	// no validation rules for Message
-
-	if len(errors) > 0 {
-		return SetAutoRenewReplyMultiError(errors)
-	}
-
-	return nil
-}
-
-// SetAutoRenewReplyMultiError is an error wrapping multiple validation errors
-// returned by SetAutoRenewReply.ValidateAll() if the designated constraints
-// aren't met.
-type SetAutoRenewReplyMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m SetAutoRenewReplyMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m SetAutoRenewReplyMultiError) AllErrors() []error { return m }
-
-// SetAutoRenewReplyValidationError is the validation error returned by
-// SetAutoRenewReply.Validate if the designated constraints aren't met.
-type SetAutoRenewReplyValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e SetAutoRenewReplyValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e SetAutoRenewReplyValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e SetAutoRenewReplyValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e SetAutoRenewReplyValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e SetAutoRenewReplyValidationError) ErrorName() string {
-	return "SetAutoRenewReplyValidationError"
-}
-
-// Error satisfies the builtin error interface
-func (e SetAutoRenewReplyValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sSetAutoRenewReply.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = SetAutoRenewReplyValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = SetAutoRenewReplyValidationError{}
 
 // Validate checks the field values on GetExpiringSubscriptionsRequest with the
 // rules defined in the proto definition for this message. If any rules are
@@ -4091,3 +3563,1124 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = ProcessAutoRenewalsReplyValidationError{}
+
+// Validate checks the field values on PlanPricing with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *PlanPricing) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PlanPricing with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in PlanPricingMultiError, or
+// nil if none found.
+func (m *PlanPricing) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PlanPricing) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for PlanPricingId
+
+	// no validation rules for PlanId
+
+	// no validation rules for CountryCode
+
+	// no validation rules for Price
+
+	// no validation rules for Currency
+
+	if len(errors) > 0 {
+		return PlanPricingMultiError(errors)
+	}
+
+	return nil
+}
+
+// PlanPricingMultiError is an error wrapping multiple validation errors
+// returned by PlanPricing.ValidateAll() if the designated constraints aren't met.
+type PlanPricingMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PlanPricingMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PlanPricingMultiError) AllErrors() []error { return m }
+
+// PlanPricingValidationError is the validation error returned by
+// PlanPricing.Validate if the designated constraints aren't met.
+type PlanPricingValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PlanPricingValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PlanPricingValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PlanPricingValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PlanPricingValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PlanPricingValidationError) ErrorName() string { return "PlanPricingValidationError" }
+
+// Error satisfies the builtin error interface
+func (e PlanPricingValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPlanPricing.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PlanPricingValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PlanPricingValidationError{}
+
+// Validate checks the field values on ListPlanPricingsRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListPlanPricingsRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListPlanPricingsRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListPlanPricingsRequestMultiError, or nil if none found.
+func (m *ListPlanPricingsRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListPlanPricingsRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetPlanId()) < 1 {
+		err := ListPlanPricingsRequestValidationError{
+			field:  "PlanId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return ListPlanPricingsRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListPlanPricingsRequestMultiError is an error wrapping multiple validation
+// errors returned by ListPlanPricingsRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ListPlanPricingsRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListPlanPricingsRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListPlanPricingsRequestMultiError) AllErrors() []error { return m }
+
+// ListPlanPricingsRequestValidationError is the validation error returned by
+// ListPlanPricingsRequest.Validate if the designated constraints aren't met.
+type ListPlanPricingsRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListPlanPricingsRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListPlanPricingsRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListPlanPricingsRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListPlanPricingsRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListPlanPricingsRequestValidationError) ErrorName() string {
+	return "ListPlanPricingsRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListPlanPricingsRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListPlanPricingsRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListPlanPricingsRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListPlanPricingsRequestValidationError{}
+
+// Validate checks the field values on ListPlanPricingsReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ListPlanPricingsReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ListPlanPricingsReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ListPlanPricingsReplyMultiError, or nil if none found.
+func (m *ListPlanPricingsReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ListPlanPricingsReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	for idx, item := range m.GetPricings() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ListPlanPricingsReplyValidationError{
+						field:  fmt.Sprintf("Pricings[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ListPlanPricingsReplyValidationError{
+						field:  fmt.Sprintf("Pricings[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return ListPlanPricingsReplyValidationError{
+					field:  fmt.Sprintf("Pricings[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return ListPlanPricingsReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// ListPlanPricingsReplyMultiError is an error wrapping multiple validation
+// errors returned by ListPlanPricingsReply.ValidateAll() if the designated
+// constraints aren't met.
+type ListPlanPricingsReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ListPlanPricingsReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ListPlanPricingsReplyMultiError) AllErrors() []error { return m }
+
+// ListPlanPricingsReplyValidationError is the validation error returned by
+// ListPlanPricingsReply.Validate if the designated constraints aren't met.
+type ListPlanPricingsReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ListPlanPricingsReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ListPlanPricingsReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ListPlanPricingsReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ListPlanPricingsReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ListPlanPricingsReplyValidationError) ErrorName() string {
+	return "ListPlanPricingsReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ListPlanPricingsReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sListPlanPricingsReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ListPlanPricingsReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ListPlanPricingsReplyValidationError{}
+
+// Validate checks the field values on CreatePlanPricingRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CreatePlanPricingRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreatePlanPricingRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CreatePlanPricingRequestMultiError, or nil if none found.
+func (m *CreatePlanPricingRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreatePlanPricingRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetPlanId()) < 1 {
+		err := CreatePlanPricingRequestValidationError{
+			field:  "PlanId",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetCountryCode()) != 2 {
+		err := CreatePlanPricingRequestValidationError{
+			field:  "CountryCode",
+			reason: "value length must be 2 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+
+	}
+
+	if m.GetPrice() <= 0 {
+		err := CreatePlanPricingRequestValidationError{
+			field:  "Price",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetCurrency()) != 3 {
+		err := CreatePlanPricingRequestValidationError{
+			field:  "Currency",
+			reason: "value length must be 3 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+
+	}
+
+	if len(errors) > 0 {
+		return CreatePlanPricingRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreatePlanPricingRequestMultiError is an error wrapping multiple validation
+// errors returned by CreatePlanPricingRequest.ValidateAll() if the designated
+// constraints aren't met.
+type CreatePlanPricingRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreatePlanPricingRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreatePlanPricingRequestMultiError) AllErrors() []error { return m }
+
+// CreatePlanPricingRequestValidationError is the validation error returned by
+// CreatePlanPricingRequest.Validate if the designated constraints aren't met.
+type CreatePlanPricingRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreatePlanPricingRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreatePlanPricingRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreatePlanPricingRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreatePlanPricingRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreatePlanPricingRequestValidationError) ErrorName() string {
+	return "CreatePlanPricingRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreatePlanPricingRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreatePlanPricingRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreatePlanPricingRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreatePlanPricingRequestValidationError{}
+
+// Validate checks the field values on CreatePlanPricingReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *CreatePlanPricingReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on CreatePlanPricingReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// CreatePlanPricingReplyMultiError, or nil if none found.
+func (m *CreatePlanPricingReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *CreatePlanPricingReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetPricing()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CreatePlanPricingReplyValidationError{
+					field:  "Pricing",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CreatePlanPricingReplyValidationError{
+					field:  "Pricing",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetPricing()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreatePlanPricingReplyValidationError{
+				field:  "Pricing",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return CreatePlanPricingReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// CreatePlanPricingReplyMultiError is an error wrapping multiple validation
+// errors returned by CreatePlanPricingReply.ValidateAll() if the designated
+// constraints aren't met.
+type CreatePlanPricingReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m CreatePlanPricingReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m CreatePlanPricingReplyMultiError) AllErrors() []error { return m }
+
+// CreatePlanPricingReplyValidationError is the validation error returned by
+// CreatePlanPricingReply.Validate if the designated constraints aren't met.
+type CreatePlanPricingReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e CreatePlanPricingReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e CreatePlanPricingReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e CreatePlanPricingReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e CreatePlanPricingReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e CreatePlanPricingReplyValidationError) ErrorName() string {
+	return "CreatePlanPricingReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e CreatePlanPricingReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sCreatePlanPricingReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = CreatePlanPricingReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = CreatePlanPricingReplyValidationError{}
+
+// Validate checks the field values on UpdatePlanPricingRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpdatePlanPricingRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdatePlanPricingRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UpdatePlanPricingRequestMultiError, or nil if none found.
+func (m *UpdatePlanPricingRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdatePlanPricingRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetPlanPricingId() <= 0 {
+		err := UpdatePlanPricingRequestValidationError{
+			field:  "PlanPricingId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetPrice() <= 0 {
+		err := UpdatePlanPricingRequestValidationError{
+			field:  "Price",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetCurrency()) != 3 {
+		err := UpdatePlanPricingRequestValidationError{
+			field:  "Currency",
+			reason: "value length must be 3 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+
+	}
+
+	if len(errors) > 0 {
+		return UpdatePlanPricingRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdatePlanPricingRequestMultiError is an error wrapping multiple validation
+// errors returned by UpdatePlanPricingRequest.ValidateAll() if the designated
+// constraints aren't met.
+type UpdatePlanPricingRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdatePlanPricingRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdatePlanPricingRequestMultiError) AllErrors() []error { return m }
+
+// UpdatePlanPricingRequestValidationError is the validation error returned by
+// UpdatePlanPricingRequest.Validate if the designated constraints aren't met.
+type UpdatePlanPricingRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdatePlanPricingRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdatePlanPricingRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdatePlanPricingRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdatePlanPricingRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdatePlanPricingRequestValidationError) ErrorName() string {
+	return "UpdatePlanPricingRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdatePlanPricingRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdatePlanPricingRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdatePlanPricingRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdatePlanPricingRequestValidationError{}
+
+// Validate checks the field values on UpdatePlanPricingReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *UpdatePlanPricingReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on UpdatePlanPricingReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// UpdatePlanPricingReplyMultiError, or nil if none found.
+func (m *UpdatePlanPricingReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *UpdatePlanPricingReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetPricing()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpdatePlanPricingReplyValidationError{
+					field:  "Pricing",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpdatePlanPricingReplyValidationError{
+					field:  "Pricing",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetPricing()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpdatePlanPricingReplyValidationError{
+				field:  "Pricing",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return UpdatePlanPricingReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// UpdatePlanPricingReplyMultiError is an error wrapping multiple validation
+// errors returned by UpdatePlanPricingReply.ValidateAll() if the designated
+// constraints aren't met.
+type UpdatePlanPricingReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m UpdatePlanPricingReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m UpdatePlanPricingReplyMultiError) AllErrors() []error { return m }
+
+// UpdatePlanPricingReplyValidationError is the validation error returned by
+// UpdatePlanPricingReply.Validate if the designated constraints aren't met.
+type UpdatePlanPricingReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e UpdatePlanPricingReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e UpdatePlanPricingReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e UpdatePlanPricingReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e UpdatePlanPricingReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e UpdatePlanPricingReplyValidationError) ErrorName() string {
+	return "UpdatePlanPricingReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e UpdatePlanPricingReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sUpdatePlanPricingReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = UpdatePlanPricingReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = UpdatePlanPricingReplyValidationError{}
+
+// Validate checks the field values on DeletePlanPricingRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeletePlanPricingRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeletePlanPricingRequest with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DeletePlanPricingRequestMultiError, or nil if none found.
+func (m *DeletePlanPricingRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeletePlanPricingRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetPlanPricingId() <= 0 {
+		err := DeletePlanPricingRequestValidationError{
+			field:  "PlanPricingId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if len(errors) > 0 {
+		return DeletePlanPricingRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeletePlanPricingRequestMultiError is an error wrapping multiple validation
+// errors returned by DeletePlanPricingRequest.ValidateAll() if the designated
+// constraints aren't met.
+type DeletePlanPricingRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeletePlanPricingRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeletePlanPricingRequestMultiError) AllErrors() []error { return m }
+
+// DeletePlanPricingRequestValidationError is the validation error returned by
+// DeletePlanPricingRequest.Validate if the designated constraints aren't met.
+type DeletePlanPricingRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeletePlanPricingRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeletePlanPricingRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeletePlanPricingRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeletePlanPricingRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeletePlanPricingRequestValidationError) ErrorName() string {
+	return "DeletePlanPricingRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeletePlanPricingRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeletePlanPricingRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeletePlanPricingRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeletePlanPricingRequestValidationError{}
+
+// Validate checks the field values on DeletePlanPricingReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *DeletePlanPricingReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on DeletePlanPricingReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// DeletePlanPricingReplyMultiError, or nil if none found.
+func (m *DeletePlanPricingReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *DeletePlanPricingReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for PlanPricingId
+
+	if len(errors) > 0 {
+		return DeletePlanPricingReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// DeletePlanPricingReplyMultiError is an error wrapping multiple validation
+// errors returned by DeletePlanPricingReply.ValidateAll() if the designated
+// constraints aren't met.
+type DeletePlanPricingReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m DeletePlanPricingReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m DeletePlanPricingReplyMultiError) AllErrors() []error { return m }
+
+// DeletePlanPricingReplyValidationError is the validation error returned by
+// DeletePlanPricingReply.Validate if the designated constraints aren't met.
+type DeletePlanPricingReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e DeletePlanPricingReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e DeletePlanPricingReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e DeletePlanPricingReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e DeletePlanPricingReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e DeletePlanPricingReplyValidationError) ErrorName() string {
+	return "DeletePlanPricingReplyValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e DeletePlanPricingReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sDeletePlanPricingReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = DeletePlanPricingReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = DeletePlanPricingReplyValidationError{}

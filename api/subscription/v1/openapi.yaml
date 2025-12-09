@@ -21,10 +21,7 @@ paths:
             responses:
                 "200":
                     description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/subscription.v1.SetAutoRenewReply'
+                    content: {}
     /v1/subscription/auto-renew/process:
         post:
             tags:
@@ -59,10 +56,7 @@ paths:
             responses:
                 "200":
                     description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/subscription.v1.CancelSubscriptionReply'
+                    content: {}
     /v1/subscription/expired/update:
         post:
             tags:
@@ -193,10 +187,7 @@ paths:
             responses:
                 "200":
                     description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/subscription.v1.PauseSubscriptionReply'
+                    content: {}
     /v1/subscription/payment/success:
         post:
             tags:
@@ -212,10 +203,7 @@ paths:
             responses:
                 "200":
                     description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/subscription.v1.HandlePaymentSuccessReply'
+                    content: {}
     /v1/subscription/plans:
         get:
             tags:
@@ -295,6 +283,92 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/subscription.v1.DeletePlanReply'
+    /v1/subscription/plans/{planId}/pricings:
+        get:
+            tags:
+                - Subscription
+            description: 获取套餐的区域定价列表
+            operationId: Subscription_ListPlanPricings
+            parameters:
+                - name: planId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/subscription.v1.ListPlanPricingsReply'
+        post:
+            tags:
+                - Subscription
+            description: 创建区域定价
+            operationId: Subscription_CreatePlanPricing
+            parameters:
+                - name: planId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/subscription.v1.CreatePlanPricingRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/subscription.v1.CreatePlanPricingReply'
+    /v1/subscription/pricings/{planPricingId}:
+        put:
+            tags:
+                - Subscription
+            description: 更新区域定价
+            operationId: Subscription_UpdatePlanPricing
+            parameters:
+                - name: planPricingId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/subscription.v1.UpdatePlanPricingRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/subscription.v1.UpdatePlanPricingReply'
+        delete:
+            tags:
+                - Subscription
+            description: 删除区域定价
+            operationId: Subscription_DeletePlanPricing
+            parameters:
+                - name: planPricingId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/subscription.v1.DeletePlanPricingReply'
     /v1/subscription/resume:
         post:
             tags:
@@ -310,10 +384,7 @@ paths:
             responses:
                 "200":
                     description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/subscription.v1.ResumeSubscriptionReply'
+                    content: {}
 components:
     schemas:
         subscription.v1.AutoRenewResult:
@@ -331,13 +402,6 @@ components:
                     type: string
                 errorMessage:
                     type: string
-        subscription.v1.CancelSubscriptionReply:
-            type: object
-            properties:
-                success:
-                    type: boolean
-                message:
-                    type: string
         subscription.v1.CancelSubscriptionRequest:
             type: object
             properties:
@@ -346,6 +410,23 @@ components:
                 reason:
                     type: string
             description: 取消订阅
+        subscription.v1.CreatePlanPricingReply:
+            type: object
+            properties:
+                pricing:
+                    $ref: '#/components/schemas/subscription.v1.PlanPricing'
+        subscription.v1.CreatePlanPricingRequest:
+            type: object
+            properties:
+                planId:
+                    type: string
+                countryCode:
+                    type: string
+                price:
+                    type: number
+                    format: double
+                currency:
+                    type: string
         subscription.v1.CreatePlanReply:
             type: object
             properties:
@@ -394,11 +475,16 @@ components:
                     type: string
                 region:
                     type: string
+        subscription.v1.DeletePlanPricingReply:
+            type: object
+            properties:
+                planPricingId:
+                    type: string
         subscription.v1.DeletePlanReply:
             type: object
             properties:
-                success:
-                    type: boolean
+                planId:
+                    type: string
         subscription.v1.GetExpiringSubscriptionsReply:
             type: object
             properties:
@@ -446,11 +532,6 @@ components:
                 pageSize:
                     type: integer
                     format: int32
-        subscription.v1.HandlePaymentSuccessReply:
-            type: object
-            properties:
-                success:
-                    type: boolean
         subscription.v1.HandlePaymentSuccessRequest:
             type: object
             properties:
@@ -461,6 +542,13 @@ components:
                 amount:
                     type: number
                     format: double
+        subscription.v1.ListPlanPricingsReply:
+            type: object
+            properties:
+                pricings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/subscription.v1.PlanPricing'
         subscription.v1.ListPlansReply:
             type: object
             properties:
@@ -468,13 +556,6 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/subscription.v1.Plan'
-        subscription.v1.PauseSubscriptionReply:
-            type: object
-            properties:
-                success:
-                    type: boolean
-                message:
-                    type: string
         subscription.v1.PauseSubscriptionRequest:
             type: object
             properties:
@@ -486,7 +567,7 @@ components:
         subscription.v1.Plan:
             type: object
             properties:
-                id:
+                planId:
                     type: string
                 name:
                     type: string
@@ -504,6 +585,21 @@ components:
                     type: string
                 appId:
                     type: string
+        subscription.v1.PlanPricing:
+            type: object
+            properties:
+                planPricingId:
+                    type: string
+                planId:
+                    type: string
+                countryCode:
+                    type: string
+                price:
+                    type: number
+                    format: double
+                currency:
+                    type: string
+            description: 区域定价相关消息
         subscription.v1.ProcessAutoRenewalsReply:
             type: object
             properties:
@@ -529,26 +625,12 @@ components:
                 dryRun:
                     type: boolean
             description: 自动续费处理
-        subscription.v1.ResumeSubscriptionReply:
-            type: object
-            properties:
-                success:
-                    type: boolean
-                message:
-                    type: string
         subscription.v1.ResumeSubscriptionRequest:
             type: object
             properties:
                 uid:
                     type: string
             description: 恢复订阅
-        subscription.v1.SetAutoRenewReply:
-            type: object
-            properties:
-                success:
-                    type: boolean
-                message:
-                    type: string
         subscription.v1.SetAutoRenewRequest:
             type: object
             properties:
@@ -609,6 +691,21 @@ components:
             type: object
             properties: {}
             description: 批量更新过期订阅
+        subscription.v1.UpdatePlanPricingReply:
+            type: object
+            properties:
+                pricing:
+                    $ref: '#/components/schemas/subscription.v1.PlanPricing'
+        subscription.v1.UpdatePlanPricingRequest:
+            type: object
+            properties:
+                planPricingId:
+                    type: string
+                price:
+                    type: number
+                    format: double
+                currency:
+                    type: string
         subscription.v1.UpdatePlanReply:
             type: object
             properties:

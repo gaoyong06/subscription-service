@@ -10,6 +10,7 @@ import (
 	context "context"
 	http "github.com/go-kratos/kratos/v2/transport/http"
 	binding "github.com/go-kratos/kratos/v2/transport/http/binding"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -21,12 +22,15 @@ const _ = http.SupportPackageIsVersion1
 
 const OperationSubscriptionCancelSubscription = "/subscription.v1.Subscription/CancelSubscription"
 const OperationSubscriptionCreatePlan = "/subscription.v1.Subscription/CreatePlan"
+const OperationSubscriptionCreatePlanPricing = "/subscription.v1.Subscription/CreatePlanPricing"
 const OperationSubscriptionCreateSubscriptionOrder = "/subscription.v1.Subscription/CreateSubscriptionOrder"
 const OperationSubscriptionDeletePlan = "/subscription.v1.Subscription/DeletePlan"
+const OperationSubscriptionDeletePlanPricing = "/subscription.v1.Subscription/DeletePlanPricing"
 const OperationSubscriptionGetExpiringSubscriptions = "/subscription.v1.Subscription/GetExpiringSubscriptions"
 const OperationSubscriptionGetMySubscription = "/subscription.v1.Subscription/GetMySubscription"
 const OperationSubscriptionGetSubscriptionHistory = "/subscription.v1.Subscription/GetSubscriptionHistory"
 const OperationSubscriptionHandlePaymentSuccess = "/subscription.v1.Subscription/HandlePaymentSuccess"
+const OperationSubscriptionListPlanPricings = "/subscription.v1.Subscription/ListPlanPricings"
 const OperationSubscriptionListPlans = "/subscription.v1.Subscription/ListPlans"
 const OperationSubscriptionPauseSubscription = "/subscription.v1.Subscription/PauseSubscription"
 const OperationSubscriptionProcessAutoRenewals = "/subscription.v1.Subscription/ProcessAutoRenewals"
@@ -34,16 +38,21 @@ const OperationSubscriptionResumeSubscription = "/subscription.v1.Subscription/R
 const OperationSubscriptionSetAutoRenew = "/subscription.v1.Subscription/SetAutoRenew"
 const OperationSubscriptionUpdateExpiredSubscriptions = "/subscription.v1.Subscription/UpdateExpiredSubscriptions"
 const OperationSubscriptionUpdatePlan = "/subscription.v1.Subscription/UpdatePlan"
+const OperationSubscriptionUpdatePlanPricing = "/subscription.v1.Subscription/UpdatePlanPricing"
 
 type SubscriptionHTTPServer interface {
 	// CancelSubscription 取消订阅
-	CancelSubscription(context.Context, *CancelSubscriptionRequest) (*CancelSubscriptionReply, error)
+	CancelSubscription(context.Context, *CancelSubscriptionRequest) (*emptypb.Empty, error)
 	// CreatePlan 创建订阅套餐
 	CreatePlan(context.Context, *CreatePlanRequest) (*CreatePlanReply, error)
+	// CreatePlanPricing 创建区域定价
+	CreatePlanPricing(context.Context, *CreatePlanPricingRequest) (*CreatePlanPricingReply, error)
 	// CreateSubscriptionOrder 创建订阅订单 (调用 Payment Service)
 	CreateSubscriptionOrder(context.Context, *CreateSubscriptionOrderRequest) (*CreateSubscriptionOrderReply, error)
 	// DeletePlan 删除订阅套餐
 	DeletePlan(context.Context, *DeletePlanRequest) (*DeletePlanReply, error)
+	// DeletePlanPricing 删除区域定价
+	DeletePlanPricing(context.Context, *DeletePlanPricingRequest) (*DeletePlanPricingReply, error)
 	// GetExpiringSubscriptions 获取即将过期的订阅（用于定时任务）
 	GetExpiringSubscriptions(context.Context, *GetExpiringSubscriptionsRequest) (*GetExpiringSubscriptionsReply, error)
 	// GetMySubscription 获取用户的订阅状态
@@ -51,21 +60,25 @@ type SubscriptionHTTPServer interface {
 	// GetSubscriptionHistory 获取订阅历史记录
 	GetSubscriptionHistory(context.Context, *GetSubscriptionHistoryRequest) (*GetSubscriptionHistoryReply, error)
 	// HandlePaymentSuccess 支付回调处理 (通常由 Payment Service 或 MQ 调用)
-	HandlePaymentSuccess(context.Context, *HandlePaymentSuccessRequest) (*HandlePaymentSuccessReply, error)
+	HandlePaymentSuccess(context.Context, *HandlePaymentSuccessRequest) (*emptypb.Empty, error)
+	// ListPlanPricings 获取套餐的区域定价列表
+	ListPlanPricings(context.Context, *ListPlanPricingsRequest) (*ListPlanPricingsReply, error)
 	// ListPlans 获取所有订阅套餐
 	ListPlans(context.Context, *ListPlansRequest) (*ListPlansReply, error)
 	// PauseSubscription 暂停订阅
-	PauseSubscription(context.Context, *PauseSubscriptionRequest) (*PauseSubscriptionReply, error)
+	PauseSubscription(context.Context, *PauseSubscriptionRequest) (*emptypb.Empty, error)
 	// ProcessAutoRenewals 处理自动续费（用于定时任务）
 	ProcessAutoRenewals(context.Context, *ProcessAutoRenewalsRequest) (*ProcessAutoRenewalsReply, error)
 	// ResumeSubscription 恢复订阅
-	ResumeSubscription(context.Context, *ResumeSubscriptionRequest) (*ResumeSubscriptionReply, error)
+	ResumeSubscription(context.Context, *ResumeSubscriptionRequest) (*emptypb.Empty, error)
 	// SetAutoRenew 设置自动续费
-	SetAutoRenew(context.Context, *SetAutoRenewRequest) (*SetAutoRenewReply, error)
+	SetAutoRenew(context.Context, *SetAutoRenewRequest) (*emptypb.Empty, error)
 	// UpdateExpiredSubscriptions 批量更新过期订阅状态（用于定时任务）
 	UpdateExpiredSubscriptions(context.Context, *UpdateExpiredSubscriptionsRequest) (*UpdateExpiredSubscriptionsReply, error)
 	// UpdatePlan 更新订阅套餐
 	UpdatePlan(context.Context, *UpdatePlanRequest) (*UpdatePlanReply, error)
+	// UpdatePlanPricing 更新区域定价
+	UpdatePlanPricing(context.Context, *UpdatePlanPricingRequest) (*UpdatePlanPricingReply, error)
 }
 
 func RegisterSubscriptionHTTPServer(s *http.Server, srv SubscriptionHTTPServer) {
@@ -83,8 +96,12 @@ func RegisterSubscriptionHTTPServer(s *http.Server, srv SubscriptionHTTPServer) 
 	r.POST("/v1/subscription/expired/update", _Subscription_UpdateExpiredSubscriptions0_HTTP_Handler(srv))
 	r.POST("/v1/subscription/auto-renew/process", _Subscription_ProcessAutoRenewals0_HTTP_Handler(srv))
 	r.POST("/v1/subscription/plans", _Subscription_CreatePlan0_HTTP_Handler(srv))
-	r.PUT("/v1/subscription/plans/{plan_id}", _Subscription_UpdatePlan0_HTTP_Handler(srv))
-	r.DELETE("/v1/subscription/plans/{plan_id}", _Subscription_DeletePlan0_HTTP_Handler(srv))
+	r.PUT("/v1/subscription/plans/{planId}", _Subscription_UpdatePlan0_HTTP_Handler(srv))
+	r.DELETE("/v1/subscription/plans/{planId}", _Subscription_DeletePlan0_HTTP_Handler(srv))
+	r.GET("/v1/subscription/plans/{planId}/pricings", _Subscription_ListPlanPricings0_HTTP_Handler(srv))
+	r.POST("/v1/subscription/plans/{planId}/pricings", _Subscription_CreatePlanPricing0_HTTP_Handler(srv))
+	r.PUT("/v1/subscription/pricings/{planPricingId}", _Subscription_UpdatePlanPricing0_HTTP_Handler(srv))
+	r.DELETE("/v1/subscription/pricings/{planPricingId}", _Subscription_DeletePlanPricing0_HTTP_Handler(srv))
 }
 
 func _Subscription_ListPlans0_HTTP_Handler(srv SubscriptionHTTPServer) func(ctx http.Context) error {
@@ -167,7 +184,7 @@ func _Subscription_HandlePaymentSuccess0_HTTP_Handler(srv SubscriptionHTTPServer
 		if err != nil {
 			return err
 		}
-		reply := out.(*HandlePaymentSuccessReply)
+		reply := out.(*emptypb.Empty)
 		return ctx.Result(200, reply)
 	}
 }
@@ -189,7 +206,7 @@ func _Subscription_CancelSubscription0_HTTP_Handler(srv SubscriptionHTTPServer) 
 		if err != nil {
 			return err
 		}
-		reply := out.(*CancelSubscriptionReply)
+		reply := out.(*emptypb.Empty)
 		return ctx.Result(200, reply)
 	}
 }
@@ -211,7 +228,7 @@ func _Subscription_PauseSubscription0_HTTP_Handler(srv SubscriptionHTTPServer) f
 		if err != nil {
 			return err
 		}
-		reply := out.(*PauseSubscriptionReply)
+		reply := out.(*emptypb.Empty)
 		return ctx.Result(200, reply)
 	}
 }
@@ -233,7 +250,7 @@ func _Subscription_ResumeSubscription0_HTTP_Handler(srv SubscriptionHTTPServer) 
 		if err != nil {
 			return err
 		}
-		reply := out.(*ResumeSubscriptionReply)
+		reply := out.(*emptypb.Empty)
 		return ctx.Result(200, reply)
 	}
 }
@@ -277,7 +294,7 @@ func _Subscription_SetAutoRenew0_HTTP_Handler(srv SubscriptionHTTPServer) func(c
 		if err != nil {
 			return err
 		}
-		reply := out.(*SetAutoRenewReply)
+		reply := out.(*emptypb.Empty)
 		return ctx.Result(200, reply)
 	}
 }
@@ -414,15 +431,113 @@ func _Subscription_DeletePlan0_HTTP_Handler(srv SubscriptionHTTPServer) func(ctx
 	}
 }
 
+func _Subscription_ListPlanPricings0_HTTP_Handler(srv SubscriptionHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ListPlanPricingsRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSubscriptionListPlanPricings)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListPlanPricings(ctx, req.(*ListPlanPricingsRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListPlanPricingsReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Subscription_CreatePlanPricing0_HTTP_Handler(srv SubscriptionHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in CreatePlanPricingRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSubscriptionCreatePlanPricing)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CreatePlanPricing(ctx, req.(*CreatePlanPricingRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*CreatePlanPricingReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Subscription_UpdatePlanPricing0_HTTP_Handler(srv SubscriptionHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in UpdatePlanPricingRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSubscriptionUpdatePlanPricing)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdatePlanPricing(ctx, req.(*UpdatePlanPricingRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UpdatePlanPricingReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Subscription_DeletePlanPricing0_HTTP_Handler(srv SubscriptionHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DeletePlanPricingRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSubscriptionDeletePlanPricing)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.DeletePlanPricing(ctx, req.(*DeletePlanPricingRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*DeletePlanPricingReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type SubscriptionHTTPClient interface {
 	// CancelSubscription 取消订阅
-	CancelSubscription(ctx context.Context, req *CancelSubscriptionRequest, opts ...http.CallOption) (rsp *CancelSubscriptionReply, err error)
+	CancelSubscription(ctx context.Context, req *CancelSubscriptionRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	// CreatePlan 创建订阅套餐
 	CreatePlan(ctx context.Context, req *CreatePlanRequest, opts ...http.CallOption) (rsp *CreatePlanReply, err error)
+	// CreatePlanPricing 创建区域定价
+	CreatePlanPricing(ctx context.Context, req *CreatePlanPricingRequest, opts ...http.CallOption) (rsp *CreatePlanPricingReply, err error)
 	// CreateSubscriptionOrder 创建订阅订单 (调用 Payment Service)
 	CreateSubscriptionOrder(ctx context.Context, req *CreateSubscriptionOrderRequest, opts ...http.CallOption) (rsp *CreateSubscriptionOrderReply, err error)
 	// DeletePlan 删除订阅套餐
 	DeletePlan(ctx context.Context, req *DeletePlanRequest, opts ...http.CallOption) (rsp *DeletePlanReply, err error)
+	// DeletePlanPricing 删除区域定价
+	DeletePlanPricing(ctx context.Context, req *DeletePlanPricingRequest, opts ...http.CallOption) (rsp *DeletePlanPricingReply, err error)
 	// GetExpiringSubscriptions 获取即将过期的订阅（用于定时任务）
 	GetExpiringSubscriptions(ctx context.Context, req *GetExpiringSubscriptionsRequest, opts ...http.CallOption) (rsp *GetExpiringSubscriptionsReply, err error)
 	// GetMySubscription 获取用户的订阅状态
@@ -430,21 +545,25 @@ type SubscriptionHTTPClient interface {
 	// GetSubscriptionHistory 获取订阅历史记录
 	GetSubscriptionHistory(ctx context.Context, req *GetSubscriptionHistoryRequest, opts ...http.CallOption) (rsp *GetSubscriptionHistoryReply, err error)
 	// HandlePaymentSuccess 支付回调处理 (通常由 Payment Service 或 MQ 调用)
-	HandlePaymentSuccess(ctx context.Context, req *HandlePaymentSuccessRequest, opts ...http.CallOption) (rsp *HandlePaymentSuccessReply, err error)
+	HandlePaymentSuccess(ctx context.Context, req *HandlePaymentSuccessRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
+	// ListPlanPricings 获取套餐的区域定价列表
+	ListPlanPricings(ctx context.Context, req *ListPlanPricingsRequest, opts ...http.CallOption) (rsp *ListPlanPricingsReply, err error)
 	// ListPlans 获取所有订阅套餐
 	ListPlans(ctx context.Context, req *ListPlansRequest, opts ...http.CallOption) (rsp *ListPlansReply, err error)
 	// PauseSubscription 暂停订阅
-	PauseSubscription(ctx context.Context, req *PauseSubscriptionRequest, opts ...http.CallOption) (rsp *PauseSubscriptionReply, err error)
+	PauseSubscription(ctx context.Context, req *PauseSubscriptionRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	// ProcessAutoRenewals 处理自动续费（用于定时任务）
 	ProcessAutoRenewals(ctx context.Context, req *ProcessAutoRenewalsRequest, opts ...http.CallOption) (rsp *ProcessAutoRenewalsReply, err error)
 	// ResumeSubscription 恢复订阅
-	ResumeSubscription(ctx context.Context, req *ResumeSubscriptionRequest, opts ...http.CallOption) (rsp *ResumeSubscriptionReply, err error)
+	ResumeSubscription(ctx context.Context, req *ResumeSubscriptionRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	// SetAutoRenew 设置自动续费
-	SetAutoRenew(ctx context.Context, req *SetAutoRenewRequest, opts ...http.CallOption) (rsp *SetAutoRenewReply, err error)
+	SetAutoRenew(ctx context.Context, req *SetAutoRenewRequest, opts ...http.CallOption) (rsp *emptypb.Empty, err error)
 	// UpdateExpiredSubscriptions 批量更新过期订阅状态（用于定时任务）
 	UpdateExpiredSubscriptions(ctx context.Context, req *UpdateExpiredSubscriptionsRequest, opts ...http.CallOption) (rsp *UpdateExpiredSubscriptionsReply, err error)
 	// UpdatePlan 更新订阅套餐
 	UpdatePlan(ctx context.Context, req *UpdatePlanRequest, opts ...http.CallOption) (rsp *UpdatePlanReply, err error)
+	// UpdatePlanPricing 更新区域定价
+	UpdatePlanPricing(ctx context.Context, req *UpdatePlanPricingRequest, opts ...http.CallOption) (rsp *UpdatePlanPricingReply, err error)
 }
 
 type SubscriptionHTTPClientImpl struct {
@@ -456,8 +575,8 @@ func NewSubscriptionHTTPClient(client *http.Client) SubscriptionHTTPClient {
 }
 
 // CancelSubscription 取消订阅
-func (c *SubscriptionHTTPClientImpl) CancelSubscription(ctx context.Context, in *CancelSubscriptionRequest, opts ...http.CallOption) (*CancelSubscriptionReply, error) {
-	var out CancelSubscriptionReply
+func (c *SubscriptionHTTPClientImpl) CancelSubscription(ctx context.Context, in *CancelSubscriptionRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
 	pattern := "/v1/subscription/cancel"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSubscriptionCancelSubscription))
@@ -483,6 +602,20 @@ func (c *SubscriptionHTTPClientImpl) CreatePlan(ctx context.Context, in *CreateP
 	return &out, nil
 }
 
+// CreatePlanPricing 创建区域定价
+func (c *SubscriptionHTTPClientImpl) CreatePlanPricing(ctx context.Context, in *CreatePlanPricingRequest, opts ...http.CallOption) (*CreatePlanPricingReply, error) {
+	var out CreatePlanPricingReply
+	pattern := "/v1/subscription/plans/{planId}/pricings"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationSubscriptionCreatePlanPricing))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 // CreateSubscriptionOrder 创建订阅订单 (调用 Payment Service)
 func (c *SubscriptionHTTPClientImpl) CreateSubscriptionOrder(ctx context.Context, in *CreateSubscriptionOrderRequest, opts ...http.CallOption) (*CreateSubscriptionOrderReply, error) {
 	var out CreateSubscriptionOrderReply
@@ -500,9 +633,23 @@ func (c *SubscriptionHTTPClientImpl) CreateSubscriptionOrder(ctx context.Context
 // DeletePlan 删除订阅套餐
 func (c *SubscriptionHTTPClientImpl) DeletePlan(ctx context.Context, in *DeletePlanRequest, opts ...http.CallOption) (*DeletePlanReply, error) {
 	var out DeletePlanReply
-	pattern := "/v1/subscription/plans/{plan_id}"
+	pattern := "/v1/subscription/plans/{planId}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationSubscriptionDeletePlan))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// DeletePlanPricing 删除区域定价
+func (c *SubscriptionHTTPClientImpl) DeletePlanPricing(ctx context.Context, in *DeletePlanPricingRequest, opts ...http.CallOption) (*DeletePlanPricingReply, error) {
+	var out DeletePlanPricingReply
+	pattern := "/v1/subscription/pricings/{planPricingId}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationSubscriptionDeletePlanPricing))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
 	if err != nil {
@@ -554,13 +701,27 @@ func (c *SubscriptionHTTPClientImpl) GetSubscriptionHistory(ctx context.Context,
 }
 
 // HandlePaymentSuccess 支付回调处理 (通常由 Payment Service 或 MQ 调用)
-func (c *SubscriptionHTTPClientImpl) HandlePaymentSuccess(ctx context.Context, in *HandlePaymentSuccessRequest, opts ...http.CallOption) (*HandlePaymentSuccessReply, error) {
-	var out HandlePaymentSuccessReply
+func (c *SubscriptionHTTPClientImpl) HandlePaymentSuccess(ctx context.Context, in *HandlePaymentSuccessRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
 	pattern := "/v1/subscription/payment/success"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSubscriptionHandlePaymentSuccess))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// ListPlanPricings 获取套餐的区域定价列表
+func (c *SubscriptionHTTPClientImpl) ListPlanPricings(ctx context.Context, in *ListPlanPricingsRequest, opts ...http.CallOption) (*ListPlanPricingsReply, error) {
+	var out ListPlanPricingsReply
+	pattern := "/v1/subscription/plans/{planId}/pricings"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationSubscriptionListPlanPricings))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -582,8 +743,8 @@ func (c *SubscriptionHTTPClientImpl) ListPlans(ctx context.Context, in *ListPlan
 }
 
 // PauseSubscription 暂停订阅
-func (c *SubscriptionHTTPClientImpl) PauseSubscription(ctx context.Context, in *PauseSubscriptionRequest, opts ...http.CallOption) (*PauseSubscriptionReply, error) {
-	var out PauseSubscriptionReply
+func (c *SubscriptionHTTPClientImpl) PauseSubscription(ctx context.Context, in *PauseSubscriptionRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
 	pattern := "/v1/subscription/pause"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSubscriptionPauseSubscription))
@@ -610,8 +771,8 @@ func (c *SubscriptionHTTPClientImpl) ProcessAutoRenewals(ctx context.Context, in
 }
 
 // ResumeSubscription 恢复订阅
-func (c *SubscriptionHTTPClientImpl) ResumeSubscription(ctx context.Context, in *ResumeSubscriptionRequest, opts ...http.CallOption) (*ResumeSubscriptionReply, error) {
-	var out ResumeSubscriptionReply
+func (c *SubscriptionHTTPClientImpl) ResumeSubscription(ctx context.Context, in *ResumeSubscriptionRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
 	pattern := "/v1/subscription/resume"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSubscriptionResumeSubscription))
@@ -624,8 +785,8 @@ func (c *SubscriptionHTTPClientImpl) ResumeSubscription(ctx context.Context, in 
 }
 
 // SetAutoRenew 设置自动续费
-func (c *SubscriptionHTTPClientImpl) SetAutoRenew(ctx context.Context, in *SetAutoRenewRequest, opts ...http.CallOption) (*SetAutoRenewReply, error) {
-	var out SetAutoRenewReply
+func (c *SubscriptionHTTPClientImpl) SetAutoRenew(ctx context.Context, in *SetAutoRenewRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
+	var out emptypb.Empty
 	pattern := "/v1/subscription/auto-renew"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSubscriptionSetAutoRenew))
@@ -654,9 +815,23 @@ func (c *SubscriptionHTTPClientImpl) UpdateExpiredSubscriptions(ctx context.Cont
 // UpdatePlan 更新订阅套餐
 func (c *SubscriptionHTTPClientImpl) UpdatePlan(ctx context.Context, in *UpdatePlanRequest, opts ...http.CallOption) (*UpdatePlanReply, error) {
 	var out UpdatePlanReply
-	pattern := "/v1/subscription/plans/{plan_id}"
+	pattern := "/v1/subscription/plans/{planId}"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSubscriptionUpdatePlan))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// UpdatePlanPricing 更新区域定价
+func (c *SubscriptionHTTPClientImpl) UpdatePlanPricing(ctx context.Context, in *UpdatePlanPricingRequest, opts ...http.CallOption) (*UpdatePlanPricingReply, error) {
+	var out UpdatePlanPricingReply
+	pattern := "/v1/subscription/pricings/{planPricingId}"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationSubscriptionUpdatePlanPricing))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
 	if err != nil {

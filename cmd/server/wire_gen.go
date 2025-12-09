@@ -39,8 +39,14 @@ func wireApp(bootstrap *conf.Bootstrap, logger log.Logger) (*kratos.App, func(),
 		cleanup()
 		return nil, nil, err
 	}
+	passportClient, err := data.NewPassportClient(bootstrap)
+	if err != nil {
+		cleanup()
+		return nil, nil, err
+	}
+	regionDetectionService := biz.NewRegionDetectionService(passportClient, logger)
 	redsync := data.NewRedsync(client)
-	subscriptionUsecase := biz.NewSubscriptionUsecase(planRepo, userSubscriptionRepo, subscriptionOrderRepo, subscriptionHistoryRepo, paymentClient, dataData, redsync, bootstrap, logger)
+	subscriptionUsecase := biz.NewSubscriptionUsecase(planRepo, userSubscriptionRepo, subscriptionOrderRepo, subscriptionHistoryRepo, paymentClient, regionDetectionService, dataData, redsync, bootstrap, logger)
 	subscriptionService := service.NewSubscriptionService(subscriptionUsecase)
 	grpcServer := server.NewGRPCServer(bootstrap, subscriptionService, logger)
 	httpServer := server.NewHTTPServer(bootstrap, subscriptionService, logger)

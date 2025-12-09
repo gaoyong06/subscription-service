@@ -35,7 +35,7 @@ ci:
 
 # 全局变量定义
 variables:
-  userId: 1001
+  uid: 1001
   planId: "plan_monthly"
 
 # 测试场景

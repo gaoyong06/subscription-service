@@ -1,17 +1,14 @@
 package server
 
 import (
-	"encoding/json"
-	stdhttp "net/http"
-
 	"github.com/gaoyong06/go-pkg/health"
 	"github.com/gaoyong06/go-pkg/middleware/i18n"
+	"github.com/gaoyong06/go-pkg/middleware/response"
 
 	v1 "xinyuan_tech/subscription-service/api/subscription/v1"
 	"xinyuan_tech/subscription-service/internal/conf"
 	"xinyuan_tech/subscription-service/internal/service"
 
-	kerrors "github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/validate"
@@ -20,6 +17,17 @@ import (
 
 // NewHTTPServer new an HTTP server.
 func NewHTTPServer(c *conf.Bootstrap, sub *service.SubscriptionService, logger log.Logger) *http.Server {
+	// 响应中间件配置
+	responseConfig := &response.Config{
+		EnableUnifiedResponse: true,
+		IncludeDetailedError:  true, // 开发环境可以为 true
+		IncludeHost:           true,
+		IncludeTraceId:        true,
+	}
+
+	// 使用默认错误处理器（已支持 Kratos errors 的 HTTP 状态码映射）
+	errorHandler := response.NewDefaultErrorHandler()
+
 	var opts = []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),
@@ -28,7 +36,10 @@ func NewHTTPServer(c *conf.Bootstrap, sub *service.SubscriptionService, logger l
 			// 添加 i18n 中间件
 			i18n.Middleware(),
 		),
-		http.ErrorEncoder(customErrorEncoder),
+		// 使用统一响应格式编码器（已支持 OPTIONS 请求处理）
+		http.ResponseEncoder(response.NewResponseEncoder(errorHandler, responseConfig)),
+		// 使用统一错误编码器
+		http.ErrorEncoder(response.NewErrorEncoder(errorHandler)),
 	}
 	if c != nil && c.GetServer() != nil && c.GetServer().GetHttp() != nil {
 		if addr := c.GetServer().GetHttp().GetAddr(); addr != "" {
@@ -49,39 +60,4 @@ func NewHTTPServer(c *conf.Bootstrap, sub *service.SubscriptionService, logger l
 	})
 
 	return srv
-}
-
-func customErrorEncoder(w stdhttp.ResponseWriter, r *stdhttp.Request, err error) {
-	se := kerrors.FromError(err)
-	status := stdhttp.StatusInternalServerError
-	response := map[string]interface{}{
-		"code":    status,
-		"message": "internal server error",
-	}
-
-	if se != nil {
-		status = mapErrorStatus(int(se.Code))
-		response["code"] = se.Code
-		response["reason"] = se.Reason
-		response["message"] = se.Message
-		if len(se.Metadata) > 0 {
-			response["metadata"] = se.Metadata
-		}
-	} else if err != nil {
-		response["message"] = err.Error()
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(response)
-}
-
-func mapErrorStatus(code int) int {
-	if code >= 100 && code < 600 {
-		return code
-	}
-	if code >= 130000 && code < 140000 {
-		return stdhttp.StatusBadRequest
-	}
-	return stdhttp.StatusInternalServerError
 }

@@ -215,11 +215,11 @@ func (x *Data) GetRedis() *Data_Redis {
 
 // 客户端配置（外部依赖服务）
 type Client struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	PaymentService   *PaymentService        `protobuf:"bytes,1,opt,name=payment_service,json=paymentService,proto3" json:"payment_service,omitempty"`
-	MarketingService *MarketingService      `protobuf:"bytes,2,opt,name=marketing_service,json=marketingService,proto3" json:"marketing_service,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	PaymentService  *PaymentService        `protobuf:"bytes,1,opt,name=payment_service,json=paymentService,proto3" json:"payment_service,omitempty"`
+	PassportService *PassportService       `protobuf:"bytes,2,opt,name=passport_service,json=passportService,proto3" json:"passport_service,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *Client) Reset() {
@@ -259,9 +259,9 @@ func (x *Client) GetPaymentService() *PaymentService {
 	return nil
 }
 
-func (x *Client) GetMarketingService() *MarketingService {
+func (x *Client) GetPassportService() *PassportService {
 	if x != nil {
-		return x.MarketingService
+		return x.PassportService
 	}
 	return nil
 }
@@ -311,28 +311,28 @@ func (x *PaymentService) GetAddr() string {
 	return ""
 }
 
-// 营销服务配置
-type MarketingService struct {
+// 用户服务配置
+type PassportService struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Addr          string                 `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *MarketingService) Reset() {
-	*x = MarketingService{}
+func (x *PassportService) Reset() {
+	*x = PassportService{}
 	mi := &file_conf_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *MarketingService) String() string {
+func (x *PassportService) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*MarketingService) ProtoMessage() {}
+func (*PassportService) ProtoMessage() {}
 
-func (x *MarketingService) ProtoReflect() protoreflect.Message {
+func (x *PassportService) ProtoReflect() protoreflect.Message {
 	mi := &file_conf_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -344,12 +344,12 @@ func (x *MarketingService) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use MarketingService.ProtoReflect.Descriptor instead.
-func (*MarketingService) Descriptor() ([]byte, []int) {
+// Deprecated: Use PassportService.ProtoReflect.Descriptor instead.
+func (*PassportService) Descriptor() ([]byte, []int) {
 	return file_conf_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *MarketingService) GetAddr() string {
+func (x *PassportService) GetAddr() string {
 	if x != nil {
 		return x.Addr
 	}
@@ -925,13 +925,13 @@ const file_conf_proto_rawDesc = "" +
 	"\fread_timeout\x18\x06 \x01(\v2\x19.google.protobuf.DurationR\vreadTimeout\x12>\n" +
 	"\rwrite_timeout\x18\a \x01(\v2\x19.google.protobuf.DurationR\fwriteTimeout\x12\x1b\n" +
 	"\tpool_size\x18\b \x01(\x05R\bpoolSize\x12$\n" +
-	"\x0emin_idle_conns\x18\t \x01(\x05R\fminIdleConns\"\xa6\x01\n" +
+	"\x0emin_idle_conns\x18\t \x01(\x05R\fminIdleConns\"\xa3\x01\n" +
 	"\x06Client\x12J\n" +
-	"\x0fpayment_service\x18\x01 \x01(\v2!.subscription.conf.PaymentServiceR\x0epaymentService\x12P\n" +
-	"\x11marketing_service\x18\x02 \x01(\v2#.subscription.conf.MarketingServiceR\x10marketingService\"$\n" +
+	"\x0fpayment_service\x18\x01 \x01(\v2!.subscription.conf.PaymentServiceR\x0epaymentService\x12M\n" +
+	"\x10passport_service\x18\x02 \x01(\v2\".subscription.conf.PassportServiceR\x0fpassportService\"$\n" +
 	"\x0ePaymentService\x12\x12\n" +
-	"\x04addr\x18\x01 \x01(\tR\x04addr\"&\n" +
-	"\x10MarketingService\x12\x12\n" +
+	"\x04addr\x18\x01 \x01(\tR\x04addr\"%\n" +
+	"\x0fPassportService\x12\x12\n" +
 	"\x04addr\x18\x01 \x01(\tR\x04addr\"\x8e\x01\n" +
 	"\fSubscription\x12\x1d\n" +
 	"\n" +
@@ -972,7 +972,7 @@ var file_conf_proto_goTypes = []any{
 	(*Data)(nil),                // 2: subscription.conf.Data
 	(*Client)(nil),              // 3: subscription.conf.Client
 	(*PaymentService)(nil),      // 4: subscription.conf.PaymentService
-	(*MarketingService)(nil),    // 5: subscription.conf.MarketingService
+	(*PassportService)(nil),     // 5: subscription.conf.PassportService
 	(*Subscription)(nil),        // 6: subscription.conf.Subscription
 	(*Cron)(nil),                // 7: subscription.conf.Cron
 	(*Log)(nil),                 // 8: subscription.conf.Log
@@ -994,7 +994,7 @@ var file_conf_proto_depIdxs = []int32{
 	11, // 8: subscription.conf.Data.database:type_name -> subscription.conf.Data.Database
 	12, // 9: subscription.conf.Data.redis:type_name -> subscription.conf.Data.Redis
 	4,  // 10: subscription.conf.Client.payment_service:type_name -> subscription.conf.PaymentService
-	5,  // 11: subscription.conf.Client.marketing_service:type_name -> subscription.conf.MarketingService
+	5,  // 11: subscription.conf.Client.passport_service:type_name -> subscription.conf.PassportService
 	13, // 12: subscription.conf.Server.HTTP.timeout:type_name -> google.protobuf.Duration
 	13, // 13: subscription.conf.Server.GRPC.timeout:type_name -> google.protobuf.Duration
 	13, // 14: subscription.conf.Data.Database.conn_max_lifetime:type_name -> google.protobuf.Duration

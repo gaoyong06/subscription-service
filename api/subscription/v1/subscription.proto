@@ -6,6 +6,7 @@ option go_package = "xinyuan_tech/subscription-service/api/subscription/v1;v1";
 
 import "google/api/annotations.proto";
 import "validate/validate.proto";
+import "google/protobuf/empty.proto";
 
 service Subscription {
   // 获取所有订阅套餐
@@ -28,28 +29,28 @@ service Subscription {
     };
   }
   // 支付回调处理 (通常由 Payment Service 或 MQ 调用)
-  rpc HandlePaymentSuccess (HandlePaymentSuccessRequest) returns (HandlePaymentSuccessReply) {
+  rpc HandlePaymentSuccess (HandlePaymentSuccessRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post: "/v1/subscription/payment/success"
       body: "*"
     };
   }
   // 取消订阅
-  rpc CancelSubscription (CancelSubscriptionRequest) returns (CancelSubscriptionReply) {
+  rpc CancelSubscription (CancelSubscriptionRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post: "/v1/subscription/cancel"
       body: "*"
     };
   }
   // 暂停订阅
-  rpc PauseSubscription (PauseSubscriptionRequest) returns (PauseSubscriptionReply) {
+  rpc PauseSubscription (PauseSubscriptionRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post: "/v1/subscription/pause"
       body: "*"
     };
   }
   // 恢复订阅
-  rpc ResumeSubscription (ResumeSubscriptionRequest) returns (ResumeSubscriptionReply) {
+  rpc ResumeSubscription (ResumeSubscriptionRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post: "/v1/subscription/resume"
       body: "*"
@@ -62,7 +63,7 @@ service Subscription {
     };
   }
   // 设置自动续费
-  rpc SetAutoRenew (SetAutoRenewRequest) returns (SetAutoRenewReply) {
+  rpc SetAutoRenew (SetAutoRenewRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
       post: "/v1/subscription/auto-renew"
       body: "*"
@@ -98,40 +99,67 @@ service Subscription {
   // 更新订阅套餐
   rpc UpdatePlan (UpdatePlanRequest) returns (UpdatePlanReply) {
     option (google.api.http) = {
-      put: "/v1/subscription/plans/{plan_id}"
+      put: "/v1/subscription/plans/{planId}"
       body: "*"
     };
   }
   // 删除订阅套餐
   rpc DeletePlan (DeletePlanRequest) returns (DeletePlanReply) {
     option (google.api.http) = {
-      delete: "/v1/subscription/plans/{plan_id}"
+      delete: "/v1/subscription/plans/{planId}"
+    };
+  }
+  
+  // 获取套餐的区域定价列表
+  rpc ListPlanPricings (ListPlanPricingsRequest) returns (ListPlanPricingsReply) {
+    option (google.api.http) = {
+      get: "/v1/subscription/plans/{planId}/pricings"
+    };
+  }
+  // 创建区域定价
+  rpc CreatePlanPricing (CreatePlanPricingRequest) returns (CreatePlanPricingReply) {
+    option (google.api.http) = {
+      post: "/v1/subscription/plans/{planId}/pricings"
+      body: "*"
+    };
+  }
+  // 更新区域定价
+  rpc UpdatePlanPricing (UpdatePlanPricingRequest) returns (UpdatePlanPricingReply) {
+    option (google.api.http) = {
+      put: "/v1/subscription/pricings/{planPricingId}"
+      body: "*"
+    };
+  }
+  // 删除区域定价
+  rpc DeletePlanPricing (DeletePlanPricingRequest) returns (DeletePlanPricingReply) {
+    option (google.api.http) = {
+      delete: "/v1/subscription/pricings/{planPricingId}"
     };
   }
 }
 
 message Plan {
-  string id = 1;
+  string planId = 1;
   string name = 2;
   string description = 3;
   double price = 4;
   string currency = 5;
-  int32 duration_days = 6; // 持续天数
+  int32 durationDays = 6; // 持续天数
   string type = 7;         // free, pro, enterprise
-  string app_id = 8;       // 应用ID
+  string appId = 8;       // 应用ID
 }
 
 message ListPlansRequest {
-  string app_id = 1; // 可选，按应用ID筛选
+  string appId = 1; // 可选，按应用ID筛选
 }
 
 message CreatePlanRequest {
-  string app_id = 1 [(validate.rules).string = {min_len: 1}];
+  string appId = 1 [(validate.rules).string = {min_len: 1}];
   string name = 2 [(validate.rules).string = {min_len: 1, max_len: 100}];
   string description = 3;
   double price = 4 [(validate.rules).double = {gte: 0}];
   string currency = 5 [(validate.rules).string = {len: 3}];
-  int32 duration_days = 6 [(validate.rules).int32 = {gt: 0}];
+  int32 durationDays = 6 [(validate.rules).int32 = {gt: 0}];
   string type = 7 [(validate.rules).string = {min_len: 1}];
 }
 
@@ -140,12 +168,12 @@ message CreatePlanReply {
 }
 
 message UpdatePlanRequest {
-  string plan_id = 1 [(validate.rules).string = {min_len: 1}];
+  string planId = 1 [(validate.rules).string = {min_len: 1}];
   string name = 2;
   string description = 3;
   double price = 4;
   string currency = 5;
-  int32 duration_days = 6;
+  int32 durationDays = 6;
   string type = 7;
 }
 
@@ -154,11 +182,11 @@ message UpdatePlanReply {
 }
 
 message DeletePlanRequest {
-  string plan_id = 1 [(validate.rules).string = {min_len: 1}];
+  string planId = 1 [(validate.rules).string = {min_len: 1}];
 }
 
 message DeletePlanReply {
-  bool success = 1;
+  string planId = 1; // 被删除的套餐ID
 }
 
 message ListPlansReply {
@@ -170,37 +198,33 @@ message GetMySubscriptionRequest {
 }
 
 message GetMySubscriptionReply {
-  bool is_active = 1;
-  string plan_id = 2;
-  int64 start_time = 3;
-  int64 end_time = 4;
+  bool isActive = 1;
+  string planId = 2;
+  int64 startTime = 3;
+  int64 endTime = 4;
   string status = 5; // active, expired, paused, cancelled
-  bool auto_renew = 6; // 是否自动续费
+  bool autoRenew = 6; // 是否自动续费
 }
 
 message CreateSubscriptionOrderRequest {
   uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
-  string plan_id = 2 [(validate.rules).string = {min_len: 1, max_len: 50}];
-  string payment_method = 3 [(validate.rules).string = {in: ["alipay", "wechatpay"]}]; // alipay, wechatpay
+  string planId = 2 [(validate.rules).string = {min_len: 1, max_len: 50}];
+  string paymentMethod = 3 [(validate.rules).string = {in: ["alipay", "wechatpay"]}]; // alipay, wechatpay
   string region = 4; // 区域代码 (e.g., "CN", "US", "EU")，可选，默认 "default"
 }
 
 message CreateSubscriptionOrderReply {
-  string order_id = 1;       // 业务订单号
-  string payment_id = 2;     // 支付流水号
-  string pay_url = 3;
-  string pay_code = 4;
-  string pay_params = 5;
+  string orderId = 1;       // 业务订单号
+  string paymentId = 2;     // 支付流水号
+  string payUrl = 3;
+  string payCode = 4;
+  string payParams = 5;
 }
 
 message HandlePaymentSuccessRequest {
-  string order_id = 1 [(validate.rules).string = {min_len: 1, max_len: 100}];
-  string payment_id = 2 [(validate.rules).string = {min_len: 1, max_len: 100}];
+  string orderId = 1 [(validate.rules).string = {min_len: 1, max_len: 100}];
+  string paymentId = 2 [(validate.rules).string = {min_len: 1, max_len: 100}];
   double amount = 3 [(validate.rules).double = {gt: 0}];
-}
-
-message HandlePaymentSuccessReply {
-  bool success = 1;
 }
 
 // 取消订阅
@@ -209,20 +233,10 @@ message CancelSubscriptionRequest {
   string reason = 2; // 取消原因（可选）
 }
 
-message CancelSubscriptionReply {
-  bool success = 1;
-  string message = 2;
-}
-
 // 暂停订阅
 message PauseSubscriptionRequest {
   uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
   string reason = 2; // 暂停原因（可选）
-}
-
-message PauseSubscriptionReply {
-  bool success = 1;
-  string message = 2;
 }
 
 // 恢复订阅
@@ -230,61 +244,51 @@ message ResumeSubscriptionRequest {
   uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
 }
 
-message ResumeSubscriptionReply {
-  bool success = 1;
-  string message = 2;
-}
-
 // 订阅历史记录
 message SubscriptionHistoryItem {
   uint64 id = 1;
-  string plan_id = 2;
-  string plan_name = 3;
-  int64 start_time = 4;
-  int64 end_time = 5;
+  string planId = 2;
+  string planName = 3;
+  int64 startTime = 4;
+  int64 endTime = 5;
   string status = 6; // active, expired, paused, cancelled
   string action = 7; // created, renewed, upgraded, paused, resumed, cancelled
-  int64 created_at = 8;
+  int64 createdAt = 8;
 }
 
 message GetSubscriptionHistoryRequest {
   uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
   int32 page = 2; // 页码，从1开始
-  int32 page_size = 3; // 每页数量，默认10
+  int32 pageSize = 3; // 每页数量，默认10
 }
 
 message GetSubscriptionHistoryReply {
   repeated SubscriptionHistoryItem items = 1;
   int32 total = 2;
   int32 page = 3;
-  int32 page_size = 4;
+  int32 pageSize = 4;
 }
 
 // 自动续费设置
 message SetAutoRenewRequest {
   uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
-  bool auto_renew = 2; // true: 开启自动续费, false: 关闭自动续费
-}
-
-message SetAutoRenewReply {
-  bool success = 1;
-  string message = 2;
+  bool autoRenew = 2; // true: 开启自动续费, false: 关闭自动续费
 }
 
 // 获取即将过期的订阅
 message GetExpiringSubscriptionsRequest {
-  int32 days_before_expiry = 1 [(validate.rules).int32 = {gte: 1, lte: 30}]; // 过期前多少天，默认7天
+  int32 daysBeforeExpiry = 1 [(validate.rules).int32 = {gte: 1, lte: 30}]; // 过期前多少天，默认7天
   int32 page = 2; // 页码，从1开始
-  int32 page_size = 3; // 每页数量，默认10
+  int32 pageSize = 3; // 每页数量，默认10
 }
 
 message SubscriptionInfo {
   uint64 uid = 1;
-  string plan_id = 2;
-  string plan_name = 3;
-  int64 start_time = 4;
-  int64 end_time = 5;
-  bool auto_renew = 6;
+  string planId = 2;
+  string planName = 3;
+  int64 startTime = 4;
+  int64 endTime = 5;
+  bool autoRenew = 6;
   double amount = 7;
 }
 
@@ -292,7 +296,7 @@ message GetExpiringSubscriptionsReply {
   repeated SubscriptionInfo subscriptions = 1;
   int32 total = 2;
   int32 page = 3;
-  int32 page_size = 4;
+  int32 pageSize = 4;
 }
 
 // 批量更新过期订阅
@@ -301,28 +305,74 @@ message UpdateExpiredSubscriptionsRequest {
 }
 
 message UpdateExpiredSubscriptionsReply {
-  int32 updated_count = 1;
-  repeated uint64 updated_uids = 2; // 更新的用户ID列表
+  int32 updatedCount = 1;
+  repeated uint64 updatedUids = 2; // 更新的用户ID列表
 }
 
 // 自动续费处理
 message ProcessAutoRenewalsRequest {
-  int32 days_before_expiry = 1 [(validate.rules).int32 = {gte: 1, lte: 30}]; // 提前多少天续费，默认3天
-  bool dry_run = 2; // 是否为测试运行
+  int32 daysBeforeExpiry = 1 [(validate.rules).int32 = {gte: 1, lte: 30}]; // 提前多少天续费，默认3天
+  bool dryRun = 2; // 是否为测试运行
 }
 
 message AutoRenewResult {
   uint64 uid = 1;
-  string plan_id = 2;
+  string planId = 2;
   bool success = 3;
-  string order_id = 4;
-  string payment_id = 5;
-  string error_message = 6;
+  string orderId = 4;
+  string paymentId = 5;
+  string errorMessage = 6;
 }
 
 message ProcessAutoRenewalsReply {
-  int32 total_count = 1;    // 总共需要处理的数量
-  int32 success_count = 2;  // 成功的数量
-  int32 failed_count = 3;   // 失败的数量
+  int32 totalCount = 1;    // 总共需要处理的数量
+  int32 successCount = 2;  // 成功的数量
+  int32 failedCount = 3;   // 失败的数量
   repeated AutoRenewResult results = 4;
+}
+
+// 区域定价相关消息
+message PlanPricing {
+  uint64 planPricingId = 1;
+  string planId = 2;
+  string countryCode = 3; // ISO 3166-1 alpha-2 国家代码
+  double price = 4;
+  string currency = 5;
+}
+
+message ListPlanPricingsRequest {
+  string planId = 1 [(validate.rules).string = {min_len: 1}];
+}
+
+message ListPlanPricingsReply {
+  repeated PlanPricing pricings = 1;
+}
+
+message CreatePlanPricingRequest {
+  string planId = 1 [(validate.rules).string = {min_len: 1}];
+  string countryCode = 2 [(validate.rules).string = {len: 2}]; // ISO 3166-1 alpha-2
+  double price = 3 [(validate.rules).double = {gt: 0}];
+  string currency = 4 [(validate.rules).string = {len: 3}];
+}
+
+message CreatePlanPricingReply {
+  PlanPricing pricing = 1;
+}
+
+message UpdatePlanPricingRequest {
+  uint64 planPricingId = 1 [(validate.rules).uint64 = {gt: 0}];
+  double price = 2 [(validate.rules).double = {gt: 0}];
+  string currency = 3 [(validate.rules).string = {len: 3}];
+}
+
+message UpdatePlanPricingReply {
+  PlanPricing pricing = 1;
+}
+
+message DeletePlanPricingRequest {
+  uint64 planPricingId = 1 [(validate.rules).uint64 = {gt: 0}];
+}
+
+message DeletePlanPricingReply {
+  uint64 planPricingId = 1; // 被删除的区域定价ID
 }

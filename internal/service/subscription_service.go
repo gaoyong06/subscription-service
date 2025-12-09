@@ -7,7 +7,10 @@ import (
 	"xinyuan_tech/subscription-service/internal/biz"
 	"xinyuan_tech/subscription-service/internal/constants"
 
+	pkgUtils "github.com/gaoyong06/go-pkg/utils"
+	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // SubscriptionService 订阅服务
@@ -32,7 +35,7 @@ func (s *SubscriptionService) ListPlans(ctx context.Context, req *pb.ListPlansRe
 	pbPlans := make([]*pb.Plan, len(plans))
 	for i, p := range plans {
 		pbPlans[i] = &pb.Plan{
-			Id:           p.ID,
+			PlanId:       p.PlanID,
 			AppId:        p.AppID,
 			Name:         p.Name,
 			Description:  p.Description,
@@ -49,7 +52,7 @@ func (s *SubscriptionService) ListPlans(ctx context.Context, req *pb.ListPlansRe
 // CreatePlan 创建订阅套餐
 func (s *SubscriptionService) CreatePlan(ctx context.Context, req *pb.CreatePlanRequest) (*pb.CreatePlanReply, error) {
 	plan := &biz.Plan{
-		ID:           uuid.New().String(),
+		PlanID:       uuid.New().String(),
 		AppID:        req.AppId,
 		Name:         req.Name,
 		Description:  req.Description,
@@ -63,7 +66,7 @@ func (s *SubscriptionService) CreatePlan(ctx context.Context, req *pb.CreatePlan
 	}
 	return &pb.CreatePlanReply{
 		Plan: &pb.Plan{
-			Id:           plan.ID,
+			PlanId:       plan.PlanID,
 			AppId:        plan.AppID,
 			Name:         plan.Name,
 			Description:  plan.Description,
@@ -84,7 +87,7 @@ func (s *SubscriptionService) UpdatePlan(ctx context.Context, req *pb.UpdatePlan
 	}
 
 	plan := &biz.Plan{
-		ID:           req.PlanId,
+		PlanID:       req.PlanId,
 		AppID:        existing.AppID, // 保留原有的 AppID
 		Name:         req.Name,
 		Description:  req.Description,
@@ -98,7 +101,7 @@ func (s *SubscriptionService) UpdatePlan(ctx context.Context, req *pb.UpdatePlan
 	}
 	return &pb.UpdatePlanReply{
 		Plan: &pb.Plan{
-			Id:           plan.ID,
+			PlanId:       plan.PlanID,
 			AppId:        plan.AppID,
 			Name:         plan.Name,
 			Description:  plan.Description,
@@ -113,9 +116,81 @@ func (s *SubscriptionService) UpdatePlan(ctx context.Context, req *pb.UpdatePlan
 // DeletePlan 删除订阅套餐
 func (s *SubscriptionService) DeletePlan(ctx context.Context, req *pb.DeletePlanRequest) (*pb.DeletePlanReply, error) {
 	if err := s.uc.DeletePlan(ctx, req.PlanId); err != nil {
-		return &pb.DeletePlanReply{Success: false}, err
+		return nil, err
 	}
-	return &pb.DeletePlanReply{Success: true}, nil
+	return &pb.DeletePlanReply{PlanId: req.PlanId}, nil
+}
+
+// ListPlanPricings 获取套餐的区域定价列表
+func (s *SubscriptionService) ListPlanPricings(ctx context.Context, req *pb.ListPlanPricingsRequest) (*pb.ListPlanPricingsReply, error) {
+	pricings, err := s.uc.ListPlanPricings(ctx, req.PlanId)
+	if err != nil {
+		return nil, err
+	}
+
+	pbPricings := make([]*pb.PlanPricing, len(pricings))
+	for i, p := range pricings {
+		pbPricings[i] = &pb.PlanPricing{
+			PlanPricingId: p.PlanPricingID,
+			PlanId:        p.PlanID,
+			CountryCode:   p.CountryCode,
+			Price:         p.Price,
+			Currency:      p.Currency,
+		}
+	}
+
+	return &pb.ListPlanPricingsReply{Pricings: pbPricings}, nil
+}
+
+// CreatePlanPricing 创建区域定价
+func (s *SubscriptionService) CreatePlanPricing(ctx context.Context, req *pb.CreatePlanPricingRequest) (*pb.CreatePlanPricingReply, error) {
+	pricing := &biz.PlanPricing{
+		PlanID:      req.PlanId,
+		CountryCode: req.CountryCode,
+		Price:       req.Price,
+		Currency:    req.Currency,
+	}
+	if err := s.uc.CreatePlanPricing(ctx, pricing); err != nil {
+		return nil, err
+	}
+	return &pb.CreatePlanPricingReply{
+		Pricing: &pb.PlanPricing{
+			PlanPricingId: pricing.PlanPricingID,
+			PlanId:        pricing.PlanID,
+			CountryCode:   pricing.CountryCode,
+			Price:         pricing.Price,
+			Currency:      pricing.Currency,
+		},
+	}, nil
+}
+
+// UpdatePlanPricing 更新区域定价
+func (s *SubscriptionService) UpdatePlanPricing(ctx context.Context, req *pb.UpdatePlanPricingRequest) (*pb.UpdatePlanPricingReply, error) {
+	if err := s.uc.UpdatePlanPricing(ctx, req.PlanPricingId, req.Price, req.Currency); err != nil {
+		return nil, err
+	}
+	// 获取更新后的完整信息
+	pricing, err := s.uc.GetPlanPricingByID(ctx, req.PlanPricingId)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UpdatePlanPricingReply{
+		Pricing: &pb.PlanPricing{
+			PlanPricingId: pricing.PlanPricingID,
+			PlanId:        pricing.PlanID,
+			CountryCode:   pricing.CountryCode,
+			Price:         pricing.Price,
+			Currency:      pricing.Currency,
+		},
+	}, nil
+}
+
+// DeletePlanPricing 删除区域定价
+func (s *SubscriptionService) DeletePlanPricing(ctx context.Context, req *pb.DeletePlanPricingRequest) (*pb.DeletePlanPricingReply, error) {
+	if err := s.uc.DeletePlanPricing(ctx, req.PlanPricingId); err != nil {
+		return nil, err
+	}
+	return &pb.DeletePlanPricingReply{PlanPricingId: req.PlanPricingId}, nil
 }
 
 // GetMySubscription 获取用户当前订阅信息
@@ -141,7 +216,7 @@ func (s *SubscriptionService) GetMySubscription(ctx context.Context, req *pb.Get
 		StartTime: sub.StartTime.Unix(),
 		EndTime:   sub.EndTime.Unix(),
 		Status:    sub.Status,
-		AutoRenew: sub.AutoRenew,
+		AutoRenew: sub.IsAutoRenew,
 	}, nil
 }
 
@@ -153,22 +228,28 @@ func (s *SubscriptionService) CreateSubscriptionOrder(ctx context.Context, req *
 		return nil, err
 	}
 
-	// 从请求中获取 region，如果为空则使用默认值
+	// 从请求中获取 region，如果为空则自动推断
 	region := req.Region
+
+	// 如果 region 为空，从 HTTP 请求中提取信息用于自动推断
+	var clientIP, acceptLanguage, xLanguage string
 	if region == "" {
-		region = "default"
+		// 从 kratos transport 中提取 HTTP 信息
+		if tr, ok := transport.FromServerContext(ctx); ok {
+			header := tr.RequestHeader()
+			clientIP = pkgUtils.GetClientIP(ctx)
+			acceptLanguage = header.Get("Accept-Language")
+			xLanguage = header.Get("X-Language")
+		}
 	}
-	// 验证 region
-	if !constants.SupportedRegions[region] {
-		region = "default"
-	}
-	order, paymentID, payUrl, payCode, payParams, err := s.uc.CreateSubscriptionOrder(ctx, req.Uid, req.PlanId, req.PaymentMethod, region)
+
+	order, paymentID, payUrl, payCode, payParams, err := s.uc.CreateSubscriptionOrderWithContext(ctx, req.Uid, req.PlanId, req.PaymentMethod, region, clientIP, acceptLanguage, xLanguage)
 	if err != nil {
 		return nil, err
 	}
 
 	return &pb.CreateSubscriptionOrderReply{
-		OrderId:   order.ID,
+		OrderId:   order.OrderID,
 		PaymentId: paymentID,
 		PayUrl:    payUrl,
 		PayCode:   payCode,
@@ -178,57 +259,57 @@ func (s *SubscriptionService) CreateSubscriptionOrder(ctx context.Context, req *
 
 // HandlePaymentSuccess 处理支付成功回调
 // 接收支付成功通知，更新订单状态，激活或续费用户订阅
-func (s *SubscriptionService) HandlePaymentSuccess(ctx context.Context, req *pb.HandlePaymentSuccessRequest) (*pb.HandlePaymentSuccessReply, error) {
+func (s *SubscriptionService) HandlePaymentSuccess(ctx context.Context, req *pb.HandlePaymentSuccessRequest) (*emptypb.Empty, error) {
 	err := s.uc.HandlePaymentSuccess(ctx, req.OrderId, req.Amount)
 	if err != nil {
-		return &pb.HandlePaymentSuccessReply{Success: false}, err
+		return nil, err
 	}
-	return &pb.HandlePaymentSuccessReply{Success: true}, nil
+	return &emptypb.Empty{}, nil
 }
 
 // CancelSubscription 取消订阅
 // 用户主动取消订阅，订阅状态变更为已取消
-func (s *SubscriptionService) CancelSubscription(ctx context.Context, req *pb.CancelSubscriptionRequest) (*pb.CancelSubscriptionReply, error) {
+func (s *SubscriptionService) CancelSubscription(ctx context.Context, req *pb.CancelSubscriptionRequest) (*emptypb.Empty, error) {
 	// 权限验证
 	if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
-		return &pb.CancelSubscriptionReply{Success: false, Message: err.Error()}, nil
+		return nil, err
 	}
 
 	err := s.uc.CancelSubscription(ctx, req.Uid, req.Reason)
 	if err != nil {
-		return &pb.CancelSubscriptionReply{Success: false, Message: err.Error()}, nil
+		return nil, err
 	}
-	return &pb.CancelSubscriptionReply{Success: true, Message: "Subscription cancelled successfully"}, nil
+	return &emptypb.Empty{}, nil
 }
 
 // PauseSubscription 暂停订阅
 // 暂停用户订阅，订阅状态变更为已暂停
-func (s *SubscriptionService) PauseSubscription(ctx context.Context, req *pb.PauseSubscriptionRequest) (*pb.PauseSubscriptionReply, error) {
+func (s *SubscriptionService) PauseSubscription(ctx context.Context, req *pb.PauseSubscriptionRequest) (*emptypb.Empty, error) {
 	// 权限验证
 	if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
-		return &pb.PauseSubscriptionReply{Success: false, Message: err.Error()}, nil
+		return nil, err
 	}
 
 	err := s.uc.PauseSubscription(ctx, req.Uid, req.Reason)
 	if err != nil {
-		return &pb.PauseSubscriptionReply{Success: false, Message: err.Error()}, nil
+		return nil, err
 	}
-	return &pb.PauseSubscriptionReply{Success: true, Message: "Subscription paused successfully"}, nil
+	return &emptypb.Empty{}, nil
 }
 
 // ResumeSubscription 恢复订阅
 // 恢复已暂停的订阅，订阅状态变更为激活
-func (s *SubscriptionService) ResumeSubscription(ctx context.Context, req *pb.ResumeSubscriptionRequest) (*pb.ResumeSubscriptionReply, error) {
+func (s *SubscriptionService) ResumeSubscription(ctx context.Context, req *pb.ResumeSubscriptionRequest) (*emptypb.Empty, error) {
 	// 权限验证
 	if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
-		return &pb.ResumeSubscriptionReply{Success: false, Message: err.Error()}, nil
+		return nil, err
 	}
 
 	err := s.uc.ResumeSubscription(ctx, req.Uid)
 	if err != nil {
-		return &pb.ResumeSubscriptionReply{Success: false, Message: err.Error()}, nil
+		return nil, err
 	}
-	return &pb.ResumeSubscriptionReply{Success: true, Message: "Subscription resumed successfully"}, nil
+	return &emptypb.Empty{}, nil
 }
 
 // GetSubscriptionHistory 获取订阅历史记录
@@ -259,7 +340,7 @@ func (s *SubscriptionService) GetSubscriptionHistory(ctx context.Context, req *p
 	pbItems := make([]*pb.SubscriptionHistoryItem, len(items))
 	for i, item := range items {
 		pbItems[i] = &pb.SubscriptionHistoryItem{
-			Id:        item.ID,
+			Id:        item.SubscriptionHistoryID,
 			PlanId:    item.PlanID,
 			PlanName:  item.PlanName,
 			StartTime: item.StartTime.Unix(),
@@ -280,21 +361,17 @@ func (s *SubscriptionService) GetSubscriptionHistory(ctx context.Context, req *p
 
 // SetAutoRenew 设置自动续费
 // 开启或关闭用户订阅的自动续费功能
-func (s *SubscriptionService) SetAutoRenew(ctx context.Context, req *pb.SetAutoRenewRequest) (*pb.SetAutoRenewReply, error) {
+func (s *SubscriptionService) SetAutoRenew(ctx context.Context, req *pb.SetAutoRenewRequest) (*emptypb.Empty, error) {
 	// 权限验证
 	if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
-		return &pb.SetAutoRenewReply{Success: false, Message: err.Error()}, nil
+		return nil, err
 	}
 
 	err := s.uc.SetAutoRenew(ctx, req.Uid, req.AutoRenew)
 	if err != nil {
-		return &pb.SetAutoRenewReply{Success: false, Message: err.Error()}, nil
+		return nil, err
 	}
-	message := "Auto-renew disabled successfully"
-	if req.AutoRenew {
-		message = "Auto-renew enabled successfully"
-	}
-	return &pb.SetAutoRenewReply{Success: true, Message: message}, nil
+	return &emptypb.Empty{}, nil
 }
 
 // GetExpiringSubscriptions 获取即将过期的订阅列表
@@ -323,7 +400,7 @@ func (s *SubscriptionService) GetExpiringSubscriptions(ctx context.Context, req 
 	planMap := make(map[string]*biz.Plan)
 	if err == nil {
 		for _, p := range allPlans {
-			planMap[p.ID] = p
+			planMap[p.PlanID] = p
 		}
 	}
 
@@ -344,7 +421,7 @@ func (s *SubscriptionService) GetExpiringSubscriptions(ctx context.Context, req 
 			PlanName:  planName,
 			StartTime: sub.StartTime.Unix(),
 			EndTime:   sub.EndTime.Unix(),
-			AutoRenew: sub.AutoRenew,
+			AutoRenew: sub.IsAutoRenew,
 			Amount:    amount,
 		}
 	}

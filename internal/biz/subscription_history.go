@@ -7,15 +7,16 @@ import (
 
 // SubscriptionHistory 订阅历史记录
 type SubscriptionHistory struct {
-	ID        uint64
-	UserID    uint64
-	PlanID    string
-	PlanName  string
-	StartTime time.Time
-	EndTime   time.Time
-	Status    string
-	Action    string // created, renewed, upgraded, paused, resumed, cancelled
-	CreatedAt time.Time
+	SubscriptionHistoryID uint64
+	UID                   uint64
+	PlanID                string
+	PlanName              string
+	AppID                 string // 应用ID（冗余字段，便于按app统计和查询）
+	StartTime             time.Time
+	EndTime               time.Time
+	Status                string
+	Action                string // created, renewed, upgraded, paused, resumed, cancelled
+	CreatedAt             time.Time
 }
 
 // SubscriptionHistoryRepo 订阅历史记录仓库接口

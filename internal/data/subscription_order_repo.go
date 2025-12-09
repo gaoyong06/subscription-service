@@ -25,8 +25,9 @@ func NewSubscriptionOrderRepo(data *Data, logger log.Logger) biz.SubscriptionOrd
 // CreateOrder 创建订单
 func (r *orderRepo) CreateOrder(ctx context.Context, order *biz.SubscriptionOrder) error {
 	m := &model.SubscriptionOrder{
-		ID:            order.ID,
-		UserID:        order.UserID,
+		OrderID:       order.OrderID,
+		PaymentID:     order.PaymentID,
+		UID:           order.UID,
 		PlanID:        order.PlanID,
 		AppID:         order.AppID,
 		Amount:        order.Amount,
@@ -34,7 +35,7 @@ func (r *orderRepo) CreateOrder(ctx context.Context, order *biz.SubscriptionOrde
 		CreatedAt:     order.CreatedAt,
 	}
 	if err := r.data.db.WithContext(ctx).Create(m).Error; err != nil {
-		r.log.Errorf("Failed to create order %s: %v", order.ID, err)
+		r.log.Errorf("Failed to create order %s: %v", order.OrderID, err)
 		return err
 	}
 	return nil
@@ -48,8 +49,9 @@ func (r *orderRepo) GetOrder(ctx context.Context, orderID string) (*biz.Subscrip
 		return nil, err
 	}
 	return &biz.SubscriptionOrder{
-		ID:            m.ID,
-		UserID:        m.UserID,
+		OrderID:       m.OrderID,
+		PaymentID:     m.PaymentID,
+		UID:           m.UID,
 		PlanID:        m.PlanID,
 		AppID:         m.AppID,
 		Amount:        m.Amount,
@@ -61,8 +63,9 @@ func (r *orderRepo) GetOrder(ctx context.Context, orderID string) (*biz.Subscrip
 // UpdateOrder 更新订单
 func (r *orderRepo) UpdateOrder(ctx context.Context, order *biz.SubscriptionOrder) error {
 	m := &model.SubscriptionOrder{
-		ID:            order.ID,
-		UserID:        order.UserID,
+		OrderID:       order.OrderID,
+		PaymentID:     order.PaymentID,
+		UID:           order.UID,
 		PlanID:        order.PlanID,
 		AppID:         order.AppID,
 		Amount:        order.Amount,
@@ -70,7 +73,7 @@ func (r *orderRepo) UpdateOrder(ctx context.Context, order *biz.SubscriptionOrde
 		CreatedAt:     order.CreatedAt,
 	}
 	if err := r.data.db.WithContext(ctx).Save(m).Error; err != nil {
-		r.log.Errorf("Failed to update order %s: %v", order.ID, err)
+		r.log.Errorf("Failed to update order %s: %v", order.OrderID, err)
 		return err
 	}
 	return nil
