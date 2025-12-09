@@ -150,17 +150,15 @@ message Plan {
 }
 
 message ListPlansRequest {
-  string appId = 1; // 可选，按应用ID筛选
 }
 
 message CreatePlanRequest {
-  string appId = 1 [(validate.rules).string = {min_len: 1}];
-  string name = 2 [(validate.rules).string = {min_len: 1, max_len: 100}];
-  string description = 3;
-  double price = 4 [(validate.rules).double = {gte: 0}];
-  string currency = 5 [(validate.rules).string = {len: 3}];
-  int32 durationDays = 6 [(validate.rules).int32 = {gt: 0}];
-  string type = 7 [(validate.rules).string = {min_len: 1}];
+  string name = 1 [(validate.rules).string = {min_len: 1, max_len: 100}];
+  string description = 2;
+  double price = 3 [(validate.rules).double = {gte: 0}];
+  string currency = 4 [(validate.rules).string = {len: 3}];
+  int32 durationDays = 5 [(validate.rules).int32 = {gt: 0}];
+  string type = 6 [(validate.rules).string = {min_len: 1}];
 }
 
 message CreatePlanReply {

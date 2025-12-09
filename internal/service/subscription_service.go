@@ -7,6 +7,8 @@ import (
 	"xinyuan_tech/subscription-service/internal/biz"
 	"xinyuan_tech/subscription-service/internal/constants"
 
+	pkgErrors "github.com/gaoyong06/go-pkg/errors"
+	"github.com/gaoyong06/go-pkg/middleware/app_id"
 	pkgUtils "github.com/gaoyong06/go-pkg/utils"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/google/uuid"
@@ -27,7 +29,13 @@ func NewSubscriptionService(uc *biz.SubscriptionUsecase) *SubscriptionService {
 // ListPlans 获取所有订阅套餐列表
 // 返回系统中所有可用的订阅套餐信息
 func (s *SubscriptionService) ListPlans(ctx context.Context, req *pb.ListPlansRequest) (*pb.ListPlansReply, error) {
-	plans, err := s.uc.ListPlans(ctx, req.AppId)
+	// 获取 app_id（只从 Context，由中间件从 Header 提取）
+	appID := app_id.GetAppIDFromContext(ctx)
+	if appID == "" {
+		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+	}
+
+	plans, err := s.uc.ListPlans(ctx, appID)
 	if err != nil {
 		return nil, err
 	}
@@ -51,9 +59,15 @@ func (s *SubscriptionService) ListPlans(ctx context.Context, req *pb.ListPlansRe
 
 // CreatePlan 创建订阅套餐
 func (s *SubscriptionService) CreatePlan(ctx context.Context, req *pb.CreatePlanRequest) (*pb.CreatePlanReply, error) {
+	// 获取 app_id（只从 Context，由中间件从 Header 提取）
+	appID := app_id.GetAppIDFromContext(ctx)
+	if appID == "" {
+		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+	}
+
 	plan := &biz.Plan{
 		PlanID:       uuid.New().String(),
-		AppID:        req.AppId,
+		AppID:        appID,
 		Name:         req.Name,
 		Description:  req.Description,
 		Price:        req.Price,

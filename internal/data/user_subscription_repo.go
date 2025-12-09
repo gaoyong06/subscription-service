@@ -88,16 +88,10 @@ func (r *subscriptionRepo) GetSubscription(ctx context.Context, userID uint64) (
 
 // SaveSubscription 保存订阅
 func (r *subscriptionRepo) SaveSubscription(ctx context.Context, sub *biz.UserSubscription) error {
-	// 如果 AppID 为空，从 plan 表获取
+	// app_id 应该由业务层从 Context 获取并传入，不再通过 plan 表查询获取
 	appID := sub.AppID
-	if appID == "" && sub.PlanID != "" {
-		// 通过 plan_id 查询 plan 表获取 app_id
-		var plan model.Plan
-		if err := r.data.db.WithContext(ctx).Where("plan_id = ?", sub.PlanID).First(&plan).Error; err == nil {
-			appID = plan.AppID
-		} else {
-			r.log.Warnf("Failed to get plan for app_id: %v, will use empty string", err)
-		}
+	if appID == "" {
+		r.log.Warnf("app_id is empty in UserSubscription, this should be set by business layer from Context")
 	}
 
 	m := &model.UserSubscription{

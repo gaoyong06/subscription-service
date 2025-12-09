@@ -9,6 +9,7 @@ import (
 	"xinyuan_tech/subscription-service/internal/errors"
 
 	pkgErrors "github.com/gaoyong06/go-pkg/errors"
+	"github.com/gaoyong06/go-pkg/middleware/app_id"
 )
 
 // SubscriptionOrder 简易订单记录 (用于记录订阅购买请求)
@@ -79,7 +80,14 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrderWithContext(ctx context.Co
 	}
 	uc.log.Infof("Found plan pricing: countryCode=%s, price=%.2f %s", pricing.CountryCode, pricing.Price, pricing.Currency)
 
-	// 2. 获取套餐信息（用于获取 app_id 和名称）
+	// 2. 获取 app_id（优先从 Context，由中间件从 Header 提取）
+	appID := app_id.GetAppIDFromContext(ctx)
+	if appID == "" {
+		uc.log.Errorf("app_id is required, please provide X-App-Id header")
+		return nil, "", "", "", "", pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+	}
+
+	// 3. 获取套餐信息（用于获取名称等信息，并验证 app_id 是否匹配）
 	plan, err := uc.planRepo.GetPlan(ctx, planID)
 	if err != nil {
 		uc.log.Errorf("Failed to get plan: %v", err)
@@ -90,14 +98,20 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrderWithContext(ctx context.Co
 		return nil, "", "", "", "", pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodePlanNotFound)
 	}
 
-	// 3. 创建本地订单
+	// 4. 验证 app_id 是否与 plan 的 app_id 匹配（数据一致性校验）
+	if plan.AppID != "" && plan.AppID != appID {
+		uc.log.Errorf("app_id mismatch: plan %s belongs to app %s, but request app_id is %s", planID, plan.AppID, appID)
+		return nil, "", "", "", "", pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+	}
+
+	// 5. 创建本地订单
 	orderID := fmt.Sprintf("SUB%d%d", time.Now().UnixNano(), userID)
 	order := &SubscriptionOrder{
 		OrderID:       orderID,
 		PaymentID:     "", // 初始为空，调用支付服务后更新
 		UID:           userID,
 		PlanID:        planID,
-		AppID:         plan.AppID, // 保存 app_id
+		AppID:         appID, // 使用从 Context 获取的 app_id
 		Amount:        pricing.Price,
 		PaymentStatus: constants.PaymentStatusPending,
 		CreatedAt:     time.Now().UTC(),
@@ -108,7 +122,7 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrderWithContext(ctx context.Co
 	}
 	uc.log.Infof("Created order: %s", orderID)
 
-	// 4. 调用支付服务
+	// 6. 调用支付服务
 	// 从配置中获取 ReturnURL
 	returnURL := ""
 	if uc.config != nil && uc.config.GetSubscription() != nil {
@@ -124,12 +138,6 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrderWithContext(ctx context.Co
 		subject = "Subscription: " + plan.Name
 	}
 
-	// 使用 plan 中的 app_id
-	appID := plan.AppID
-	if appID == "" {
-		uc.log.Warnf("Plan %s has no app_id, using empty string", planID)
-	}
-
 	uc.log.Infof("Calling payment service: orderID=%s, appID=%s, amount=%.2f %s, method=%s", orderID, appID, pricing.Price, pricing.Currency, method)
 	paymentID, payUrl, payCode, payParams, err := uc.paymentClient.CreatePayment(ctx, orderID, userID, appID, pricing.Price, pricing.Currency, method, subject, returnURL)
 	if err != nil {
@@ -138,7 +146,7 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrderWithContext(ctx context.Co
 	}
 	uc.log.Infof("Payment created: paymentID=%s", paymentID)
 
-	// 5. 更新订单，保存 payment_id
+	// 7. 更新订单，保存 payment_id
 	order.PaymentID = paymentID
 	if err := uc.orderRepo.UpdateOrder(ctx, order); err != nil {
 		uc.log.Errorf("Failed to update order with payment_id: %v", err)

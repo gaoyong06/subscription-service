@@ -76,3 +76,11 @@ const (
 	PaymentStatusRefunded          = "refunded"           // 已全额退款
 	PaymentStatusPartiallyRefunded = "partially_refunded" // 部分退款
 )
+
+// 支付来源常量（用于 payment-service）
+const (
+	// PaymentSourceBilling 充值来源
+	PaymentSourceBilling = "billing"
+	// PaymentSourceSubscription 订阅来源
+	PaymentSourceSubscription = "subscription"
+)

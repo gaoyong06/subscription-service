@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"xinyuan_tech/subscription-service/internal/biz"
 	"xinyuan_tech/subscription-service/internal/conf"
+	"xinyuan_tech/subscription-service/internal/constants"
 
 	paymentv1 "xinyuan_tech/payment-service/api/payment/v1"
 
@@ -54,8 +55,8 @@ func (c *paymentServiceClient) CreatePayment(ctx context.Context, orderID string
 	req := &paymentv1.CreatePaymentRequest{
 		OrderId:   orderID,
 		UserId:    userID,
-		AppId:     appID, // 传递应用ID
-		Source:    "subscription", // 标记来源为订阅
+		AppId:     appID, // 传递应用ID（注意：此字段已从 proto 移除，但生成的代码可能仍存在，需要重新生成 proto）
+		Source:    constants.PaymentSourceSubscription, // 标记来源为订阅
 		Amount:    int64(amount),
 		Currency:  currency,
 		Method:    paymentMethod,
