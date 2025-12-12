@@ -150,6 +150,7 @@ message Plan {
 }
 
 message ListPlansRequest {
+  string appId = 1;  // 应用ID（查询参数，必填）
 }
 
 message CreatePlanRequest {

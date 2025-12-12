@@ -210,6 +210,11 @@ paths:
                 - Subscription
             description: 获取所有订阅套餐
             operationId: Subscription_ListPlans
+            parameters:
+                - name: appId
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK

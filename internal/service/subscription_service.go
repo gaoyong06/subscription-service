@@ -9,6 +9,7 @@ import (
 
 	pkgErrors "github.com/gaoyong06/go-pkg/errors"
 	"github.com/gaoyong06/go-pkg/middleware/app_id"
+	"github.com/gaoyong06/go-pkg/middleware/developer_id"
 	pkgUtils "github.com/gaoyong06/go-pkg/utils"
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/google/uuid"
@@ -65,9 +66,16 @@ func (s *SubscriptionService) CreatePlan(ctx context.Context, req *pb.CreatePlan
 		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
 	}
 
+	// 获取开发者 ID（从 Context，由中间件从 X-Developer-Id Header 提取）
+	developerID := developer_id.GetDeveloperIDFromContext(ctx)
+	if developerID == "" {
+		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+	}
+
 	plan := &biz.Plan{
 		PlanID:       uuid.New().String(),
 		AppID:        appID,
+		UID:          developerID, // 开发者 ID（用户 ID）
 		Name:         req.Name,
 		Description:  req.Description,
 		Price:        req.Price,

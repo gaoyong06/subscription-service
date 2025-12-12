@@ -126,6 +126,7 @@ func (x *Plan) GetAppId() string {
 
 type ListPlansRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	AppId         string                 `protobuf:"bytes,1,opt,name=appId,proto3" json:"appId,omitempty"` // 应用ID（查询参数，必填）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -158,6 +159,13 @@ func (x *ListPlansRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ListPlansRequest.ProtoReflect.Descriptor instead.
 func (*ListPlansRequest) Descriptor() ([]byte, []int) {
 	return file_subscription_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ListPlansRequest) GetAppId() string {
+	if x != nil {
+		return x.AppId
+	}
+	return ""
 }
 
 type CreatePlanRequest struct {
@@ -2318,8 +2326,9 @@ const file_subscription_proto_rawDesc = "" +
 	"\bcurrency\x18\x05 \x01(\tR\bcurrency\x12\"\n" +
 	"\fdurationDays\x18\x06 \x01(\x05R\fdurationDays\x12\x12\n" +
 	"\x04type\x18\a \x01(\tR\x04type\x12\x14\n" +
-	"\x05appId\x18\b \x01(\tR\x05appId\"\x12\n" +
-	"\x10ListPlansRequest\"\xea\x01\n" +
+	"\x05appId\x18\b \x01(\tR\x05appId\"(\n" +
+	"\x10ListPlansRequest\x12\x14\n" +
+	"\x05appId\x18\x01 \x01(\tR\x05appId\"\xea\x01\n" +
 	"\x11CreatePlanRequest\x12\x1d\n" +
 	"\x04name\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18dR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12$\n" +
