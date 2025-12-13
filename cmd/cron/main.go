@@ -121,7 +121,7 @@ func main() {
 		for _, sub := range subscriptions {
 			// TODO: 发送续费提醒通知
 			log.Printf("[CRON] Reminder: User %d subscription (plan: %s) expires at %s",
-				sub.UserID, sub.PlanID, sub.EndTime.Format("2006-01-02 15:04:05"))
+				sub.UID, sub.PlanID, sub.EndTime.Format("2006-01-02 15:04:05"))
 		}
 		log.Println("[CRON] Finished renewal reminder check")
 	})

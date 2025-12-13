@@ -566,7 +566,7 @@ func (x *ListPlansReply) GetPlans() []*Plan {
 
 type GetMySubscriptionRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Uid           uint64                 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	Uid           string                 `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"` // 用户ID（字符串 UUID）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -601,11 +601,11 @@ func (*GetMySubscriptionRequest) Descriptor() ([]byte, []int) {
 	return file_subscription_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *GetMySubscriptionRequest) GetUid() uint64 {
+func (x *GetMySubscriptionRequest) GetUid() string {
 	if x != nil {
 		return x.Uid
 	}
-	return 0
+	return ""
 }
 
 type GetMySubscriptionReply struct {
@@ -694,7 +694,7 @@ func (x *GetMySubscriptionReply) GetAutoRenew() bool {
 
 type CreateSubscriptionOrderRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Uid           uint64                 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	Uid           string                 `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"` // 用户ID（字符串 UUID）
 	PlanId        string                 `protobuf:"bytes,2,opt,name=planId,proto3" json:"planId,omitempty"`
 	PaymentMethod string                 `protobuf:"bytes,3,opt,name=paymentMethod,proto3" json:"paymentMethod,omitempty"` // alipay, wechatpay
 	Region        string                 `protobuf:"bytes,4,opt,name=region,proto3" json:"region,omitempty"`               // 区域代码 (e.g., "CN", "US", "EU")，可选，默认 "default"
@@ -732,11 +732,11 @@ func (*CreateSubscriptionOrderRequest) Descriptor() ([]byte, []int) {
 	return file_subscription_proto_rawDescGZIP(), []int{11}
 }
 
-func (x *CreateSubscriptionOrderRequest) GetUid() uint64 {
+func (x *CreateSubscriptionOrderRequest) GetUid() string {
 	if x != nil {
 		return x.Uid
 	}
-	return 0
+	return ""
 }
 
 func (x *CreateSubscriptionOrderRequest) GetPlanId() string {
@@ -899,7 +899,7 @@ func (x *HandlePaymentSuccessRequest) GetAmount() float64 {
 // 取消订阅
 type CancelSubscriptionRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Uid           uint64                 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	Uid           string                 `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"`       // 用户ID（字符串 UUID）
 	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"` // 取消原因（可选）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -935,11 +935,11 @@ func (*CancelSubscriptionRequest) Descriptor() ([]byte, []int) {
 	return file_subscription_proto_rawDescGZIP(), []int{14}
 }
 
-func (x *CancelSubscriptionRequest) GetUid() uint64 {
+func (x *CancelSubscriptionRequest) GetUid() string {
 	if x != nil {
 		return x.Uid
 	}
-	return 0
+	return ""
 }
 
 func (x *CancelSubscriptionRequest) GetReason() string {
@@ -952,7 +952,7 @@ func (x *CancelSubscriptionRequest) GetReason() string {
 // 暂停订阅
 type PauseSubscriptionRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Uid           uint64                 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	Uid           string                 `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"`       // 用户ID（字符串 UUID）
 	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"` // 暂停原因（可选）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -988,11 +988,11 @@ func (*PauseSubscriptionRequest) Descriptor() ([]byte, []int) {
 	return file_subscription_proto_rawDescGZIP(), []int{15}
 }
 
-func (x *PauseSubscriptionRequest) GetUid() uint64 {
+func (x *PauseSubscriptionRequest) GetUid() string {
 	if x != nil {
 		return x.Uid
 	}
-	return 0
+	return ""
 }
 
 func (x *PauseSubscriptionRequest) GetReason() string {
@@ -1005,7 +1005,7 @@ func (x *PauseSubscriptionRequest) GetReason() string {
 // 恢复订阅
 type ResumeSubscriptionRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Uid           uint64                 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	Uid           string                 `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"` // 用户ID（字符串 UUID）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1040,11 +1040,11 @@ func (*ResumeSubscriptionRequest) Descriptor() ([]byte, []int) {
 	return file_subscription_proto_rawDescGZIP(), []int{16}
 }
 
-func (x *ResumeSubscriptionRequest) GetUid() uint64 {
+func (x *ResumeSubscriptionRequest) GetUid() string {
 	if x != nil {
 		return x.Uid
 	}
-	return 0
+	return ""
 }
 
 // 订阅历史记录
@@ -1150,7 +1150,7 @@ func (x *SubscriptionHistoryItem) GetCreatedAt() int64 {
 
 type GetSubscriptionHistoryRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Uid           uint64                 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	Uid           string                 `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"`            // 用户ID（字符串 UUID）
 	Page          int32                  `protobuf:"varint,2,opt,name=page,proto3" json:"page,omitempty"`         // 页码，从1开始
 	PageSize      int32                  `protobuf:"varint,3,opt,name=pageSize,proto3" json:"pageSize,omitempty"` // 每页数量，默认10
 	unknownFields protoimpl.UnknownFields
@@ -1187,11 +1187,11 @@ func (*GetSubscriptionHistoryRequest) Descriptor() ([]byte, []int) {
 	return file_subscription_proto_rawDescGZIP(), []int{18}
 }
 
-func (x *GetSubscriptionHistoryRequest) GetUid() uint64 {
+func (x *GetSubscriptionHistoryRequest) GetUid() string {
 	if x != nil {
 		return x.Uid
 	}
-	return 0
+	return ""
 }
 
 func (x *GetSubscriptionHistoryRequest) GetPage() int32 {
@@ -1279,7 +1279,7 @@ func (x *GetSubscriptionHistoryReply) GetPageSize() int32 {
 // 自动续费设置
 type SetAutoRenewRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Uid           uint64                 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	Uid           string                 `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"`              // 用户ID（字符串 UUID）
 	AutoRenew     bool                   `protobuf:"varint,2,opt,name=autoRenew,proto3" json:"autoRenew,omitempty"` // true: 开启自动续费, false: 关闭自动续费
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -1315,11 +1315,11 @@ func (*SetAutoRenewRequest) Descriptor() ([]byte, []int) {
 	return file_subscription_proto_rawDescGZIP(), []int{20}
 }
 
-func (x *SetAutoRenewRequest) GetUid() uint64 {
+func (x *SetAutoRenewRequest) GetUid() string {
 	if x != nil {
 		return x.Uid
 	}
-	return 0
+	return ""
 }
 
 func (x *SetAutoRenewRequest) GetAutoRenew() bool {
@@ -1392,7 +1392,7 @@ func (x *GetExpiringSubscriptionsRequest) GetPageSize() int32 {
 
 type SubscriptionInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Uid           uint64                 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	Uid           string                 `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"` // 用户ID（字符串 UUID）
 	PlanId        string                 `protobuf:"bytes,2,opt,name=planId,proto3" json:"planId,omitempty"`
 	PlanName      string                 `protobuf:"bytes,3,opt,name=planName,proto3" json:"planName,omitempty"`
 	StartTime     int64                  `protobuf:"varint,4,opt,name=startTime,proto3" json:"startTime,omitempty"`
@@ -1433,11 +1433,11 @@ func (*SubscriptionInfo) Descriptor() ([]byte, []int) {
 	return file_subscription_proto_rawDescGZIP(), []int{22}
 }
 
-func (x *SubscriptionInfo) GetUid() uint64 {
+func (x *SubscriptionInfo) GetUid() string {
 	if x != nil {
 		return x.Uid
 	}
-	return 0
+	return ""
 }
 
 func (x *SubscriptionInfo) GetPlanId() string {
@@ -1590,7 +1590,7 @@ func (*UpdateExpiredSubscriptionsRequest) Descriptor() ([]byte, []int) {
 type UpdateExpiredSubscriptionsReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UpdatedCount  int32                  `protobuf:"varint,1,opt,name=updatedCount,proto3" json:"updatedCount,omitempty"`
-	UpdatedUids   []uint64               `protobuf:"varint,2,rep,packed,name=updatedUids,proto3" json:"updatedUids,omitempty"` // 更新的用户ID列表
+	UpdatedUids   []string               `protobuf:"bytes,2,rep,name=updatedUids,proto3" json:"updatedUids,omitempty"` // 更新的用户ID列表（字符串 UUID）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1632,7 +1632,7 @@ func (x *UpdateExpiredSubscriptionsReply) GetUpdatedCount() int32 {
 	return 0
 }
 
-func (x *UpdateExpiredSubscriptionsReply) GetUpdatedUids() []uint64 {
+func (x *UpdateExpiredSubscriptionsReply) GetUpdatedUids() []string {
 	if x != nil {
 		return x.UpdatedUids
 	}
@@ -1694,7 +1694,7 @@ func (x *ProcessAutoRenewalsRequest) GetDryRun() bool {
 
 type AutoRenewResult struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Uid           uint64                 `protobuf:"varint,1,opt,name=uid,proto3" json:"uid,omitempty"`
+	Uid           string                 `protobuf:"bytes,1,opt,name=uid,proto3" json:"uid,omitempty"` // 用户ID（字符串 UUID）
 	PlanId        string                 `protobuf:"bytes,2,opt,name=planId,proto3" json:"planId,omitempty"`
 	Success       bool                   `protobuf:"varint,3,opt,name=success,proto3" json:"success,omitempty"`
 	OrderId       string                 `protobuf:"bytes,4,opt,name=orderId,proto3" json:"orderId,omitempty"`
@@ -1734,11 +1734,11 @@ func (*AutoRenewResult) Descriptor() ([]byte, []int) {
 	return file_subscription_proto_rawDescGZIP(), []int{27}
 }
 
-func (x *AutoRenewResult) GetUid() uint64 {
+func (x *AutoRenewResult) GetUid() string {
 	if x != nil {
 		return x.Uid
 	}
-	return 0
+	return ""
 }
 
 func (x *AutoRenewResult) GetPlanId() string {
@@ -2353,18 +2353,18 @@ const file_subscription_proto_rawDesc = "" +
 	"\x0fDeletePlanReply\x12\x16\n" +
 	"\x06planId\x18\x01 \x01(\tR\x06planId\"=\n" +
 	"\x0eListPlansReply\x12+\n" +
-	"\x05plans\x18\x01 \x03(\v2\x15.subscription.v1.PlanR\x05plans\"5\n" +
-	"\x18GetMySubscriptionRequest\x12\x19\n" +
-	"\x03uid\x18\x01 \x01(\x04B\a\xfaB\x042\x02 \x00R\x03uid\"\xba\x01\n" +
+	"\x05plans\x18\x01 \x03(\v2\x15.subscription.v1.PlanR\x05plans\"7\n" +
+	"\x18GetMySubscriptionRequest\x12\x1b\n" +
+	"\x03uid\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18$R\x03uid\"\xba\x01\n" +
 	"\x16GetMySubscriptionReply\x12\x1a\n" +
 	"\bisActive\x18\x01 \x01(\bR\bisActive\x12\x16\n" +
 	"\x06planId\x18\x02 \x01(\tR\x06planId\x12\x1c\n" +
 	"\tstartTime\x18\x03 \x01(\x03R\tstartTime\x12\x18\n" +
 	"\aendTime\x18\x04 \x01(\x03R\aendTime\x12\x16\n" +
 	"\x06status\x18\x05 \x01(\tR\x06status\x12\x1c\n" +
-	"\tautoRenew\x18\x06 \x01(\bR\tautoRenew\"\xb6\x01\n" +
-	"\x1eCreateSubscriptionOrderRequest\x12\x19\n" +
-	"\x03uid\x18\x01 \x01(\x04B\a\xfaB\x042\x02 \x00R\x03uid\x12!\n" +
+	"\tautoRenew\x18\x06 \x01(\bR\tautoRenew\"\xb8\x01\n" +
+	"\x1eCreateSubscriptionOrderRequest\x12\x1b\n" +
+	"\x03uid\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18$R\x03uid\x12!\n" +
 	"\x06planId\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x182R\x06planId\x12>\n" +
 	"\rpaymentMethod\x18\x03 \x01(\tB\x18\xfaB\x15r\x13R\x06alipayR\twechatpayR\rpaymentMethod\x12\x16\n" +
 	"\x06region\x18\x04 \x01(\tR\x06region\"\xa6\x01\n" +
@@ -2377,15 +2377,15 @@ const file_subscription_proto_rawDesc = "" +
 	"\x1bHandlePaymentSuccessRequest\x12#\n" +
 	"\aorderId\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18dR\aorderId\x12'\n" +
 	"\tpaymentId\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18dR\tpaymentId\x12&\n" +
-	"\x06amount\x18\x03 \x01(\x01B\x0e\xfaB\v\x12\t!\x00\x00\x00\x00\x00\x00\x00\x00R\x06amount\"N\n" +
-	"\x19CancelSubscriptionRequest\x12\x19\n" +
-	"\x03uid\x18\x01 \x01(\x04B\a\xfaB\x042\x02 \x00R\x03uid\x12\x16\n" +
-	"\x06reason\x18\x02 \x01(\tR\x06reason\"M\n" +
-	"\x18PauseSubscriptionRequest\x12\x19\n" +
-	"\x03uid\x18\x01 \x01(\x04B\a\xfaB\x042\x02 \x00R\x03uid\x12\x16\n" +
-	"\x06reason\x18\x02 \x01(\tR\x06reason\"6\n" +
-	"\x19ResumeSubscriptionRequest\x12\x19\n" +
-	"\x03uid\x18\x01 \x01(\x04B\a\xfaB\x042\x02 \x00R\x03uid\"\xe3\x01\n" +
+	"\x06amount\x18\x03 \x01(\x01B\x0e\xfaB\v\x12\t!\x00\x00\x00\x00\x00\x00\x00\x00R\x06amount\"P\n" +
+	"\x19CancelSubscriptionRequest\x12\x1b\n" +
+	"\x03uid\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18$R\x03uid\x12\x16\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\"O\n" +
+	"\x18PauseSubscriptionRequest\x12\x1b\n" +
+	"\x03uid\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18$R\x03uid\x12\x16\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\"8\n" +
+	"\x19ResumeSubscriptionRequest\x12\x1b\n" +
+	"\x03uid\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18$R\x03uid\"\xe3\x01\n" +
 	"\x17SubscriptionHistoryItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x16\n" +
 	"\x06planId\x18\x02 \x01(\tR\x06planId\x12\x1a\n" +
@@ -2394,25 +2394,25 @@ const file_subscription_proto_rawDesc = "" +
 	"\aendTime\x18\x05 \x01(\x03R\aendTime\x12\x16\n" +
 	"\x06status\x18\x06 \x01(\tR\x06status\x12\x16\n" +
 	"\x06action\x18\a \x01(\tR\x06action\x12\x1c\n" +
-	"\tcreatedAt\x18\b \x01(\x03R\tcreatedAt\"j\n" +
-	"\x1dGetSubscriptionHistoryRequest\x12\x19\n" +
-	"\x03uid\x18\x01 \x01(\x04B\a\xfaB\x042\x02 \x00R\x03uid\x12\x12\n" +
+	"\tcreatedAt\x18\b \x01(\x03R\tcreatedAt\"l\n" +
+	"\x1dGetSubscriptionHistoryRequest\x12\x1b\n" +
+	"\x03uid\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18$R\x03uid\x12\x12\n" +
 	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x1a\n" +
 	"\bpageSize\x18\x03 \x01(\x05R\bpageSize\"\xa3\x01\n" +
 	"\x1bGetSubscriptionHistoryReply\x12>\n" +
 	"\x05items\x18\x01 \x03(\v2(.subscription.v1.SubscriptionHistoryItemR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total\x12\x12\n" +
 	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x1a\n" +
-	"\bpageSize\x18\x04 \x01(\x05R\bpageSize\"N\n" +
-	"\x13SetAutoRenewRequest\x12\x19\n" +
-	"\x03uid\x18\x01 \x01(\x04B\a\xfaB\x042\x02 \x00R\x03uid\x12\x1c\n" +
+	"\bpageSize\x18\x04 \x01(\x05R\bpageSize\"P\n" +
+	"\x13SetAutoRenewRequest\x12\x1b\n" +
+	"\x03uid\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18$R\x03uid\x12\x1c\n" +
 	"\tautoRenew\x18\x02 \x01(\bR\tautoRenew\"\x88\x01\n" +
 	"\x1fGetExpiringSubscriptionsRequest\x125\n" +
 	"\x10daysBeforeExpiry\x18\x01 \x01(\x05B\t\xfaB\x06\x1a\x04\x18\x1e(\x01R\x10daysBeforeExpiry\x12\x12\n" +
 	"\x04page\x18\x02 \x01(\x05R\x04page\x12\x1a\n" +
 	"\bpageSize\x18\x03 \x01(\x05R\bpageSize\"\xc6\x01\n" +
 	"\x10SubscriptionInfo\x12\x10\n" +
-	"\x03uid\x18\x01 \x01(\x04R\x03uid\x12\x16\n" +
+	"\x03uid\x18\x01 \x01(\tR\x03uid\x12\x16\n" +
 	"\x06planId\x18\x02 \x01(\tR\x06planId\x12\x1a\n" +
 	"\bplanName\x18\x03 \x01(\tR\bplanName\x12\x1c\n" +
 	"\tstartTime\x18\x04 \x01(\x03R\tstartTime\x12\x18\n" +
@@ -2427,12 +2427,12 @@ const file_subscription_proto_rawDesc = "" +
 	"!UpdateExpiredSubscriptionsRequest\"g\n" +
 	"\x1fUpdateExpiredSubscriptionsReply\x12\"\n" +
 	"\fupdatedCount\x18\x01 \x01(\x05R\fupdatedCount\x12 \n" +
-	"\vupdatedUids\x18\x02 \x03(\x04R\vupdatedUids\"k\n" +
+	"\vupdatedUids\x18\x02 \x03(\tR\vupdatedUids\"k\n" +
 	"\x1aProcessAutoRenewalsRequest\x125\n" +
 	"\x10daysBeforeExpiry\x18\x01 \x01(\x05B\t\xfaB\x06\x1a\x04\x18\x1e(\x01R\x10daysBeforeExpiry\x12\x16\n" +
 	"\x06dryRun\x18\x02 \x01(\bR\x06dryRun\"\xb1\x01\n" +
 	"\x0fAutoRenewResult\x12\x10\n" +
-	"\x03uid\x18\x01 \x01(\x04R\x03uid\x12\x16\n" +
+	"\x03uid\x18\x01 \x01(\tR\x03uid\x12\x16\n" +
 	"\x06planId\x18\x02 \x01(\tR\x06planId\x12\x18\n" +
 	"\asuccess\x18\x03 \x01(\bR\asuccess\x12\x18\n" +
 	"\aorderId\x18\x04 \x01(\tR\aorderId\x12\x1c\n" +
