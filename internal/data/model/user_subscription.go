@@ -5,7 +5,7 @@ import "time"
 // UserSubscription 用户订阅模型
 type UserSubscription struct {
 	SubscriptionID uint64    `gorm:"primaryKey;column:subscription_id;autoIncrement"`
-	UID            uint64    `gorm:"column:uid;uniqueIndex;not null"`
+	UID            string    `gorm:"column:uid;type:varchar(36);uniqueIndex;not null"`          // 用户ID（字符串 UUID）
 	PlanID         string    `gorm:"column:plan_id;not null"`                                   // 套餐ID
 	AppID          string    `gorm:"column:app_id;not null;index:idx_app_id;index:idx_app_uid"` // 应用ID（冗余字段，便于按app统计和查询）
 	StartTime      time.Time `gorm:"column:start_time;not null"`

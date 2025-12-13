@@ -5,8 +5,8 @@ import "time"
 // SubscriptionOrder 订单模型
 type SubscriptionOrder struct {
 	OrderID       string    `gorm:"primaryKey;column:order_id"`
-	PaymentID     string    `gorm:"column:payment_id;index"` // 支付流水号(payment-service返回的payment_id，用于追溯支付记录)
-	UID           uint64    `gorm:"column:uid;index:idx_uid"`
+	PaymentID     string    `gorm:"column:payment_id;index"`                   // 支付流水号(payment-service返回的payment_id，用于追溯支付记录)
+	UID           string    `gorm:"column:uid;type:varchar(36);index:idx_uid"` // 用户ID（字符串 UUID）
 	PlanID        string    `gorm:"column:plan_id"`
 	AppID         string    `gorm:"column:app_id;type:varchar(50);index"`
 	Amount        float64   `gorm:"column:amount"`

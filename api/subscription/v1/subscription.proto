@@ -193,7 +193,7 @@ message ListPlansReply {
 }
 
 message GetMySubscriptionRequest {
-  uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
+  string uid = 1 [(validate.rules).string = {min_len: 1, max_len: 36}]; // 用户ID（字符串 UUID）
 }
 
 message GetMySubscriptionReply {
@@ -206,7 +206,7 @@ message GetMySubscriptionReply {
 }
 
 message CreateSubscriptionOrderRequest {
-  uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
+  string uid = 1 [(validate.rules).string = {min_len: 1, max_len: 36}]; // 用户ID（字符串 UUID）
   string planId = 2 [(validate.rules).string = {min_len: 1, max_len: 50}];
   string paymentMethod = 3 [(validate.rules).string = {in: ["alipay", "wechatpay"]}]; // alipay, wechatpay
   string region = 4; // 区域代码 (e.g., "CN", "US", "EU")，可选，默认 "default"
@@ -228,19 +228,19 @@ message HandlePaymentSuccessRequest {
 
 // 取消订阅
 message CancelSubscriptionRequest {
-  uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
+  string uid = 1 [(validate.rules).string = {min_len: 1, max_len: 36}]; // 用户ID（字符串 UUID）
   string reason = 2; // 取消原因（可选）
 }
 
 // 暂停订阅
 message PauseSubscriptionRequest {
-  uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
+  string uid = 1 [(validate.rules).string = {min_len: 1, max_len: 36}]; // 用户ID（字符串 UUID）
   string reason = 2; // 暂停原因（可选）
 }
 
 // 恢复订阅
 message ResumeSubscriptionRequest {
-  uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
+  string uid = 1 [(validate.rules).string = {min_len: 1, max_len: 36}]; // 用户ID（字符串 UUID）
 }
 
 // 订阅历史记录
@@ -256,7 +256,7 @@ message SubscriptionHistoryItem {
 }
 
 message GetSubscriptionHistoryRequest {
-  uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
+  string uid = 1 [(validate.rules).string = {min_len: 1, max_len: 36}]; // 用户ID（字符串 UUID）
   int32 page = 2; // 页码，从1开始
   int32 pageSize = 3; // 每页数量，默认10
 }
@@ -270,7 +270,7 @@ message GetSubscriptionHistoryReply {
 
 // 自动续费设置
 message SetAutoRenewRequest {
-  uint64 uid = 1 [(validate.rules).uint64 = {gt: 0}];
+  string uid = 1 [(validate.rules).string = {min_len: 1, max_len: 36}]; // 用户ID（字符串 UUID）
   bool autoRenew = 2; // true: 开启自动续费, false: 关闭自动续费
 }
 
@@ -282,7 +282,7 @@ message GetExpiringSubscriptionsRequest {
 }
 
 message SubscriptionInfo {
-  uint64 uid = 1;
+  string uid = 1; // 用户ID（字符串 UUID）
   string planId = 2;
   string planName = 3;
   int64 startTime = 4;
@@ -305,7 +305,7 @@ message UpdateExpiredSubscriptionsRequest {
 
 message UpdateExpiredSubscriptionsReply {
   int32 updatedCount = 1;
-  repeated uint64 updatedUids = 2; // 更新的用户ID列表
+  repeated string updatedUids = 2; // 更新的用户ID列表（字符串 UUID）
 }
 
 // 自动续费处理
@@ -315,7 +315,7 @@ message ProcessAutoRenewalsRequest {
 }
 
 message AutoRenewResult {
-  uint64 uid = 1;
+  string uid = 1; // 用户ID（字符串 UUID）
   string planId = 2;
   bool success = 3;
   string orderId = 4;

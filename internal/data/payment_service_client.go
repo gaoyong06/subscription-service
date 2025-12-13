@@ -35,7 +35,7 @@ func NewPaymentClient(c *conf.Bootstrap) (biz.PaymentClient, error) {
 	}, nil
 }
 
-func (c *paymentServiceClient) CreatePayment(ctx context.Context, orderID string, userID uint64, amount float64, currency, method, subject, returnURL string) (string, string, string, string, error) {
+func (c *paymentServiceClient) CreatePayment(ctx context.Context, orderID string, uid string, amount float64, currency, method, subject, returnURL string) (string, string, string, string, error) {
 	// 验证必填参数
 	if currency == "" {
 		return "", "", "", "", fmt.Errorf("currency is required")
@@ -54,7 +54,7 @@ func (c *paymentServiceClient) CreatePayment(ctx context.Context, orderID string
 
 	req := &paymentv1.CreatePaymentRequest{
 		OrderId: orderID,
-		UserId:  userID,
+		Uid:     uid, // 用户ID（字符串 UUID）
 		// 注意：appId 现在只从 Context 获取（由中间件从 Header/metadata 提取），不再从请求体传递
 		Source:    constants.PaymentSourceSubscription, // 标记来源为订阅
 		Amount:    int64(amount),

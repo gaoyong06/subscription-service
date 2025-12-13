@@ -11,7 +11,7 @@ import (
 
 // AutoRenewResult 自动续费结果
 type AutoRenewResult struct {
-	UID          uint64
+	UID          string // 用户ID（字符串 UUID）
 	PlanID       string
 	Success      bool
 	OrderID      string
@@ -46,7 +46,7 @@ func (uc *SubscriptionUsecase) GetExpiringSubscriptions(ctx context.Context, day
 }
 
 // UpdateExpiredSubscriptions 批量更新过期订阅状态
-func (uc *SubscriptionUsecase) UpdateExpiredSubscriptions(ctx context.Context) (int, []uint64, error) {
+func (uc *SubscriptionUsecase) UpdateExpiredSubscriptions(ctx context.Context) (int, []string, error) {
 	uc.log.Infof("Starting to update expired subscriptions")
 
 	// 调用 repo 批量更新
@@ -62,7 +62,7 @@ func (uc *SubscriptionUsecase) UpdateExpiredSubscriptions(ctx context.Context) (
 		// 获取订阅信息
 		sub, err := uc.subRepo.GetSubscription(ctx, uid)
 		if err != nil {
-			uc.log.Errorf("Failed to get subscription for user %d: %v", uid, err)
+			uc.log.Errorf("Failed to get subscription for user %s: %v", uid, err)
 			continue
 		}
 		if sub == nil {
@@ -89,7 +89,7 @@ func (uc *SubscriptionUsecase) UpdateExpiredSubscriptions(ctx context.Context) (
 			CreatedAt: now,
 		}
 		if err := uc.historyRepo.AddSubscriptionHistory(ctx, history); err != nil {
-			uc.log.Errorf("Failed to add history for user %d: %v", uid, err)
+			uc.log.Errorf("Failed to add history for user %s: %v", uid, err)
 		}
 	}
 
@@ -120,12 +120,12 @@ func (uc *SubscriptionUsecase) ProcessAutoRenewals(ctx context.Context, daysBefo
 
 	for _, sub := range subscriptions {
 		result := &AutoRenewResult{
-			UID:    sub.UserID,
+			UID:    sub.UID,
 			PlanID: sub.PlanID,
 		}
 
 		// 使用分布式锁防止重复续费
-		lockKey := fmt.Sprintf("auto_renew_lock:user:%d", sub.UserID)
+		lockKey := fmt.Sprintf("auto_renew_lock:user:%s", sub.UID)
 		mutex := uc.rs.NewMutex(
 			lockKey,
 			redsync.WithExpiry(constants.AutoRenewLockExpiration),
@@ -136,7 +136,7 @@ func (uc *SubscriptionUsecase) ProcessAutoRenewals(ctx context.Context, daysBefo
 		if err := mutex.LockContext(ctx); err != nil {
 			result.Success = false
 			result.ErrorMessage = "failed to acquire lock or already processing"
-			uc.log.Infof("Skipping auto-renew for user %d: lock busy or already processing", sub.UserID)
+			uc.log.Infof("Skipping auto-renew for user %s: lock busy or already processing", sub.UID)
 			results = append(results, result)
 			continue
 		}
@@ -144,12 +144,12 @@ func (uc *SubscriptionUsecase) ProcessAutoRenewals(ctx context.Context, daysBefo
 		// 确保释放锁
 		defer func(m *redsync.Mutex) {
 			if _, err := m.UnlockContext(ctx); err != nil {
-				uc.log.Warnf("Failed to unlock for user %d: %v", sub.UserID, err)
+				uc.log.Warnf("Failed to unlock for user %s: %v", sub.UID, err)
 			}
 		}(mutex)
 
 		// 再次检查订阅状态,防止重复处理
-		currentSub, err := uc.subRepo.GetSubscription(ctx, sub.UserID)
+		currentSub, err := uc.subRepo.GetSubscription(ctx, sub.UID)
 		if err != nil {
 			result.Success = false
 			result.ErrorMessage = "failed to get current subscription: " + err.Error()
@@ -161,7 +161,7 @@ func (uc *SubscriptionUsecase) ProcessAutoRenewals(ctx context.Context, daysBefo
 			// 已经被续费过了
 			result.Success = true
 			result.ErrorMessage = "already renewed"
-			uc.log.Infof("Subscription for user %d already renewed", sub.UserID)
+			uc.log.Infof("Subscription for user %s already renewed", sub.UID)
 			results = append(results, result)
 			continue
 		}
@@ -170,28 +170,28 @@ func (uc *SubscriptionUsecase) ProcessAutoRenewals(ctx context.Context, daysBefo
 			// 测试模式，只记录不执行
 			result.Success = true
 			result.ErrorMessage = "dry run - not executed"
-			uc.log.Infof("[DRY RUN] Would renew subscription for user %d, plan %s", sub.UserID, sub.PlanID)
+			uc.log.Infof("[DRY RUN] Would renew subscription for user %s, plan %s", sub.UID, sub.PlanID)
 		} else {
 			// 实际执行续费（使用默认区域定价）
-			order, paymentID, _, _, _, err := uc.CreateSubscriptionOrder(ctx, sub.UserID, sub.PlanID, "auto", "default")
+			order, paymentID, _, _, _, err := uc.CreateSubscriptionOrder(ctx, sub.UID, sub.PlanID, "auto", "default")
 			if err != nil {
 				result.Success = false
 				result.ErrorMessage = err.Error()
 				failedCount++
-				uc.log.Errorf("Failed to create renewal order for user %d: %v", sub.UserID, err)
+				uc.log.Errorf("Failed to create renewal order for user %s: %v", sub.UID, err)
 			} else {
 				result.Success = true
 				result.OrderID = order.OrderID
 				result.PaymentID = paymentID
 				successCount++
-				uc.log.Infof("Successfully created renewal order for user %d: %s", sub.UserID, order.OrderID)
+				uc.log.Infof("Successfully created renewal order for user %s: %s", sub.UID, order.OrderID)
 
 				// 自动续费处理逻辑：
 				// 1. 创建订单后，订单状态为 pending
 				// 2. 当前实现：直接调用 HandlePaymentSuccess 处理支付成功
 				//    注意：这假设支付服务已经完成了自动扣款（通过其他机制，如定时任务、支付回调等）
 				// 3. 未来优化：如果支付服务提供自动扣款接口，可以在这里调用
-				//    例如：paymentClient.AutoCharge(ctx, orderID, userID, amount, currency)
+				//    例如：paymentClient.AutoCharge(ctx, orderID, uid, amount, currency)
 				//    然后根据扣款结果决定是否调用 HandlePaymentSuccess
 				//
 				// 当前实现说明：
@@ -205,7 +205,7 @@ func (uc *SubscriptionUsecase) ProcessAutoRenewals(ctx context.Context, daysBefo
 					failedCount++
 					successCount--
 				} else {
-					uc.log.Infof("Successfully processed auto-renewal payment for user %d, order %s", sub.UserID, order.OrderID)
+					uc.log.Infof("Successfully processed auto-renewal payment for user %s, order %s", sub.UID, order.OrderID)
 				}
 			}
 		}

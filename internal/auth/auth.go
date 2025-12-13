@@ -10,7 +10,7 @@ import (
 type contextKey string
 
 const (
-	// UserIDKey 用户ID的context key
+	// UserIDKey 用户ID的context key（uid，字符串 UUID）
 	UserIDKey contextKey = "user_id"
 	// UserRoleKey 用户角色的context key
 	UserRoleKey contextKey = "user_role"
@@ -24,9 +24,9 @@ const (
 	RoleAdmin Role = "admin"
 )
 
-// GetUIDFromContext 从context中获取用户ID
-func GetUIDFromContext(ctx context.Context) (uint64, bool) {
-	uid, ok := ctx.Value(UserIDKey).(uint64)
+// GetUIDFromContext 从context中获取用户ID（字符串 UUID）
+func GetUIDFromContext(ctx context.Context) (string, bool) {
+	uid, ok := ctx.Value(UserIDKey).(string)
 	return uid, ok
 }
 
@@ -43,7 +43,7 @@ func IsAdmin(ctx context.Context) bool {
 }
 
 // CheckOwnership 检查用户是否有权限访问指定资源
-func CheckOwnership(ctx context.Context, resourceUID uint64) error {
+func CheckOwnership(ctx context.Context, resourceUID string) error {
 	currentUID, ok := GetUIDFromContext(ctx)
 	if !ok {
 		return errors.Unauthorized("UNAUTHORIZED", "authentication required")

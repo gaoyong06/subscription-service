@@ -438,7 +438,7 @@ func (s *SubscriptionService) GetExpiringSubscriptions(ctx context.Context, req 
 		}
 
 		pbSubscriptions[i] = &pb.SubscriptionInfo{
-			Uid:       sub.UserID,
+			Uid:       sub.UID,
 			PlanId:    sub.PlanID,
 			PlanName:  planName,
 			StartTime: sub.StartTime.Unix(),

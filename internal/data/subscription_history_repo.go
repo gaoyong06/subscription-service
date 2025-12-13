@@ -43,25 +43,25 @@ func (r *historyRepo) AddSubscriptionHistory(ctx context.Context, history *biz.S
 }
 
 // GetSubscriptionHistory 获取用户订阅历史
-func (r *historyRepo) GetSubscriptionHistory(ctx context.Context, userID uint64, page, pageSize int) ([]*biz.SubscriptionHistory, int, error) {
+func (r *historyRepo) GetSubscriptionHistory(ctx context.Context, uid string, page, pageSize int) ([]*biz.SubscriptionHistory, int, error) {
 	var models []model.SubscriptionHistory
 	var total int64
 
 	// 获取总数
-	if err := r.data.db.WithContext(ctx).Model(&model.SubscriptionHistory{}).Where("uid = ?", userID).Count(&total).Error; err != nil {
-		r.log.Errorf("Failed to count subscription history for user %d: %v", userID, err)
+	if err := r.data.db.WithContext(ctx).Model(&model.SubscriptionHistory{}).Where("uid = ?", uid).Count(&total).Error; err != nil {
+		r.log.Errorf("Failed to count subscription history for user %s: %v", uid, err)
 		return nil, 0, err
 	}
 
 	// 分页查询
 	offset := (page - 1) * pageSize
 	if err := r.data.db.WithContext(ctx).
-		Where("uid = ?", userID).
+		Where("uid = ?", uid).
 		Order("created_at DESC").
 		Limit(pageSize).
 		Offset(offset).
 		Find(&models).Error; err != nil {
-		r.log.Errorf("Failed to get subscription history for user %d: %v", userID, err)
+		r.log.Errorf("Failed to get subscription history for user %s: %v", uid, err)
 		return nil, 0, err
 	}
 
