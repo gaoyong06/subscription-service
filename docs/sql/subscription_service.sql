@@ -1,7 +1,7 @@
 CREATE TABLE `plan` (
   `plan_id` varchar(50) NOT NULL COMMENT '套餐ID',
   `app_id` varchar(36) NOT NULL COMMENT '应用ID（关联api-key-service的app表）',
-  `uid` varchar(36) NOT NULL COMMENT '开发者ID（用户ID，关联api-key-service的app.uid）',
+  `user_id` varchar(36) NOT NULL COMMENT '开发者ID（用户ID，关联api-key-service的app.user_id）',
   `name` varchar(100) NOT NULL COMMENT '套餐名称',
   `description` varchar(255) DEFAULT '' COMMENT '描述',
   `price` decimal(10,2) NOT NULL COMMENT '默认价格（用于兜底，如果plan_pricing表中没有对应地域的价格）',
@@ -12,8 +12,8 @@ CREATE TABLE `plan` (
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`plan_id`),
   KEY `idx_app_id` (`app_id`),
-  KEY `idx_uid` (`uid`),
-  KEY `idx_app_uid` (`app_id`, `uid`)
+  KEY `idx_user_id` (`user_id`),
+  KEY `idx_app_user_id` (`app_id`, `user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订阅套餐表（每个app可以设置不同的套餐）';
 
 -- 套餐区域定价表（支持按地域定价，所有价格都在数据库中配置）
@@ -36,7 +36,7 @@ CREATE TABLE `plan_pricing` (
 
 CREATE TABLE `user_subscription` (
   `subscription_id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '订阅ID',
-  `uid` bigint unsigned NOT NULL COMMENT '用户ID',
+  `user_id` varchar(36) NOT NULL COMMENT '用户ID',
   `plan_id` varchar(50) NOT NULL COMMENT '当前套餐ID',
   `app_id` varchar(50) NOT NULL DEFAULT '' COMMENT '应用ID（冗余字段，通过plan_id关联，便于按app统计和查询）',
   `start_time` datetime NOT NULL COMMENT '开始时间',
@@ -47,9 +47,9 @@ CREATE TABLE `user_subscription` (
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`subscription_id`),
-  UNIQUE KEY `idx_uid` (`uid`),
+  UNIQUE KEY `idx_user_id` (`user_id`),
   KEY `idx_app_id` (`app_id`),
-  KEY `idx_app_uid` (`app_id`, `uid`),
+  KEY `idx_app_user_id` (`app_id`, `user_id`),
   KEY `idx_end_time` (`end_time`),
   KEY `idx_order_id` (`order_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户订阅表';
@@ -57,14 +57,14 @@ CREATE TABLE `user_subscription` (
 CREATE TABLE `subscription_order` (
   `order_id` varchar(64) NOT NULL COMMENT '订单号(业务订单号，与payment-service的order_id相同)',
   `payment_id` varchar(19) DEFAULT '' COMMENT '支付流水号(payment-service返回的payment_id，用于追溯支付记录)',
-  `uid` bigint unsigned NOT NULL COMMENT '用户ID',
+  `user_id` varchar(36) NOT NULL COMMENT '用户ID',
   `plan_id` varchar(50) NOT NULL COMMENT '套餐ID',
   `app_id` varchar(50) DEFAULT '' COMMENT '应用ID',
   `amount` decimal(10,2) NOT NULL COMMENT '金额',
   `payment_status` enum('pending', 'success', 'failed', 'closed', 'refunded', 'partially_refunded') NOT NULL DEFAULT 'pending' COMMENT '支付状态(与payment-service保持一致): pending-待支付(订单已创建，等待支付), success-支付成功, failed-支付失败, closed-订单关闭, refunded-已全额退款, partially_refunded-部分退款',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`order_id`),
-  KEY `idx_uid` (`uid`),
+  KEY `idx_user_id` (`user_id`),
   KEY `idx_app_id` (`app_id`),
   KEY `idx_payment_id` (`payment_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订阅订单表';
@@ -72,7 +72,7 @@ CREATE TABLE `subscription_order` (
 -- 订阅历史记录表
 CREATE TABLE `subscription_history` (
   `subscription_history_id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '历史记录ID',
-  `uid` bigint unsigned NOT NULL COMMENT '用户ID',
+  `user_id` varchar(36) NOT NULL COMMENT '用户ID',
   `plan_id` varchar(50) NOT NULL COMMENT '套餐ID',
   `plan_name` varchar(100) NOT NULL COMMENT '套餐名称',
   `app_id` varchar(50) NOT NULL DEFAULT '' COMMENT '应用ID（冗余字段，通过plan_id关联，便于按app统计和查询）',
@@ -82,19 +82,19 @@ CREATE TABLE `subscription_history` (
   `action` enum('created', 'renewed', 'upgraded', 'paused', 'resumed', 'cancelled', 'expired', 'enabled_auto_renew', 'disabled_auto_renew') NOT NULL COMMENT '操作类型: created-创建, renewed-续费, upgraded-升级, paused-暂停, resumed-恢复, cancelled-取消, expired-过期, enabled_auto_renew-启用自动续费, disabled_auto_renew-禁用自动续费',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`subscription_history_id`),
-  KEY `idx_uid` (`uid`),
+  KEY `idx_user_id` (`user_id`),
   KEY `idx_app_id` (`app_id`),
-  KEY `idx_app_uid` (`app_id`, `uid`),
+  KEY `idx_app_user_id` (`app_id`, `user_id`),
   KEY `idx_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订阅历史记录表';
 
--- 初始化数据示例（需要根据实际app_id和uid填写）
--- INSERT INTO `plan` (`plan_id`, `app_id`, `uid`, `name`, `description`, `price`, `currency`, `duration_days`, `type`) VALUES
--- ('plan_monthly', 'app_id_here', 'uid_here', 'Pro Monthly', 'Pro features for 1 month', 9.99, 'USD', 30, 'pro'),
--- ('plan_yearly', 'app_id_here', 'uid_here', 'Pro Yearly', 'Pro features for 1 year', 99.99, 'USD', 365, 'pro');
+-- 初始化数据示例（需要根据实际app_id和user_id填写）
+-- INSERT INTO `plan` (`plan_id`, `app_id`, `user_id`, `name`, `description`, `price`, `currency`, `duration_days`, `type`) VALUES
+-- ('plan_monthly', 'app_id_here', 'user_id_here', 'Pro Monthly', 'Pro features for 1 month', 9.99, 'USD', 30, 'pro'),
+-- ('plan_yearly', 'app_id_here', 'user_id_here', 'Pro Yearly', 'Pro features for 1 year', 99.99, 'USD', 365, 'pro');
 
 -- 区域定价示例（基于巨无霸指数PPP的定价策略）
--- 假设 plan_id='plan_monthly', app_id='default_app', uid='default_uid'
+-- 假设 plan_id='plan_monthly', app_id='default_app', user_id='default_user_id'
 -- INSERT INTO `plan_pricing` (`plan_id`, `country_code`, `price`, `currency`) VALUES
 -- ('plan_monthly', 'CN', 59.9, 'CNY'),  -- 中国大陆
 -- ('plan_monthly', 'DE', 92, 'USD'),    -- 德国（超高购买力，兜底价格）

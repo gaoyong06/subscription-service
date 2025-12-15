@@ -30,9 +30,9 @@ func NewUserSubscriptionRepo(data *Data, logger log.Logger) biz.UserSubscription
 }
 
 // GetSubscription 获取用户订阅
-func (r *subscriptionRepo) GetSubscription(ctx context.Context, uid string) (*biz.UserSubscription, error) {
+func (r *subscriptionRepo) GetSubscription(ctx context.Context, userId string) (*biz.UserSubscription, error) {
 	// 1. 尝试从 Redis 获取
-	cacheKey := fmt.Sprintf("subscription:user:%s", uid)
+	cacheKey := fmt.Sprintf("subscription:user:%s", userId)
 	val, err := r.data.rdb.Get(ctx, cacheKey).Result()
 	if err == nil {
 		// 检查是否是空值缓存
@@ -48,20 +48,20 @@ func (r *subscriptionRepo) GetSubscription(ctx context.Context, uid string) (*bi
 
 	// 2. 从数据库获取
 	var m model.UserSubscription
-	err = r.data.db.WithContext(ctx).Where("uid = ?", uid).First(&m).Error
+	err = r.data.db.WithContext(ctx).Where("user_id = ?", userId).First(&m).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		// 缓存空值,防止缓存穿透
 		r.data.rdb.Set(ctx, cacheKey, "null", constants.NullCacheExpiration)
 		return nil, nil
 	}
 	if err != nil {
-		r.log.Errorf("Failed to get subscription for user %s: %v", uid, err)
+		r.log.Errorf("Failed to get subscription for user %s: %v", userId, err)
 		return nil, err
 	}
 
 	sub := &biz.UserSubscription{
 		SubscriptionID: m.SubscriptionID,
-		UID:            m.UID,
+		UserID:         m.UserID,
 		PlanID:         m.PlanID,
 		AppID:          m.AppID,
 		StartTime:      m.StartTime,
@@ -79,7 +79,7 @@ func (r *subscriptionRepo) GetSubscription(ctx context.Context, uid string) (*bi
 		randomSeconds := time.Duration(rand.Intn(constants.CacheRandomMaxSeconds)) * time.Second
 		expiration := constants.DefaultCacheExpiration + randomSeconds
 		if err := r.data.rdb.Set(ctx, cacheKey, data, expiration).Err(); err != nil {
-			r.log.Warnf("Failed to cache subscription for user %s: %v", uid, err)
+			r.log.Warnf("Failed to cache subscription for user %s: %v", userId, err)
 		}
 	}
 
@@ -96,7 +96,7 @@ func (r *subscriptionRepo) SaveSubscription(ctx context.Context, sub *biz.UserSu
 
 	m := &model.UserSubscription{
 		SubscriptionID: sub.SubscriptionID,
-		UID:            sub.UID,
+		UserID:         sub.UserID,
 		PlanID:         sub.PlanID,
 		AppID:          appID,
 		StartTime:      sub.StartTime,
@@ -108,16 +108,16 @@ func (r *subscriptionRepo) SaveSubscription(ctx context.Context, sub *biz.UserSu
 		UpdatedAt:      sub.UpdatedAt,
 	}
 	if err := r.data.db.WithContext(ctx).Save(m).Error; err != nil {
-		r.log.Errorf("Failed to save subscription for user %s: %v", sub.UID, err)
+		r.log.Errorf("Failed to save subscription for user %s: %v", sub.UserID, err)
 		return err
 	}
 	// 更新 biz 对象的 SubscriptionID（如果是新创建的）
 	sub.SubscriptionID = m.SubscriptionID
 
 	// 删除缓存
-	cacheKey := fmt.Sprintf("subscription:user:%s", sub.UID)
+	cacheKey := fmt.Sprintf("subscription:user:%s", sub.UserID)
 	if err := r.data.rdb.Del(ctx, cacheKey).Err(); err != nil {
-		r.log.Warnf("Failed to delete cache for user %s: %v", sub.UID, err)
+		r.log.Warnf("Failed to delete cache for user %s: %v", sub.UserID, err)
 		// 缓存删除失败不影响主流程,但需要记录
 		// 缓存会在过期时间后自动失效
 	}
@@ -158,7 +158,7 @@ func (r *subscriptionRepo) GetExpiringSubscriptions(ctx context.Context, daysBef
 	for i, m := range models {
 		subscriptions[i] = &biz.UserSubscription{
 			SubscriptionID: m.SubscriptionID,
-			UID:            m.UID,
+			UserID:         m.UserID,
 			PlanID:         m.PlanID,
 			StartTime:      m.StartTime,
 			EndTime:        m.EndTime,
@@ -190,10 +190,10 @@ func (r *subscriptionRepo) UpdateExpiredSubscriptions(ctx context.Context) (int,
 		return 0, []string{}, nil
 	}
 
-	// 提取 uid 列表
-	uids := make([]string, len(subscriptions))
+	// 提取 user_id 列表
+	userIds := make([]string, len(subscriptions))
 	for i, sub := range subscriptions {
-		uids[i] = sub.UID
+		userIds[i] = sub.UserID
 	}
 
 	// 批量更新状态
@@ -207,7 +207,7 @@ func (r *subscriptionRepo) UpdateExpiredSubscriptions(ctx context.Context) (int,
 	}
 
 	r.log.Infof("Updated %d expired subscriptions", result.RowsAffected)
-	return int(result.RowsAffected), uids, nil
+	return int(result.RowsAffected), userIds, nil
 }
 
 // GetAutoRenewSubscriptions 获取需要自动续费的订阅
@@ -232,7 +232,7 @@ func (r *subscriptionRepo) GetAutoRenewSubscriptions(ctx context.Context, daysBe
 	for i, m := range models {
 		subscriptions[i] = &biz.UserSubscription{
 			SubscriptionID: m.SubscriptionID,
-			UID:            m.UID,
+			UserID:         m.UserID,
 			PlanID:         m.PlanID,
 			StartTime:      m.StartTime,
 			EndTime:        m.EndTime,

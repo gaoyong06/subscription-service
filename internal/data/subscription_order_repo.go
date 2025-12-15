@@ -27,7 +27,7 @@ func (r *orderRepo) CreateOrder(ctx context.Context, order *biz.SubscriptionOrde
 	m := &model.SubscriptionOrder{
 		OrderID:       order.OrderID,
 		PaymentID:     order.PaymentID,
-		UID:           order.UID,
+		UserID:        order.UserID,
 		PlanID:        order.PlanID,
 		AppID:         order.AppID,
 		Amount:        order.Amount,
@@ -51,7 +51,7 @@ func (r *orderRepo) GetOrder(ctx context.Context, orderID string) (*biz.Subscrip
 	return &biz.SubscriptionOrder{
 		OrderID:       m.OrderID,
 		PaymentID:     m.PaymentID,
-		UID:           m.UID,
+		UserID:        m.UserID,
 		PlanID:        m.PlanID,
 		AppID:         m.AppID,
 		Amount:        m.Amount,
@@ -65,7 +65,7 @@ func (r *orderRepo) UpdateOrder(ctx context.Context, order *biz.SubscriptionOrde
 	m := &model.SubscriptionOrder{
 		OrderID:       order.OrderID,
 		PaymentID:     order.PaymentID,
-		UID:           order.UID,
+		UserID:        order.UserID,
 		PlanID:        order.PlanID,
 		AppID:         order.AppID,
 		Amount:        order.Amount,

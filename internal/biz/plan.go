@@ -6,7 +6,7 @@ import "context"
 type Plan struct {
 	PlanID       string
 	AppID        string // 应用ID（关联api-key-service的app表）
-	UID          string // 开发者ID（用户ID，关联api-key-service的app.uid）
+	UserID       string // 开发者ID（用户ID，关联api-key-service的app.user_id）
 	Name         string
 	Description  string
 	Price        float64 // 默认价格（用于兜底，如果plan_pricing表中没有对应地域的价格）

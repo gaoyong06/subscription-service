@@ -135,14 +135,14 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/history/{uid}:
+    /v1/subscription/history/{userId}:
         get:
             tags:
                 - Subscription
             description: 获取订阅历史记录
             operationId: Subscription_GetSubscriptionHistory
             parameters:
-                - name: uid
+                - name: userId
                   in: path
                   required: true
                   schema:
@@ -170,14 +170,14 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/my/{uid}:
+    /v1/subscription/my/{userId}:
         get:
             tags:
                 - Subscription
             description: 获取用户的订阅状态
             operationId: Subscription_GetMySubscription
             parameters:
-                - name: uid
+                - name: userId
                   in: path
                   required: true
                   schema:
@@ -504,7 +504,7 @@ components:
         AutoRenewResult:
             type: object
             properties:
-                uid:
+                userId:
                     type: string
                 planId:
                     type: string
@@ -519,7 +519,7 @@ components:
         CancelSubscriptionRequest:
             type: object
             properties:
-                uid:
+                userId:
                     type: string
                 reason:
                     type: string
@@ -579,7 +579,7 @@ components:
         CreateSubscriptionOrderRequest:
             type: object
             properties:
-                uid:
+                userId:
                     type: string
                 planId:
                     type: string
@@ -679,7 +679,7 @@ components:
         PauseSubscriptionRequest:
             type: object
             properties:
-                uid:
+                userId:
                     type: string
                 reason:
                     type: string
@@ -748,13 +748,13 @@ components:
         ResumeSubscriptionRequest:
             type: object
             properties:
-                uid:
+                userId:
                     type: string
             description: 恢复订阅
         SetAutoRenewRequest:
             type: object
             properties:
-                uid:
+                userId:
                     type: string
                 autoRenew:
                     type: boolean
@@ -798,7 +798,7 @@ components:
         SubscriptionInfo:
             type: object
             properties:
-                uid:
+                userId:
                     type: string
                 planId:
                     type: string
@@ -819,7 +819,7 @@ components:
                 updatedCount:
                     type: integer
                     format: int32
-                updatedUids:
+                updatedUserIds:
                     type: array
                     items:
                         type: string

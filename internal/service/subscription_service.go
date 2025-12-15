@@ -75,7 +75,7 @@ func (s *SubscriptionService) CreatePlan(ctx context.Context, req *pb.CreatePlan
 	plan := &biz.Plan{
 		PlanID:       uuid.New().String(),
 		AppID:        appID,
-		UID:          developerID, // 开发者 ID（用户 ID）
+		UserID:       developerID, // 开发者 ID（用户 ID）
 		Name:         req.Name,
 		Description:  req.Description,
 		Price:        req.Price,
@@ -219,11 +219,11 @@ func (s *SubscriptionService) DeletePlanPricing(ctx context.Context, req *pb.Del
 // 查询指定用户的当前订阅状态、套餐信息和有效期
 func (s *SubscriptionService) GetMySubscription(ctx context.Context, req *pb.GetMySubscriptionRequest) (*pb.GetMySubscriptionReply, error) {
 	// 权限验证: 只能查询自己的订阅或管理员可以查询所有
-	if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
+	if err := auth.CheckOwnership(ctx, req.UserId); err != nil {
 		return nil, err
 	}
 
-	sub, err := s.uc.GetMySubscription(ctx, req.Uid)
+	sub, err := s.uc.GetMySubscription(ctx, req.UserId)
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +246,7 @@ func (s *SubscriptionService) GetMySubscription(ctx context.Context, req *pb.Get
 // 为用户创建订阅订单，调用支付服务生成支付信息
 func (s *SubscriptionService) CreateSubscriptionOrder(ctx context.Context, req *pb.CreateSubscriptionOrderRequest) (*pb.CreateSubscriptionOrderReply, error) {
 	// 权限验证
-	if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
+	if err := auth.CheckOwnership(ctx, req.UserId); err != nil {
 		return nil, err
 	}
 
@@ -265,7 +265,7 @@ func (s *SubscriptionService) CreateSubscriptionOrder(ctx context.Context, req *
 		}
 	}
 
-	order, paymentID, payUrl, payCode, payParams, err := s.uc.CreateSubscriptionOrderWithContext(ctx, req.Uid, req.PlanId, req.PaymentMethod, region, clientIP, acceptLanguage, xLanguage)
+	order, paymentID, payUrl, payCode, payParams, err := s.uc.CreateSubscriptionOrderWithContext(ctx, req.UserId, req.PlanId, req.PaymentMethod, region, clientIP, acceptLanguage, xLanguage)
 	if err != nil {
 		return nil, err
 	}
@@ -293,11 +293,11 @@ func (s *SubscriptionService) HandlePaymentSuccess(ctx context.Context, req *pb.
 // 用户主动取消订阅，订阅状态变更为已取消
 func (s *SubscriptionService) CancelSubscription(ctx context.Context, req *pb.CancelSubscriptionRequest) (*emptypb.Empty, error) {
 	// 权限验证
-	if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
+	if err := auth.CheckOwnership(ctx, req.UserId); err != nil {
 		return nil, err
 	}
 
-	err := s.uc.CancelSubscription(ctx, req.Uid, req.Reason)
+	err := s.uc.CancelSubscription(ctx, req.UserId, req.Reason)
 	if err != nil {
 		return nil, err
 	}
@@ -308,11 +308,11 @@ func (s *SubscriptionService) CancelSubscription(ctx context.Context, req *pb.Ca
 // 暂停用户订阅，订阅状态变更为已暂停
 func (s *SubscriptionService) PauseSubscription(ctx context.Context, req *pb.PauseSubscriptionRequest) (*emptypb.Empty, error) {
 	// 权限验证
-	if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
+	if err := auth.CheckOwnership(ctx, req.UserId); err != nil {
 		return nil, err
 	}
 
-	err := s.uc.PauseSubscription(ctx, req.Uid, req.Reason)
+	err := s.uc.PauseSubscription(ctx, req.UserId, req.Reason)
 	if err != nil {
 		return nil, err
 	}
@@ -323,11 +323,11 @@ func (s *SubscriptionService) PauseSubscription(ctx context.Context, req *pb.Pau
 // 恢复已暂停的订阅，订阅状态变更为激活
 func (s *SubscriptionService) ResumeSubscription(ctx context.Context, req *pb.ResumeSubscriptionRequest) (*emptypb.Empty, error) {
 	// 权限验证
-	if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
+	if err := auth.CheckOwnership(ctx, req.UserId); err != nil {
 		return nil, err
 	}
 
-	err := s.uc.ResumeSubscription(ctx, req.Uid)
+	err := s.uc.ResumeSubscription(ctx, req.UserId)
 	if err != nil {
 		return nil, err
 	}
@@ -338,7 +338,7 @@ func (s *SubscriptionService) ResumeSubscription(ctx context.Context, req *pb.Re
 // 查询用户的订阅历史记录，支持分页
 func (s *SubscriptionService) GetSubscriptionHistory(ctx context.Context, req *pb.GetSubscriptionHistoryRequest) (*pb.GetSubscriptionHistoryReply, error) {
 	// 权限验证
-	if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
+	if err := auth.CheckOwnership(ctx, req.UserId); err != nil {
 		return nil, err
 	}
 
@@ -354,7 +354,7 @@ func (s *SubscriptionService) GetSubscriptionHistory(ctx context.Context, req *p
 		pageSize = constants.MaxPageSize
 	}
 
-	items, total, err := s.uc.GetSubscriptionHistory(ctx, req.Uid, page, pageSize)
+	items, total, err := s.uc.GetSubscriptionHistory(ctx, req.UserId, page, pageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -385,11 +385,11 @@ func (s *SubscriptionService) GetSubscriptionHistory(ctx context.Context, req *p
 // 开启或关闭用户订阅的自动续费功能
 func (s *SubscriptionService) SetAutoRenew(ctx context.Context, req *pb.SetAutoRenewRequest) (*emptypb.Empty, error) {
 	// 权限验证
-	if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
+	if err := auth.CheckOwnership(ctx, req.UserId); err != nil {
 		return nil, err
 	}
 
-	err := s.uc.SetAutoRenew(ctx, req.Uid, req.AutoRenew)
+	err := s.uc.SetAutoRenew(ctx, req.UserId, req.AutoRenew)
 	if err != nil {
 		return nil, err
 	}
@@ -438,7 +438,7 @@ func (s *SubscriptionService) GetExpiringSubscriptions(ctx context.Context, req 
 		}
 
 		pbSubscriptions[i] = &pb.SubscriptionInfo{
-			Uid:       sub.UID,
+			UserId:    sub.UserID,
 			PlanId:    sub.PlanID,
 			PlanName:  planName,
 			StartTime: sub.StartTime.Unix(),
@@ -459,14 +459,14 @@ func (s *SubscriptionService) GetExpiringSubscriptions(ctx context.Context, req 
 // UpdateExpiredSubscriptions 批量更新过期订阅状态
 // 定时任务调用，将已过期的订阅状态更新为expired
 func (s *SubscriptionService) UpdateExpiredSubscriptions(ctx context.Context, req *pb.UpdateExpiredSubscriptionsRequest) (*pb.UpdateExpiredSubscriptionsReply, error) {
-	count, uids, err := s.uc.UpdateExpiredSubscriptions(ctx)
+	count, userIds, err := s.uc.UpdateExpiredSubscriptions(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return &pb.UpdateExpiredSubscriptionsReply{
-		UpdatedCount: int32(count),
-		UpdatedUids:  uids,
+		UpdatedCount:   int32(count),
+		UpdatedUserIds: userIds,
 	}, nil
 }
 
@@ -486,7 +486,7 @@ func (s *SubscriptionService) ProcessAutoRenewals(ctx context.Context, req *pb.P
 	pbResults := make([]*pb.AutoRenewResult, len(results))
 	for i, result := range results {
 		pbResults[i] = &pb.AutoRenewResult{
-			Uid:          result.UID,
+			UserId:       result.UserID,
 			PlanId:       result.PlanID,
 			Success:      result.Success,
 			OrderId:      result.OrderID,

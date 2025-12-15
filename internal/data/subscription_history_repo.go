@@ -25,7 +25,7 @@ func NewSubscriptionHistoryRepo(data *Data, logger log.Logger) biz.SubscriptionH
 // AddSubscriptionHistory 添加订阅历史记录
 func (r *historyRepo) AddSubscriptionHistory(ctx context.Context, history *biz.SubscriptionHistory) error {
 	m := &model.SubscriptionHistory{
-		UID:       history.UID,
+		UserID:    history.UserID,
 		PlanID:    history.PlanID,
 		PlanName:  history.PlanName,
 		AppID:     history.AppID,
@@ -36,32 +36,32 @@ func (r *historyRepo) AddSubscriptionHistory(ctx context.Context, history *biz.S
 		CreatedAt: history.CreatedAt,
 	}
 	if err := r.data.db.WithContext(ctx).Create(m).Error; err != nil {
-		r.log.Errorf("Failed to add subscription history for user %d: %v", history.UID, err)
+		r.log.Errorf("Failed to add subscription history for user %s: %v", history.UserID, err)
 		return err
 	}
 	return nil
 }
 
 // GetSubscriptionHistory 获取用户订阅历史
-func (r *historyRepo) GetSubscriptionHistory(ctx context.Context, uid string, page, pageSize int) ([]*biz.SubscriptionHistory, int, error) {
+func (r *historyRepo) GetSubscriptionHistory(ctx context.Context, userId string, page, pageSize int) ([]*biz.SubscriptionHistory, int, error) {
 	var models []model.SubscriptionHistory
 	var total int64
 
 	// 获取总数
-	if err := r.data.db.WithContext(ctx).Model(&model.SubscriptionHistory{}).Where("uid = ?", uid).Count(&total).Error; err != nil {
-		r.log.Errorf("Failed to count subscription history for user %s: %v", uid, err)
+	if err := r.data.db.WithContext(ctx).Model(&model.SubscriptionHistory{}).Where("user_id = ?", userId).Count(&total).Error; err != nil {
+		r.log.Errorf("Failed to count subscription history for user %s: %v", userId, err)
 		return nil, 0, err
 	}
 
 	// 分页查询
 	offset := (page - 1) * pageSize
 	if err := r.data.db.WithContext(ctx).
-		Where("uid = ?", uid).
+		Where("user_id = ?", userId).
 		Order("created_at DESC").
 		Limit(pageSize).
 		Offset(offset).
 		Find(&models).Error; err != nil {
-		r.log.Errorf("Failed to get subscription history for user %s: %v", uid, err)
+		r.log.Errorf("Failed to get subscription history for user %s: %v", userId, err)
 		return nil, 0, err
 	}
 
@@ -70,7 +70,7 @@ func (r *historyRepo) GetSubscriptionHistory(ctx context.Context, uid string, pa
 	for i, m := range models {
 		items[i] = &biz.SubscriptionHistory{
 			SubscriptionHistoryID: m.SubscriptionHistoryID,
-			UID:                   m.UID,
+			UserID:                m.UserID,
 			PlanID:                m.PlanID,
 			PlanName:              m.PlanName,
 			AppID:                 m.AppID,

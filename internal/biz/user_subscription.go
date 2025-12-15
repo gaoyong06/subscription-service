@@ -16,7 +16,7 @@ import (
 // UserSubscription 用户订阅记录
 type UserSubscription struct {
 	SubscriptionID uint64
-	UID            string // 用户ID（字符串 UUID）
+	UserID         string // 用户ID（字符串 UUID）
 	PlanID         string
 	AppID          string // 应用ID（冗余字段，便于按app统计和查询）
 	StartTime      time.Time
@@ -30,7 +30,7 @@ type UserSubscription struct {
 
 // UserSubscriptionRepo 用户订阅仓库接口
 type UserSubscriptionRepo interface {
-	GetSubscription(ctx context.Context, uid string) (*UserSubscription, error)
+	GetSubscription(ctx context.Context, userId string) (*UserSubscription, error)
 	SaveSubscription(ctx context.Context, sub *UserSubscription) error
 	// 批量操作（用于定时任务）
 	GetExpiringSubscriptions(ctx context.Context, daysBeforeExpiry, page, pageSize int) ([]*UserSubscription, int, error)
@@ -40,7 +40,7 @@ type UserSubscriptionRepo interface {
 
 // PaymentClient 支付服务客户端接口 (防腐层)
 type PaymentClient interface {
-	CreatePayment(ctx context.Context, orderID string, uid string, amount float64, currency, method, subject, returnURL string) (paymentID, payUrl, payCode, payParams string, err error)
+	CreatePayment(ctx context.Context, orderID string, userId string, amount float64, currency, method, subject, returnURL string) (paymentID, payUrl, payCode, payParams string, err error)
 }
 
 // SubscriptionUsecase 订阅业务逻辑
@@ -85,8 +85,8 @@ func NewSubscriptionUsecase(
 }
 
 // GetMySubscription 获取用户当前订阅信息
-func (uc *SubscriptionUsecase) GetMySubscription(ctx context.Context, uid string) (*UserSubscription, error) {
-	sub, err := uc.subRepo.GetSubscription(ctx, uid)
+func (uc *SubscriptionUsecase) GetMySubscription(ctx context.Context, userId string) (*UserSubscription, error) {
+	sub, err := uc.subRepo.GetSubscription(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -101,13 +101,13 @@ func (uc *SubscriptionUsecase) GetMySubscription(ctx context.Context, uid string
 }
 
 // CancelSubscription 取消订阅
-func (uc *SubscriptionUsecase) CancelSubscription(ctx context.Context, uid string, reason string) error {
-	uc.log.Infof("CancelSubscription: uid=%s, reason=%s", uid, reason)
+func (uc *SubscriptionUsecase) CancelSubscription(ctx context.Context, userId string, reason string) error {
+	uc.log.Infof("CancelSubscription: userId=%s, reason=%s", userId, reason)
 
 	// 使用事务确保数据一致性
 	return uc.withTransaction(ctx, func(ctx context.Context) error {
 		// 获取当前订阅
-		sub, err := uc.subRepo.GetSubscription(ctx, uid)
+		sub, err := uc.subRepo.GetSubscription(ctx, userId)
 		if err != nil {
 			uc.log.Errorf("Failed to get subscription: %v", err)
 			return err
@@ -133,7 +133,7 @@ func (uc *SubscriptionUsecase) CancelSubscription(ctx context.Context, uid strin
 
 		// 记录历史
 		history := &SubscriptionHistory{
-			UID:       uid,
+			UserID:    userId,
 			PlanID:    sub.PlanID,
 			AppID:     sub.AppID,
 			StartTime: sub.StartTime,
@@ -147,19 +147,19 @@ func (uc *SubscriptionUsecase) CancelSubscription(ctx context.Context, uid strin
 			return err // 事务会回滚
 		}
 
-		uc.log.Infof("Subscription cancelled successfully for user %s", uid)
+		uc.log.Infof("Subscription cancelled successfully for user %s", userId)
 		return nil
 	})
 }
 
 // PauseSubscription 暂停订阅
-func (uc *SubscriptionUsecase) PauseSubscription(ctx context.Context, uid string, reason string) error {
-	uc.log.Infof("PauseSubscription: uid=%s, reason=%s", uid, reason)
+func (uc *SubscriptionUsecase) PauseSubscription(ctx context.Context, userId string, reason string) error {
+	uc.log.Infof("PauseSubscription: userId=%s, reason=%s", userId, reason)
 
 	// 使用事务确保数据一致性
 	return uc.withTransaction(ctx, func(ctx context.Context) error {
 		// 获取当前订阅
-		sub, err := uc.subRepo.GetSubscription(ctx, uid)
+		sub, err := uc.subRepo.GetSubscription(ctx, userId)
 		if err != nil {
 			uc.log.Errorf("Failed to get subscription: %v", err)
 			return err
@@ -184,7 +184,7 @@ func (uc *SubscriptionUsecase) PauseSubscription(ctx context.Context, uid string
 
 		// 记录历史
 		history := &SubscriptionHistory{
-			UID:       uid,
+			UserID:    userId,
 			PlanID:    sub.PlanID,
 			AppID:     sub.AppID,
 			StartTime: sub.StartTime,
@@ -198,19 +198,19 @@ func (uc *SubscriptionUsecase) PauseSubscription(ctx context.Context, uid string
 			return err // 事务会回滚
 		}
 
-		uc.log.Infof("Subscription paused successfully for user %s", uid)
+		uc.log.Infof("Subscription paused successfully for user %s", userId)
 		return nil
 	})
 }
 
 // ResumeSubscription 恢复订阅
-func (uc *SubscriptionUsecase) ResumeSubscription(ctx context.Context, uid string) error {
-	uc.log.Infof("ResumeSubscription: uid=%s", uid)
+func (uc *SubscriptionUsecase) ResumeSubscription(ctx context.Context, userId string) error {
+	uc.log.Infof("ResumeSubscription: userId=%s", userId)
 
 	// 使用事务确保数据一致性
 	return uc.withTransaction(ctx, func(ctx context.Context) error {
 		// 获取当前订阅
-		sub, err := uc.subRepo.GetSubscription(ctx, uid)
+		sub, err := uc.subRepo.GetSubscription(ctx, userId)
 		if err != nil {
 			uc.log.Errorf("Failed to get subscription: %v", err)
 			return err
@@ -235,7 +235,7 @@ func (uc *SubscriptionUsecase) ResumeSubscription(ctx context.Context, uid strin
 
 		// 记录历史
 		history := &SubscriptionHistory{
-			UID:       uid,
+			UserID:    userId,
 			PlanID:    sub.PlanID,
 			AppID:     sub.AppID,
 			StartTime: sub.StartTime,
@@ -249,17 +249,17 @@ func (uc *SubscriptionUsecase) ResumeSubscription(ctx context.Context, uid strin
 			return err // 事务会回滚
 		}
 
-		uc.log.Infof("Subscription resumed successfully for user %s", uid)
+		uc.log.Infof("Subscription resumed successfully for user %s", userId)
 		return nil
 	})
 }
 
 // SetAutoRenew 设置自动续费
-func (uc *SubscriptionUsecase) SetAutoRenew(ctx context.Context, uid string, autoRenew bool) error {
-	uc.log.Infof("SetAutoRenew: uid=%s, autoRenew=%v", uid, autoRenew)
+func (uc *SubscriptionUsecase) SetAutoRenew(ctx context.Context, userId string, autoRenew bool) error {
+	uc.log.Infof("SetAutoRenew: userId=%s, autoRenew=%v", userId, autoRenew)
 
 	// 获取当前订阅
-	sub, err := uc.subRepo.GetSubscription(ctx, uid)
+	sub, err := uc.subRepo.GetSubscription(ctx, userId)
 	if err != nil {
 		uc.log.Errorf("Failed to get subscription: %v", err)
 		return err
@@ -286,6 +286,6 @@ func (uc *SubscriptionUsecase) SetAutoRenew(ctx context.Context, uid string, aut
 	if autoRenew {
 		action = "enabled_auto_renew"
 	}
-	uc.log.Infof("Auto-renew %s successfully for user %s", action, uid)
+	uc.log.Infof("Auto-renew %s successfully for user %s", action, userId)
 	return nil
 }

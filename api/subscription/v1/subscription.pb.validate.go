@@ -1165,9 +1165,9 @@ func (m *GetMySubscriptionRequest) validate(all bool) error {
 
 	var errors []error
 
-	if l := utf8.RuneCountInString(m.GetUid()); l < 1 || l > 36 {
+	if l := utf8.RuneCountInString(m.GetUserId()); l < 1 || l > 36 {
 		err := GetMySubscriptionRequestValidationError{
-			field:  "Uid",
+			field:  "UserId",
 			reason: "value length must be between 1 and 36 runes, inclusive",
 		}
 		if !all {
@@ -1392,9 +1392,9 @@ func (m *CreateSubscriptionOrderRequest) validate(all bool) error {
 
 	var errors []error
 
-	if l := utf8.RuneCountInString(m.GetUid()); l < 1 || l > 36 {
+	if l := utf8.RuneCountInString(m.GetUserId()); l < 1 || l > 36 {
 		err := CreateSubscriptionOrderRequestValidationError{
-			field:  "Uid",
+			field:  "UserId",
 			reason: "value length must be between 1 and 36 runes, inclusive",
 		}
 		if !all {
@@ -1784,9 +1784,9 @@ func (m *CancelSubscriptionRequest) validate(all bool) error {
 
 	var errors []error
 
-	if l := utf8.RuneCountInString(m.GetUid()); l < 1 || l > 36 {
+	if l := utf8.RuneCountInString(m.GetUserId()); l < 1 || l > 36 {
 		err := CancelSubscriptionRequestValidationError{
-			field:  "Uid",
+			field:  "UserId",
 			reason: "value length must be between 1 and 36 runes, inclusive",
 		}
 		if !all {
@@ -1899,9 +1899,9 @@ func (m *PauseSubscriptionRequest) validate(all bool) error {
 
 	var errors []error
 
-	if l := utf8.RuneCountInString(m.GetUid()); l < 1 || l > 36 {
+	if l := utf8.RuneCountInString(m.GetUserId()); l < 1 || l > 36 {
 		err := PauseSubscriptionRequestValidationError{
-			field:  "Uid",
+			field:  "UserId",
 			reason: "value length must be between 1 and 36 runes, inclusive",
 		}
 		if !all {
@@ -2014,9 +2014,9 @@ func (m *ResumeSubscriptionRequest) validate(all bool) error {
 
 	var errors []error
 
-	if l := utf8.RuneCountInString(m.GetUid()); l < 1 || l > 36 {
+	if l := utf8.RuneCountInString(m.GetUserId()); l < 1 || l > 36 {
 		err := ResumeSubscriptionRequestValidationError{
-			field:  "Uid",
+			field:  "UserId",
 			reason: "value length must be between 1 and 36 runes, inclusive",
 		}
 		if !all {
@@ -2245,9 +2245,9 @@ func (m *GetSubscriptionHistoryRequest) validate(all bool) error {
 
 	var errors []error
 
-	if l := utf8.RuneCountInString(m.GetUid()); l < 1 || l > 36 {
+	if l := utf8.RuneCountInString(m.GetUserId()); l < 1 || l > 36 {
 		err := GetSubscriptionHistoryRequestValidationError{
-			field:  "Uid",
+			field:  "UserId",
 			reason: "value length must be between 1 and 36 runes, inclusive",
 		}
 		if !all {
@@ -2506,9 +2506,9 @@ func (m *SetAutoRenewRequest) validate(all bool) error {
 
 	var errors []error
 
-	if l := utf8.RuneCountInString(m.GetUid()); l < 1 || l > 36 {
+	if l := utf8.RuneCountInString(m.GetUserId()); l < 1 || l > 36 {
 		err := SetAutoRenewRequestValidationError{
-			field:  "Uid",
+			field:  "UserId",
 			reason: "value length must be between 1 and 36 runes, inclusive",
 		}
 		if !all {
@@ -2739,7 +2739,7 @@ func (m *SubscriptionInfo) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Uid
+	// no validation rules for UserId
 
 	// no validation rules for PlanId
 
@@ -3321,7 +3321,7 @@ func (m *AutoRenewResult) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Uid
+	// no validation rules for UserId
 
 	// no validation rules for PlanId
 

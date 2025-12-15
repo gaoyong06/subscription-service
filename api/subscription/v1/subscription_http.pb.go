@@ -84,13 +84,13 @@ type SubscriptionHTTPServer interface {
 func RegisterSubscriptionHTTPServer(s *http.Server, srv SubscriptionHTTPServer) {
 	r := s.Route("/")
 	r.GET("/v1/subscription/plans", _Subscription_ListPlans0_HTTP_Handler(srv))
-	r.GET("/v1/subscription/my/{uid}", _Subscription_GetMySubscription0_HTTP_Handler(srv))
+	r.GET("/v1/subscription/my/{userId}", _Subscription_GetMySubscription0_HTTP_Handler(srv))
 	r.POST("/v1/subscription/order", _Subscription_CreateSubscriptionOrder0_HTTP_Handler(srv))
 	r.POST("/v1/subscription/payment/success", _Subscription_HandlePaymentSuccess0_HTTP_Handler(srv))
 	r.POST("/v1/subscription/cancel", _Subscription_CancelSubscription0_HTTP_Handler(srv))
 	r.POST("/v1/subscription/pause", _Subscription_PauseSubscription0_HTTP_Handler(srv))
 	r.POST("/v1/subscription/resume", _Subscription_ResumeSubscription0_HTTP_Handler(srv))
-	r.GET("/v1/subscription/history/{uid}", _Subscription_GetSubscriptionHistory0_HTTP_Handler(srv))
+	r.GET("/v1/subscription/history/{userId}", _Subscription_GetSubscriptionHistory0_HTTP_Handler(srv))
 	r.POST("/v1/subscription/auto-renew", _Subscription_SetAutoRenew0_HTTP_Handler(srv))
 	r.GET("/v1/subscription/expiring", _Subscription_GetExpiringSubscriptions0_HTTP_Handler(srv))
 	r.POST("/v1/subscription/expired/update", _Subscription_UpdateExpiredSubscriptions0_HTTP_Handler(srv))
@@ -675,7 +675,7 @@ func (c *SubscriptionHTTPClientImpl) GetExpiringSubscriptions(ctx context.Contex
 // GetMySubscription 获取用户的订阅状态
 func (c *SubscriptionHTTPClientImpl) GetMySubscription(ctx context.Context, in *GetMySubscriptionRequest, opts ...http.CallOption) (*GetMySubscriptionReply, error) {
 	var out GetMySubscriptionReply
-	pattern := "/v1/subscription/my/{uid}"
+	pattern := "/v1/subscription/my/{userId}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationSubscriptionGetMySubscription))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -689,7 +689,7 @@ func (c *SubscriptionHTTPClientImpl) GetMySubscription(ctx context.Context, in *
 // GetSubscriptionHistory 获取订阅历史记录
 func (c *SubscriptionHTTPClientImpl) GetSubscriptionHistory(ctx context.Context, in *GetSubscriptionHistoryRequest, opts ...http.CallOption) (*GetSubscriptionHistoryReply, error) {
 	var out GetSubscriptionHistoryReply
-	pattern := "/v1/subscription/history/{uid}"
+	pattern := "/v1/subscription/history/{userId}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationSubscriptionGetSubscriptionHistory))
 	opts = append(opts, http.PathTemplate(pattern))

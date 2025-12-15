@@ -39,7 +39,7 @@ func (r *planRepo) ListPlans(ctx context.Context, appID string) ([]*biz.Plan, er
 		plans[i] = &biz.Plan{
 			PlanID:       m.PlanID,
 			AppID:        m.AppID,
-			UID:          m.UID,
+			UserID:       m.UserID,
 			Name:         m.Name,
 			Description:  m.Description,
 			Price:        m.Price,
@@ -61,7 +61,7 @@ func (r *planRepo) GetPlan(ctx context.Context, id string) (*biz.Plan, error) {
 	return &biz.Plan{
 		PlanID:       m.PlanID,
 		AppID:        m.AppID,
-		UID:          m.UID,
+		UserID:       m.UserID,
 		Name:         m.Name,
 		Description:  m.Description,
 		Price:        m.Price,
@@ -76,7 +76,7 @@ func (r *planRepo) CreatePlan(ctx context.Context, plan *biz.Plan) error {
 	m := &model.Plan{
 		PlanID:       plan.PlanID,
 		AppID:        plan.AppID,
-		UID:          plan.UID,
+		UserID:       plan.UserID,
 		Name:         plan.Name,
 		Description:  plan.Description,
 		Price:        plan.Price,
@@ -96,7 +96,7 @@ func (r *planRepo) UpdatePlan(ctx context.Context, plan *biz.Plan) error {
 	m := &model.Plan{
 		PlanID:       plan.PlanID,
 		AppID:        plan.AppID,
-		UID:          plan.UID,
+		UserID:       plan.UserID,
 		Name:         plan.Name,
 		Description:  plan.Description,
 		Price:        plan.Price,
