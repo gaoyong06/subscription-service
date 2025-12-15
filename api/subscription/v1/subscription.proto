@@ -136,6 +136,34 @@ service Subscription {
       delete: "/v1/subscription/pricings/{planPricingId}"
     };
   }
+  
+  // 获取订阅订单列表（管理员视角，按应用查询）
+  rpc ListSubscriptionOrders (ListSubscriptionOrdersRequest) returns (ListSubscriptionOrdersReply) {
+    option (google.api.http) = {
+      get: "/v1/subscription/orders"
+    };
+  }
+  
+  // 获取订阅订单详情
+  rpc GetSubscriptionOrder (GetSubscriptionOrderRequest) returns (GetSubscriptionOrderReply) {
+    option (google.api.http) = {
+      get: "/v1/subscription/orders/{orderId}"
+    };
+  }
+  
+  // 获取应用的订阅用户列表（管理员视角）
+  rpc ListAppSubscriptions (ListAppSubscriptionsRequest) returns (ListAppSubscriptionsReply) {
+    option (google.api.http) = {
+      get: "/v1/subscription/app/subscriptions"
+    };
+  }
+  
+  // 获取应用的订阅历史记录（管理员视角）
+  rpc GetAppSubscriptionHistory (GetAppSubscriptionHistoryRequest) returns (GetAppSubscriptionHistoryReply) {
+    option (google.api.http) = {
+      get: "/v1/subscription/app/history"
+    };
+  }
 }
 
 message Plan {
@@ -246,13 +274,14 @@ message ResumeSubscriptionRequest {
 // 订阅历史记录
 message SubscriptionHistoryItem {
   uint64 id = 1;
-  string planId = 2;
-  string planName = 3;
-  int64 startTime = 4;
-  int64 endTime = 5;
-  string status = 6; // active, expired, paused, cancelled
-  string action = 7; // created, renewed, upgraded, paused, resumed, cancelled
-  int64 createdAt = 8;
+  string userId = 2; // 用户ID（字符串 UUID）
+  string planId = 3;
+  string planName = 4;
+  int64 startTime = 5;
+  int64 endTime = 6;
+  string status = 7; // active, expired, paused, cancelled
+  string action = 8; // created, renewed, upgraded, paused, resumed, cancelled
+  int64 createdAt = 9;
 }
 
 message GetSubscriptionHistoryRequest {
@@ -374,4 +403,98 @@ message DeletePlanPricingRequest {
 
 message DeletePlanPricingReply {
   uint64 planPricingId = 1; // 被删除的区域定价ID
+}
+
+// 订阅订单列表查询请求（管理员视角）
+message ListSubscriptionOrdersRequest {
+  string appId = 1; // 应用ID（查询参数，必填）
+  string userId = 2; // 用户ID（查询参数，可选）
+  string planId = 3; // 套餐ID（查询参数，可选）
+  string status = 4; // 支付状态（查询参数，可选）：pending, success, failed, closed, refunded, partially_refunded
+  int32 page = 5; // 页码，从1开始，默认1
+  int32 pageSize = 6; // 每页数量，默认10，最大100
+}
+
+// 订阅订单信息
+message SubscriptionOrderInfo {
+  string orderId = 1; // 订单号
+  string paymentId = 2; // 支付流水号
+  string userId = 3; // 用户ID（字符串 UUID）
+  string planId = 4; // 套餐ID
+  string planName = 5; // 套餐名称（关联查询）
+  string appId = 6; // 应用ID
+  double amount = 7; // 金额
+  string currency = 8; // 币种（从套餐获取）
+  string paymentStatus = 9; // 支付状态：pending, success, failed, closed, refunded, partially_refunded
+  int64 createdAt = 10; // 创建时间（timestamp）
+}
+
+// 订阅订单列表响应
+message ListSubscriptionOrdersReply {
+  repeated SubscriptionOrderInfo orders = 1;
+  int32 total = 2; // 总数
+  int32 page = 3; // 当前页码
+  int32 pageSize = 4; // 每页数量
+}
+
+// 获取订阅订单详情请求
+message GetSubscriptionOrderRequest {
+  string orderId = 1 [(validate.rules).string = {min_len: 1, max_len: 100}];
+}
+
+// 获取订阅订单详情响应
+message GetSubscriptionOrderReply {
+  SubscriptionOrderInfo order = 1;
+}
+
+// 应用的订阅用户列表请求（管理员视角）
+message ListAppSubscriptionsRequest {
+  string appId = 1 [(validate.rules).string = {min_len: 1}]; // 应用ID（查询参数，必填）
+  string status = 2; // 订阅状态（查询参数，可选）：active, expired, paused, cancelled
+  string userId = 3; // 用户ID（查询参数，可选，用于筛选特定用户）
+  int32 page = 4; // 页码，从1开始，默认1
+  int32 pageSize = 5; // 每页数量，默认10，最大100
+}
+
+// 订阅用户信息
+message AppSubscriptionInfo {
+  uint64 subscriptionId = 1; // 订阅ID
+  string userId = 2; // 用户ID（字符串 UUID）
+  string planId = 3; // 套餐ID
+  string planName = 4; // 套餐名称（关联查询）
+  string appId = 5; // 应用ID
+  int64 startTime = 6; // 开始时间（timestamp）
+  int64 endTime = 7; // 结束时间（timestamp）
+  string status = 8; // 订阅状态：active, expired, paused, cancelled
+  string orderId = 9; // 订单ID
+  bool autoRenew = 10; // 是否自动续费
+  int64 createdAt = 11; // 创建时间（timestamp）
+  int64 updatedAt = 12; // 更新时间（timestamp）
+}
+
+// 应用的订阅用户列表响应
+message ListAppSubscriptionsReply {
+  repeated AppSubscriptionInfo subscriptions = 1;
+  int32 total = 2; // 总数
+  int32 page = 3; // 当前页码
+  int32 pageSize = 4; // 每页数量
+}
+
+// 应用的订阅历史记录请求（管理员视角）
+message GetAppSubscriptionHistoryRequest {
+  string appId = 1 [(validate.rules).string = {min_len: 1}]; // 应用ID（查询参数，必填）
+  string userId = 2; // 用户ID（查询参数，可选，用于筛选特定用户）
+  string action = 3; // 操作类型（查询参数，可选）：created, renewed, upgraded, paused, resumed, cancelled, expired, enabled_auto_renew, disabled_auto_renew
+  int64 startTime = 4; // 开始时间（查询参数，可选，timestamp）
+  int64 endTime = 5; // 结束时间（查询参数，可选，timestamp）
+  int32 page = 6; // 页码，从1开始，默认1
+  int32 pageSize = 7; // 每页数量，默认10，最大100
+}
+
+// 应用的订阅历史记录响应
+message GetAppSubscriptionHistoryReply {
+  repeated SubscriptionHistoryItem items = 1;
+  int32 total = 2; // 总数
+  int32 page = 3; // 当前页码
+  int32 pageSize = 4; // 每页数量
 }

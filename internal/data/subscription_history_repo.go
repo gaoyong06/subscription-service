@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"time"
 	"xinyuan_tech/subscription-service/internal/biz"
 	"xinyuan_tech/subscription-service/internal/data/model"
 
@@ -62,6 +63,67 @@ func (r *historyRepo) GetSubscriptionHistory(ctx context.Context, userId string,
 		Offset(offset).
 		Find(&models).Error; err != nil {
 		r.log.Errorf("Failed to get subscription history for user %s: %v", userId, err)
+		return nil, 0, err
+	}
+
+	// 转换为业务对象
+	items := make([]*biz.SubscriptionHistory, len(models))
+	for i, m := range models {
+		items[i] = &biz.SubscriptionHistory{
+			SubscriptionHistoryID: m.SubscriptionHistoryID,
+			UserID:                m.UserID,
+			PlanID:                m.PlanID,
+			PlanName:              m.PlanName,
+			AppID:                 m.AppID,
+			StartTime:             m.StartTime,
+			EndTime:               m.EndTime,
+			Status:                m.Status,
+			Action:                m.Action,
+			CreatedAt:             m.CreatedAt,
+		}
+	}
+
+	return items, int(total), nil
+}
+
+// GetAppSubscriptionHistory 获取应用的订阅历史记录
+func (r *historyRepo) GetAppSubscriptionHistory(ctx context.Context, appID, userID, action string, startTime, endTime *time.Time, page, pageSize int) ([]*biz.SubscriptionHistory, int, error) {
+	var models []model.SubscriptionHistory
+	var total int64
+
+	// 构建查询条件
+	query := r.data.db.WithContext(ctx).Model(&model.SubscriptionHistory{})
+
+	if appID != "" {
+		query = query.Where("app_id = ?", appID)
+	}
+	if userID != "" {
+		query = query.Where("user_id = ?", userID)
+	}
+	if action != "" {
+		query = query.Where("action = ?", action)
+	}
+	if startTime != nil {
+		query = query.Where("created_at >= ?", *startTime)
+	}
+	if endTime != nil {
+		query = query.Where("created_at <= ?", *endTime)
+	}
+
+	// 获取总数
+	if err := query.Count(&total).Error; err != nil {
+		r.log.Errorf("Failed to count app subscription history: %v", err)
+		return nil, 0, err
+	}
+
+	// 分页查询
+	offset := (page - 1) * pageSize
+	if err := query.
+		Order("created_at DESC").
+		Limit(pageSize).
+		Offset(offset).
+		Find(&models).Error; err != nil {
+		r.log.Errorf("Failed to get app subscription history: %v", err)
 		return nil, 0, err
 	}
 

@@ -23,6 +23,8 @@ type SubscriptionHistory struct {
 type SubscriptionHistoryRepo interface {
 	AddSubscriptionHistory(ctx context.Context, history *SubscriptionHistory) error
 	GetSubscriptionHistory(ctx context.Context, userId string, page, pageSize int) ([]*SubscriptionHistory, int, error)
+	// 管理员视角：获取应用的订阅历史记录
+	GetAppSubscriptionHistory(ctx context.Context, appID, userID, action string, startTime, endTime *time.Time, page, pageSize int) ([]*SubscriptionHistory, int, error)
 }
 
 // GetSubscriptionHistory 获取订阅历史记录

@@ -36,6 +36,8 @@ type UserSubscriptionRepo interface {
 	GetExpiringSubscriptions(ctx context.Context, daysBeforeExpiry, page, pageSize int) ([]*UserSubscription, int, error)
 	UpdateExpiredSubscriptions(ctx context.Context) (int, []string, error)
 	GetAutoRenewSubscriptions(ctx context.Context, daysBeforeExpiry int) ([]*UserSubscription, error)
+	// 管理员视角：获取应用的订阅用户列表
+	ListAppSubscriptions(ctx context.Context, appID, status, userID string, page, pageSize int) ([]*UserSubscription, int, error)
 }
 
 // PaymentClient 支付服务客户端接口 (防腐层)

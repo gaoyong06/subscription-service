@@ -246,3 +246,59 @@ func (r *subscriptionRepo) GetAutoRenewSubscriptions(ctx context.Context, daysBe
 
 	return subscriptions, nil
 }
+
+// ListAppSubscriptions 获取应用的订阅用户列表
+func (r *subscriptionRepo) ListAppSubscriptions(ctx context.Context, appID, status, userID string, page, pageSize int) ([]*biz.UserSubscription, int, error) {
+	var models []model.UserSubscription
+	var total int64
+
+	// 构建查询条件
+	query := r.data.db.WithContext(ctx).Model(&model.UserSubscription{})
+
+	if appID != "" {
+		query = query.Where("app_id = ?", appID)
+	}
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+	if userID != "" {
+		query = query.Where("user_id = ?", userID)
+	}
+
+	// 获取总数
+	if err := query.Count(&total).Error; err != nil {
+		r.log.Errorf("Failed to count app subscriptions: %v", err)
+		return nil, 0, err
+	}
+
+	// 分页查询
+	offset := (page - 1) * pageSize
+	if err := query.
+		Order("created_at DESC").
+		Limit(pageSize).
+		Offset(offset).
+		Find(&models).Error; err != nil {
+		r.log.Errorf("Failed to list app subscriptions: %v", err)
+		return nil, 0, err
+	}
+
+	// 转换为业务对象
+	subscriptions := make([]*biz.UserSubscription, len(models))
+	for i, m := range models {
+		subscriptions[i] = &biz.UserSubscription{
+			SubscriptionID: m.SubscriptionID,
+			UserID:         m.UserID,
+			PlanID:         m.PlanID,
+			AppID:          m.AppID,
+			StartTime:      m.StartTime,
+			EndTime:        m.EndTime,
+			Status:         m.Status,
+			OrderID:        m.OrderID,
+			IsAutoRenew:    m.IsAutoRenew,
+			CreatedAt:      m.CreatedAt,
+			UpdatedAt:      m.UpdatedAt,
+		}
+	}
+
+	return subscriptions, int(total), nil
+}

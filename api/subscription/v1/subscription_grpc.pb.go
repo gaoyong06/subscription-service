@@ -39,6 +39,10 @@ const (
 	Subscription_CreatePlanPricing_FullMethodName          = "/subscription.v1.Subscription/CreatePlanPricing"
 	Subscription_UpdatePlanPricing_FullMethodName          = "/subscription.v1.Subscription/UpdatePlanPricing"
 	Subscription_DeletePlanPricing_FullMethodName          = "/subscription.v1.Subscription/DeletePlanPricing"
+	Subscription_ListSubscriptionOrders_FullMethodName     = "/subscription.v1.Subscription/ListSubscriptionOrders"
+	Subscription_GetSubscriptionOrder_FullMethodName       = "/subscription.v1.Subscription/GetSubscriptionOrder"
+	Subscription_ListAppSubscriptions_FullMethodName       = "/subscription.v1.Subscription/ListAppSubscriptions"
+	Subscription_GetAppSubscriptionHistory_FullMethodName  = "/subscription.v1.Subscription/GetAppSubscriptionHistory"
 )
 
 // SubscriptionClient is the client API for Subscription service.
@@ -83,6 +87,14 @@ type SubscriptionClient interface {
 	UpdatePlanPricing(ctx context.Context, in *UpdatePlanPricingRequest, opts ...grpc.CallOption) (*UpdatePlanPricingReply, error)
 	// 删除区域定价
 	DeletePlanPricing(ctx context.Context, in *DeletePlanPricingRequest, opts ...grpc.CallOption) (*DeletePlanPricingReply, error)
+	// 获取订阅订单列表（管理员视角，按应用查询）
+	ListSubscriptionOrders(ctx context.Context, in *ListSubscriptionOrdersRequest, opts ...grpc.CallOption) (*ListSubscriptionOrdersReply, error)
+	// 获取订阅订单详情
+	GetSubscriptionOrder(ctx context.Context, in *GetSubscriptionOrderRequest, opts ...grpc.CallOption) (*GetSubscriptionOrderReply, error)
+	// 获取应用的订阅用户列表（管理员视角）
+	ListAppSubscriptions(ctx context.Context, in *ListAppSubscriptionsRequest, opts ...grpc.CallOption) (*ListAppSubscriptionsReply, error)
+	// 获取应用的订阅历史记录（管理员视角）
+	GetAppSubscriptionHistory(ctx context.Context, in *GetAppSubscriptionHistoryRequest, opts ...grpc.CallOption) (*GetAppSubscriptionHistoryReply, error)
 }
 
 type subscriptionClient struct {
@@ -283,6 +295,46 @@ func (c *subscriptionClient) DeletePlanPricing(ctx context.Context, in *DeletePl
 	return out, nil
 }
 
+func (c *subscriptionClient) ListSubscriptionOrders(ctx context.Context, in *ListSubscriptionOrdersRequest, opts ...grpc.CallOption) (*ListSubscriptionOrdersReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListSubscriptionOrdersReply)
+	err := c.cc.Invoke(ctx, Subscription_ListSubscriptionOrders_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subscriptionClient) GetSubscriptionOrder(ctx context.Context, in *GetSubscriptionOrderRequest, opts ...grpc.CallOption) (*GetSubscriptionOrderReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetSubscriptionOrderReply)
+	err := c.cc.Invoke(ctx, Subscription_GetSubscriptionOrder_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subscriptionClient) ListAppSubscriptions(ctx context.Context, in *ListAppSubscriptionsRequest, opts ...grpc.CallOption) (*ListAppSubscriptionsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListAppSubscriptionsReply)
+	err := c.cc.Invoke(ctx, Subscription_ListAppSubscriptions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subscriptionClient) GetAppSubscriptionHistory(ctx context.Context, in *GetAppSubscriptionHistoryRequest, opts ...grpc.CallOption) (*GetAppSubscriptionHistoryReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetAppSubscriptionHistoryReply)
+	err := c.cc.Invoke(ctx, Subscription_GetAppSubscriptionHistory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SubscriptionServer is the server API for Subscription service.
 // All implementations must embed UnimplementedSubscriptionServer
 // for forward compatibility.
@@ -325,6 +377,14 @@ type SubscriptionServer interface {
 	UpdatePlanPricing(context.Context, *UpdatePlanPricingRequest) (*UpdatePlanPricingReply, error)
 	// 删除区域定价
 	DeletePlanPricing(context.Context, *DeletePlanPricingRequest) (*DeletePlanPricingReply, error)
+	// 获取订阅订单列表（管理员视角，按应用查询）
+	ListSubscriptionOrders(context.Context, *ListSubscriptionOrdersRequest) (*ListSubscriptionOrdersReply, error)
+	// 获取订阅订单详情
+	GetSubscriptionOrder(context.Context, *GetSubscriptionOrderRequest) (*GetSubscriptionOrderReply, error)
+	// 获取应用的订阅用户列表（管理员视角）
+	ListAppSubscriptions(context.Context, *ListAppSubscriptionsRequest) (*ListAppSubscriptionsReply, error)
+	// 获取应用的订阅历史记录（管理员视角）
+	GetAppSubscriptionHistory(context.Context, *GetAppSubscriptionHistoryRequest) (*GetAppSubscriptionHistoryReply, error)
 	mustEmbedUnimplementedSubscriptionServer()
 }
 
@@ -391,6 +451,18 @@ func (UnimplementedSubscriptionServer) UpdatePlanPricing(context.Context, *Updat
 }
 func (UnimplementedSubscriptionServer) DeletePlanPricing(context.Context, *DeletePlanPricingRequest) (*DeletePlanPricingReply, error) {
 	return nil, status.Error(codes.Unimplemented, "method DeletePlanPricing not implemented")
+}
+func (UnimplementedSubscriptionServer) ListSubscriptionOrders(context.Context, *ListSubscriptionOrdersRequest) (*ListSubscriptionOrdersReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListSubscriptionOrders not implemented")
+}
+func (UnimplementedSubscriptionServer) GetSubscriptionOrder(context.Context, *GetSubscriptionOrderRequest) (*GetSubscriptionOrderReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetSubscriptionOrder not implemented")
+}
+func (UnimplementedSubscriptionServer) ListAppSubscriptions(context.Context, *ListAppSubscriptionsRequest) (*ListAppSubscriptionsReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListAppSubscriptions not implemented")
+}
+func (UnimplementedSubscriptionServer) GetAppSubscriptionHistory(context.Context, *GetAppSubscriptionHistoryRequest) (*GetAppSubscriptionHistoryReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetAppSubscriptionHistory not implemented")
 }
 func (UnimplementedSubscriptionServer) mustEmbedUnimplementedSubscriptionServer() {}
 func (UnimplementedSubscriptionServer) testEmbeddedByValue()                      {}
@@ -755,6 +827,78 @@ func _Subscription_DeletePlanPricing_Handler(srv interface{}, ctx context.Contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Subscription_ListSubscriptionOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListSubscriptionOrdersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubscriptionServer).ListSubscriptionOrders(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Subscription_ListSubscriptionOrders_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubscriptionServer).ListSubscriptionOrders(ctx, req.(*ListSubscriptionOrdersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Subscription_GetSubscriptionOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetSubscriptionOrderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubscriptionServer).GetSubscriptionOrder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Subscription_GetSubscriptionOrder_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubscriptionServer).GetSubscriptionOrder(ctx, req.(*GetSubscriptionOrderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Subscription_ListAppSubscriptions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAppSubscriptionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubscriptionServer).ListAppSubscriptions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Subscription_ListAppSubscriptions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubscriptionServer).ListAppSubscriptions(ctx, req.(*ListAppSubscriptionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Subscription_GetAppSubscriptionHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAppSubscriptionHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubscriptionServer).GetAppSubscriptionHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Subscription_GetAppSubscriptionHistory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubscriptionServer).GetAppSubscriptionHistory(ctx, req.(*GetAppSubscriptionHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Subscription_ServiceDesc is the grpc.ServiceDesc for Subscription service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -837,6 +981,22 @@ var Subscription_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeletePlanPricing",
 			Handler:    _Subscription_DeletePlanPricing_Handler,
+		},
+		{
+			MethodName: "ListSubscriptionOrders",
+			Handler:    _Subscription_ListSubscriptionOrders_Handler,
+		},
+		{
+			MethodName: "GetSubscriptionOrder",
+			Handler:    _Subscription_GetSubscriptionOrder_Handler,
+		},
+		{
+			MethodName: "ListAppSubscriptions",
+			Handler:    _Subscription_ListAppSubscriptions_Handler,
+		},
+		{
+			MethodName: "GetAppSubscriptionHistory",
+			Handler:    _Subscription_GetAppSubscriptionHistory_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

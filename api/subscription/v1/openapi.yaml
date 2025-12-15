@@ -6,6 +6,86 @@ info:
     title: Subscription API
     version: 0.0.1
 paths:
+    /v1/subscription/app/history:
+        get:
+            tags:
+                - Subscription
+            description: 获取应用的订阅历史记录（管理员视角）
+            operationId: Subscription_GetAppSubscriptionHistory
+            parameters:
+                - name: appId
+                  in: query
+                  schema:
+                    type: string
+                - name: userId
+                  in: query
+                  schema:
+                    type: string
+                - name: action
+                  in: query
+                  schema:
+                    type: string
+                - name: startTime
+                  in: query
+                  schema:
+                    type: string
+                - name: endTime
+                  in: query
+                  schema:
+                    type: string
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/subscription.v1.GetAppSubscriptionHistoryReply'
+    /v1/subscription/app/subscriptions:
+        get:
+            tags:
+                - Subscription
+            description: 获取应用的订阅用户列表（管理员视角）
+            operationId: Subscription_ListAppSubscriptions
+            parameters:
+                - name: appId
+                  in: query
+                  schema:
+                    type: string
+                - name: status
+                  in: query
+                  schema:
+                    type: string
+                - name: userId
+                  in: query
+                  schema:
+                    type: string
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/subscription.v1.ListAppSubscriptionsReply'
     /v1/subscription/auto-renew:
         post:
             tags:
@@ -105,14 +185,14 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/subscription.v1.GetExpiringSubscriptionsReply'
-    /v1/subscription/history/{uid}:
+    /v1/subscription/history/{userId}:
         get:
             tags:
                 - Subscription
             description: 获取订阅历史记录
             operationId: Subscription_GetSubscriptionHistory
             parameters:
-                - name: uid
+                - name: userId
                   in: path
                   required: true
                   schema:
@@ -134,14 +214,14 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/subscription.v1.GetSubscriptionHistoryReply'
-    /v1/subscription/my/{uid}:
+    /v1/subscription/my/{userId}:
         get:
             tags:
                 - Subscription
             description: 获取用户的订阅状态
             operationId: Subscription_GetMySubscription
             parameters:
-                - name: uid
+                - name: userId
                   in: path
                   required: true
                   schema:
@@ -172,6 +252,65 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/subscription.v1.CreateSubscriptionOrderReply'
+    /v1/subscription/orders:
+        get:
+            tags:
+                - Subscription
+            description: 获取订阅订单列表（管理员视角，按应用查询）
+            operationId: Subscription_ListSubscriptionOrders
+            parameters:
+                - name: appId
+                  in: query
+                  schema:
+                    type: string
+                - name: userId
+                  in: query
+                  schema:
+                    type: string
+                - name: planId
+                  in: query
+                  schema:
+                    type: string
+                - name: status
+                  in: query
+                  schema:
+                    type: string
+                - name: page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/subscription.v1.ListSubscriptionOrdersReply'
+    /v1/subscription/orders/{orderId}:
+        get:
+            tags:
+                - Subscription
+            description: 获取订阅订单详情
+            operationId: Subscription_GetSubscriptionOrder
+            parameters:
+                - name: orderId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/subscription.v1.GetSubscriptionOrderReply'
     /v1/subscription/pause:
         post:
             tags:
@@ -387,10 +526,38 @@ paths:
                     content: {}
 components:
     schemas:
+        subscription.v1.AppSubscriptionInfo:
+            type: object
+            properties:
+                subscriptionId:
+                    type: string
+                userId:
+                    type: string
+                planId:
+                    type: string
+                planName:
+                    type: string
+                appId:
+                    type: string
+                startTime:
+                    type: string
+                endTime:
+                    type: string
+                status:
+                    type: string
+                orderId:
+                    type: string
+                autoRenew:
+                    type: boolean
+                createdAt:
+                    type: string
+                updatedAt:
+                    type: string
+            description: 订阅用户信息
         subscription.v1.AutoRenewResult:
             type: object
             properties:
-                uid:
+                userId:
                     type: string
                 planId:
                     type: string
@@ -405,7 +572,7 @@ components:
         subscription.v1.CancelSubscriptionRequest:
             type: object
             properties:
-                uid:
+                userId:
                     type: string
                 reason:
                     type: string
@@ -465,7 +632,7 @@ components:
         subscription.v1.CreateSubscriptionOrderRequest:
             type: object
             properties:
-                uid:
+                userId:
                     type: string
                 planId:
                     type: string
@@ -483,6 +650,23 @@ components:
             properties:
                 planId:
                     type: string
+        subscription.v1.GetAppSubscriptionHistoryReply:
+            type: object
+            properties:
+                items:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/subscription.v1.SubscriptionHistoryItem'
+                total:
+                    type: integer
+                    format: int32
+                page:
+                    type: integer
+                    format: int32
+                pageSize:
+                    type: integer
+                    format: int32
+            description: 应用的订阅历史记录响应
         subscription.v1.GetExpiringSubscriptionsReply:
             type: object
             properties:
@@ -530,6 +714,12 @@ components:
                 pageSize:
                     type: integer
                     format: int32
+        subscription.v1.GetSubscriptionOrderReply:
+            type: object
+            properties:
+                order:
+                    $ref: '#/components/schemas/subscription.v1.SubscriptionOrderInfo'
+            description: 获取订阅订单详情响应
         subscription.v1.HandlePaymentSuccessRequest:
             type: object
             properties:
@@ -540,6 +730,23 @@ components:
                 amount:
                     type: number
                     format: double
+        subscription.v1.ListAppSubscriptionsReply:
+            type: object
+            properties:
+                subscriptions:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/subscription.v1.AppSubscriptionInfo'
+                total:
+                    type: integer
+                    format: int32
+                page:
+                    type: integer
+                    format: int32
+                pageSize:
+                    type: integer
+                    format: int32
+            description: 应用的订阅用户列表响应
         subscription.v1.ListPlanPricingsReply:
             type: object
             properties:
@@ -554,10 +761,27 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/subscription.v1.Plan'
+        subscription.v1.ListSubscriptionOrdersReply:
+            type: object
+            properties:
+                orders:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/subscription.v1.SubscriptionOrderInfo'
+                total:
+                    type: integer
+                    format: int32
+                page:
+                    type: integer
+                    format: int32
+                pageSize:
+                    type: integer
+                    format: int32
+            description: 订阅订单列表响应
         subscription.v1.PauseSubscriptionRequest:
             type: object
             properties:
-                uid:
+                userId:
                     type: string
                 reason:
                     type: string
@@ -626,13 +850,13 @@ components:
         subscription.v1.ResumeSubscriptionRequest:
             type: object
             properties:
-                uid:
+                userId:
                     type: string
             description: 恢复订阅
         subscription.v1.SetAutoRenewRequest:
             type: object
             properties:
-                uid:
+                userId:
                     type: string
                 autoRenew:
                     type: boolean
@@ -641,6 +865,8 @@ components:
             type: object
             properties:
                 id:
+                    type: string
+                userId:
                     type: string
                 planId:
                     type: string
@@ -660,7 +886,7 @@ components:
         subscription.v1.SubscriptionInfo:
             type: object
             properties:
-                uid:
+                userId:
                     type: string
                 planId:
                     type: string
@@ -675,13 +901,38 @@ components:
                 amount:
                     type: number
                     format: double
+        subscription.v1.SubscriptionOrderInfo:
+            type: object
+            properties:
+                orderId:
+                    type: string
+                paymentId:
+                    type: string
+                userId:
+                    type: string
+                planId:
+                    type: string
+                planName:
+                    type: string
+                appId:
+                    type: string
+                amount:
+                    type: number
+                    format: double
+                currency:
+                    type: string
+                paymentStatus:
+                    type: string
+                createdAt:
+                    type: string
+            description: 订阅订单信息
         subscription.v1.UpdateExpiredSubscriptionsReply:
             type: object
             properties:
                 updatedCount:
                     type: integer
                     format: int32
-                updatedUids:
+                updatedUserIds:
                     type: array
                     items:
                         type: string

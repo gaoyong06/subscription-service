@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 	pb "xinyuan_tech/subscription-service/api/subscription/v1"
 	"xinyuan_tech/subscription-service/internal/auth"
 	"xinyuan_tech/subscription-service/internal/biz"
@@ -500,5 +501,242 @@ func (s *SubscriptionService) ProcessAutoRenewals(ctx context.Context, req *pb.P
 		SuccessCount: int32(successCount),
 		FailedCount:  int32(failedCount),
 		Results:      pbResults,
+	}, nil
+}
+
+// ListSubscriptionOrders 获取订阅订单列表（管理员视角）
+func (s *SubscriptionService) ListSubscriptionOrders(ctx context.Context, req *pb.ListSubscriptionOrdersRequest) (*pb.ListSubscriptionOrdersReply, error) {
+	// 获取 app_id（只从 Context，由中间件从 Header 提取）
+	appID := app_id.GetAppIDFromContext(ctx)
+	if appID == "" {
+		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+	}
+
+	// 参数验证和默认值
+	page := int(req.Page)
+	if page < 1 {
+		page = 1
+	}
+	pageSize := int(req.PageSize)
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 10
+	}
+
+	// 调用业务逻辑
+	orders, total, err := s.uc.ListSubscriptionOrders(ctx, appID, req.UserId, req.PlanId, req.Status, page, pageSize)
+	if err != nil {
+		return nil, err
+	}
+
+	// 获取套餐信息（用于填充套餐名称和币种）
+	planMap := make(map[string]*biz.Plan)
+	if len(orders) > 0 {
+		plans, err := s.uc.ListPlans(ctx, appID)
+		if err == nil {
+			for _, plan := range plans {
+				planMap[plan.PlanID] = plan
+			}
+		}
+	}
+
+	// 转换为 protobuf 消息
+	pbOrders := make([]*pb.SubscriptionOrderInfo, len(orders))
+	for i, order := range orders {
+		pbOrder := &pb.SubscriptionOrderInfo{
+			OrderId:       order.OrderID,
+			PaymentId:     order.PaymentID,
+			UserId:        order.UserID,
+			PlanId:        order.PlanID,
+			AppId:         order.AppID,
+			Amount:        order.Amount,
+			PaymentStatus: order.PaymentStatus,
+			CreatedAt:     order.CreatedAt.Unix(),
+		}
+
+		// 填充套餐信息
+		if plan, ok := planMap[order.PlanID]; ok {
+			pbOrder.PlanName = plan.Name
+			pbOrder.Currency = plan.Currency
+		}
+
+		pbOrders[i] = pbOrder
+	}
+
+	return &pb.ListSubscriptionOrdersReply{
+		Orders:   pbOrders,
+		Total:    int32(total),
+		Page:     int32(page),
+		PageSize: int32(pageSize),
+	}, nil
+}
+
+// GetSubscriptionOrder 获取订阅订单详情
+func (s *SubscriptionService) GetSubscriptionOrder(ctx context.Context, req *pb.GetSubscriptionOrderRequest) (*pb.GetSubscriptionOrderReply, error) {
+	// 获取 app_id（只从 Context，由中间件从 Header 提取）
+	appID := app_id.GetAppIDFromContext(ctx)
+	if appID == "" {
+		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+	}
+
+	// 调用业务逻辑
+	order, err := s.uc.orderRepo.GetOrder(ctx, req.OrderId)
+	if err != nil {
+		return nil, err
+	}
+
+	// 验证订单属于当前应用
+	if order.AppID != appID {
+		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeNotFound)
+	}
+
+	// 获取套餐信息
+	plan, err := s.uc.GetPlan(ctx, order.PlanID)
+	if err != nil {
+		return nil, err
+	}
+
+	// 转换为 protobuf 消息
+	pbOrder := &pb.SubscriptionOrderInfo{
+		OrderId:       order.OrderID,
+		PaymentId:     order.PaymentID,
+		UserId:        order.UserID,
+		PlanId:        order.PlanID,
+		PlanName:      plan.Name,
+		AppId:         order.AppID,
+		Amount:        order.Amount,
+		Currency:      plan.Currency,
+		PaymentStatus: order.PaymentStatus,
+		CreatedAt:     order.CreatedAt.Unix(),
+	}
+
+	return &pb.GetSubscriptionOrderReply{
+		Order: pbOrder,
+	}, nil
+}
+
+// ListAppSubscriptions 获取应用的订阅用户列表（管理员视角）
+func (s *SubscriptionService) ListAppSubscriptions(ctx context.Context, req *pb.ListAppSubscriptionsRequest) (*pb.ListAppSubscriptionsReply, error) {
+	// 获取 app_id（只从 Context，由中间件从 Header 提取）
+	appID := app_id.GetAppIDFromContext(ctx)
+	if appID == "" {
+		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+	}
+
+	// 参数验证和默认值
+	page := int(req.Page)
+	if page < 1 {
+		page = 1
+	}
+	pageSize := int(req.PageSize)
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 10
+	}
+
+	// 调用业务逻辑
+	subscriptions, total, err := s.uc.ListAppSubscriptions(ctx, appID, req.Status, req.UserId, page, pageSize)
+	if err != nil {
+		return nil, err
+	}
+
+	// 获取套餐信息（用于填充套餐名称）
+	planMap := make(map[string]*biz.Plan)
+	if len(subscriptions) > 0 {
+		plans, err := s.uc.ListPlans(ctx, appID)
+		if err == nil {
+			for _, plan := range plans {
+				planMap[plan.PlanID] = plan
+			}
+		}
+	}
+
+	// 转换为 protobuf 消息
+	pbSubscriptions := make([]*pb.AppSubscriptionInfo, len(subscriptions))
+	for i, sub := range subscriptions {
+		pbSub := &pb.AppSubscriptionInfo{
+			SubscriptionId: sub.SubscriptionID,
+			UserId:         sub.UserID,
+			PlanId:         sub.PlanID,
+			AppId:          sub.AppID,
+			StartTime:      sub.StartTime.Unix(),
+			EndTime:        sub.EndTime.Unix(),
+			Status:         sub.Status,
+			OrderId:        sub.OrderID,
+			AutoRenew:      sub.IsAutoRenew,
+			CreatedAt:      sub.CreatedAt.Unix(),
+			UpdatedAt:      sub.UpdatedAt.Unix(),
+		}
+
+		// 填充套餐名称
+		if plan, ok := planMap[sub.PlanID]; ok {
+			pbSub.PlanName = plan.Name
+		}
+
+		pbSubscriptions[i] = pbSub
+	}
+
+	return &pb.ListAppSubscriptionsReply{
+		Subscriptions: pbSubscriptions,
+		Total:         int32(total),
+		Page:          int32(page),
+		PageSize:      int32(pageSize),
+	}, nil
+}
+
+// GetAppSubscriptionHistory 获取应用的订阅历史记录（管理员视角）
+func (s *SubscriptionService) GetAppSubscriptionHistory(ctx context.Context, req *pb.GetAppSubscriptionHistoryRequest) (*pb.GetAppSubscriptionHistoryReply, error) {
+	// 获取 app_id（只从 Context，由中间件从 Header 提取）
+	appID := app_id.GetAppIDFromContext(ctx)
+	if appID == "" {
+		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+	}
+
+	// 参数验证和默认值
+	page := int(req.Page)
+	if page < 1 {
+		page = 1
+	}
+	pageSize := int(req.PageSize)
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 10
+	}
+
+	// 时间转换
+	var startTime, endTime *time.Time
+	if req.StartTime > 0 {
+		t := time.Unix(req.StartTime, 0)
+		startTime = &t
+	}
+	if req.EndTime > 0 {
+		t := time.Unix(req.EndTime, 0)
+		endTime = &t
+	}
+
+	// 调用业务逻辑
+	items, total, err := s.uc.GetAppSubscriptionHistory(ctx, appID, req.UserId, req.Action, startTime, endTime, page, pageSize)
+	if err != nil {
+		return nil, err
+	}
+
+	// 转换为 protobuf 消息
+	pbItems := make([]*pb.SubscriptionHistoryItem, len(items))
+	for i, item := range items {
+		pbItems[i] = &pb.SubscriptionHistoryItem{
+			Id:        item.SubscriptionHistoryID,
+			UserId:    item.UserID,
+			PlanId:    item.PlanID,
+			PlanName:  item.PlanName,
+			StartTime: item.StartTime.Unix(),
+			EndTime:   item.EndTime.Unix(),
+			Status:    item.Status,
+			Action:    item.Action,
+			CreatedAt: item.CreatedAt.Unix(),
+		}
+	}
+
+	return &pb.GetAppSubscriptionHistoryReply{
+		Items:    pbItems,
+		Total:    int32(total),
+		Page:     int32(page),
+		PageSize: int32(pageSize),
 	}, nil
 }

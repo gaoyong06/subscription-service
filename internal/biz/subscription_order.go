@@ -29,6 +29,7 @@ type SubscriptionOrderRepo interface {
 	CreateOrder(ctx context.Context, order *SubscriptionOrder) error
 	GetOrder(ctx context.Context, orderID string) (*SubscriptionOrder, error)
 	UpdateOrder(ctx context.Context, order *SubscriptionOrder) error
+	ListOrders(ctx context.Context, appID, userID, planID, status string, page, pageSize int) ([]*SubscriptionOrder, int, error)
 }
 
 // CreateSubscriptionOrder 创建订阅订单（保持向后兼容）
@@ -259,7 +260,81 @@ func (uc *SubscriptionUsecase) HandlePaymentSuccess(ctx context.Context, orderID
 }
 
 // withTransaction 执行事务
-// withTransaction 执行事务
 func (uc *SubscriptionUsecase) withTransaction(ctx context.Context, fn func(context.Context) error) error {
 	return uc.tm.Exec(ctx, fn)
+}
+
+// ListSubscriptionOrders 获取订阅订单列表（管理员视角）
+func (uc *SubscriptionUsecase) ListSubscriptionOrders(ctx context.Context, appID, userID, planID, status string, page, pageSize int) ([]*SubscriptionOrder, int, error) {
+	uc.log.Infof("ListSubscriptionOrders: appID=%s, userID=%s, planID=%s, status=%s, page=%d, pageSize=%d", appID, userID, planID, status, page, pageSize)
+
+	// 参数验证
+	if appID == "" {
+		return nil, 0, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+	}
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 10
+	}
+
+	orders, total, err := uc.orderRepo.ListOrders(ctx, appID, userID, planID, status, page, pageSize)
+	if err != nil {
+		uc.log.Errorf("Failed to list subscription orders: %v", err)
+		return nil, 0, err
+	}
+
+	uc.log.Infof("Retrieved %d subscription orders", len(orders))
+	return orders, total, nil
+}
+
+// ListAppSubscriptions 获取应用的订阅用户列表（管理员视角）
+func (uc *SubscriptionUsecase) ListAppSubscriptions(ctx context.Context, appID, status, userID string, page, pageSize int) ([]*UserSubscription, int, error) {
+	uc.log.Infof("ListAppSubscriptions: appID=%s, status=%s, userID=%s, page=%d, pageSize=%d", appID, status, userID, page, pageSize)
+
+	// 参数验证
+	if appID == "" {
+		return nil, 0, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+	}
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 10
+	}
+
+	subscriptions, total, err := uc.subRepo.ListAppSubscriptions(ctx, appID, status, userID, page, pageSize)
+	if err != nil {
+		uc.log.Errorf("Failed to list app subscriptions: %v", err)
+		return nil, 0, err
+	}
+
+	uc.log.Infof("Retrieved %d app subscriptions", len(subscriptions))
+	return subscriptions, total, nil
+}
+
+// GetAppSubscriptionHistory 获取应用的订阅历史记录（管理员视角）
+func (uc *SubscriptionUsecase) GetAppSubscriptionHistory(ctx context.Context, appID, userID, action string, startTime, endTime *time.Time, page, pageSize int) ([]*SubscriptionHistory, int, error) {
+	uc.log.Infof("GetAppSubscriptionHistory: appID=%s, userID=%s, action=%s, page=%d, pageSize=%d", appID, userID, action, page, pageSize)
+
+	// 参数验证
+	if appID == "" {
+		return nil, 0, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+	}
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 10
+	}
+
+	items, total, err := uc.historyRepo.GetAppSubscriptionHistory(ctx, appID, userID, action, startTime, endTime, page, pageSize)
+	if err != nil {
+		uc.log.Errorf("Failed to get app subscription history: %v", err)
+		return nil, 0, err
+	}
+
+	uc.log.Infof("Retrieved %d app subscription history items", len(items))
+	return items, total, nil
 }
