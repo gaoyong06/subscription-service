@@ -3,8 +3,8 @@ package data
 import (
 	"context"
 	"fmt"
-	"xinyuan_tech/subscription-service/internal/biz"
-	"xinyuan_tech/subscription-service/internal/conf"
+	"subscription-service/internal/biz"
+	"subscription-service/internal/conf"
 
 	passportv1 "passport-service/api/passport/v1"
 

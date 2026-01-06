@@ -1116,7 +1116,7 @@ const file_conf_proto_rawDesc = "" +
 	"\amax_age\x18\x06 \x01(\x05R\x06maxAge\x12\x1f\n" +
 	"\vmax_backups\x18\a \x01(\x05R\n" +
 	"maxBackups\x12\x1a\n" +
-	"\bcompress\x18\b \x01(\bR\bcompressB6Z4xinyuan_tech/subscription-service/internal/conf;confb\x06proto3"
+	"\bcompress\x18\b \x01(\bR\bcompressB)Z'subscription-service/internal/conf;confb\x06proto3"
 
 var (
 	file_conf_proto_rawDescOnce sync.Once

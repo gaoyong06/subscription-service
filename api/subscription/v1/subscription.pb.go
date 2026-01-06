@@ -3375,7 +3375,7 @@ const file_subscription_proto_rawDesc = "" +
 	"\x16ListSubscriptionOrders\x12..subscription.v1.ListSubscriptionOrdersRequest\x1a,.subscription.v1.ListSubscriptionOrdersReply\"\x1f\x82\xd3\xe4\x93\x02\x19\x12\x17/v1/subscription/orders\x12\x9b\x01\n" +
 	"\x14GetSubscriptionOrder\x12,.subscription.v1.GetSubscriptionOrderRequest\x1a*.subscription.v1.GetSubscriptionOrderReply\")\x82\xd3\xe4\x93\x02#\x12!/v1/subscription/orders/{orderId}\x12\x9c\x01\n" +
 	"\x14ListAppSubscriptions\x12,.subscription.v1.ListAppSubscriptionsRequest\x1a*.subscription.v1.ListAppSubscriptionsReply\"*\x82\xd3\xe4\x93\x02$\x12\"/v1/subscription/app/subscriptions\x12\xa5\x01\n" +
-	"\x19GetAppSubscriptionHistory\x121.subscription.v1.GetAppSubscriptionHistoryRequest\x1a/.subscription.v1.GetAppSubscriptionHistoryReply\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/subscription/app/historyB:Z8xinyuan_tech/subscription-service/api/subscription/v1;v1b\x06proto3"
+	"\x19GetAppSubscriptionHistory\x121.subscription.v1.GetAppSubscriptionHistoryRequest\x1a/.subscription.v1.GetAppSubscriptionHistoryReply\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/v1/subscription/app/historyB-Z+subscription-service/api/subscription/v1;v1b\x06proto3"
 
 var (
 	file_subscription_proto_rawDescOnce sync.Once

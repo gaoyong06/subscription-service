@@ -1,4 +1,4 @@
-module xinyuan_tech/subscription-service
+module subscription-service
 
 go 1.24.0
 

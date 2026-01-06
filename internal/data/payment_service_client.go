@@ -3,9 +3,9 @@ package data
 import (
 	"context"
 	"fmt"
-	"xinyuan_tech/subscription-service/internal/biz"
-	"xinyuan_tech/subscription-service/internal/conf"
-	"xinyuan_tech/subscription-service/internal/constants"
+	"subscription-service/internal/biz"
+	"subscription-service/internal/conf"
+	"subscription-service/internal/constants"
 
 	paymentv1 "payment-service/api/payment/v1"
 

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"xinyuan_tech/subscription-service/internal/constants"
-	"xinyuan_tech/subscription-service/internal/errors"
+	"subscription-service/internal/constants"
+	"subscription-service/internal/errors"
 
 	pkgErrors "github.com/gaoyong06/go-pkg/errors"
 	"github.com/gaoyong06/go-pkg/middleware/app_id"

@@ -9,6 +9,7 @@ API_PROTO_DIR=api/subscription/v1
 SERVICE_DISPLAY_NAME=Subscription Service
 HTTP_PORT=8102
 TEST_CONFIG=test/api/api-test-config.yaml
+CONF_PROTO_PATH=internal/conf/conf.proto
 WIRE_DIRS=cmd/server cmd/scheduler
 RUN_MODE=debug
 

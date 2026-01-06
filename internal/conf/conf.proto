@@ -4,7 +4,7 @@ package subscription.conf;
 
 import "google/protobuf/duration.proto";
 
-option go_package = "xinyuan_tech/subscription-service/internal/conf;conf";
+option go_package = "subscription-service/internal/conf;conf";
 
 // 启动配置
 message Bootstrap {

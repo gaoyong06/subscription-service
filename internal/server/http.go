@@ -7,9 +7,9 @@ import (
 	"github.com/gaoyong06/go-pkg/middleware/i18n"
 	"github.com/gaoyong06/go-pkg/middleware/response"
 
-	v1 "xinyuan_tech/subscription-service/api/subscription/v1"
-	"xinyuan_tech/subscription-service/internal/conf"
-	"xinyuan_tech/subscription-service/internal/service"
+	v1 "subscription-service/api/subscription/v1"
+	"subscription-service/internal/conf"
+	"subscription-service/internal/service"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"

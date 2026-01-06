@@ -2,9 +2,9 @@ package data
 
 import (
 	"context"
+	"subscription-service/internal/biz"
+	"subscription-service/internal/conf"
 	"time"
-	"xinyuan_tech/subscription-service/internal/biz"
-	"xinyuan_tech/subscription-service/internal/conf"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-redsync/redsync/v4"

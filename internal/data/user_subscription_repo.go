@@ -6,10 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"subscription-service/internal/biz"
+	"subscription-service/internal/constants"
+	"subscription-service/internal/data/model"
 	"time"
-	"xinyuan_tech/subscription-service/internal/biz"
-	"xinyuan_tech/subscription-service/internal/constants"
-	"xinyuan_tech/subscription-service/internal/data/model"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/gorm"

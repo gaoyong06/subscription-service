@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"xinyuan_tech/subscription-service/internal/conf"
+	"subscription-service/internal/conf"
 
 	pkgutils "github.com/gaoyong06/go-pkg/utils"
 	"github.com/go-kratos/kratos/v2/config"

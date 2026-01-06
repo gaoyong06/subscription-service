@@ -1,7 +1,7 @@
 package data
 
 import (
-	"xinyuan_tech/subscription-service/internal/conf"
+	"subscription-service/internal/conf"
 )
 
 // MarketingClient 营销服务客户端接口（防腐层）

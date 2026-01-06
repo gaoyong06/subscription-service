@@ -6,11 +6,11 @@
 package main
 
 import (
-	"xinyuan_tech/subscription-service/internal/biz"
-	"xinyuan_tech/subscription-service/internal/conf"
-	"xinyuan_tech/subscription-service/internal/data"
-	"xinyuan_tech/subscription-service/internal/server"
-	"xinyuan_tech/subscription-service/internal/service"
+	"subscription-service/internal/biz"
+	"subscription-service/internal/conf"
+	"subscription-service/internal/data"
+	"subscription-service/internal/server"
+	"subscription-service/internal/service"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"

@@ -3,8 +3,8 @@ package biz
 import (
 	"context"
 	"fmt"
+	"subscription-service/internal/constants"
 	"time"
-	"xinyuan_tech/subscription-service/internal/constants"
 
 	"github.com/go-redsync/redsync/v4"
 )

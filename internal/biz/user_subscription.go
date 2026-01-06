@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"xinyuan_tech/subscription-service/internal/conf"
-	"xinyuan_tech/subscription-service/internal/constants"
-	"xinyuan_tech/subscription-service/internal/errors"
+	"subscription-service/internal/conf"
+	"subscription-service/internal/constants"
+	"subscription-service/internal/errors"
 
 	pkgErrors "github.com/gaoyong06/go-pkg/errors"
 	"github.com/go-kratos/kratos/v2/log"

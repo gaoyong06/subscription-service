@@ -5,9 +5,9 @@ package main
 
 import (
 	"os"
-	"xinyuan_tech/subscription-service/internal/biz"
-	"xinyuan_tech/subscription-service/internal/conf"
-	"xinyuan_tech/subscription-service/internal/data"
+	"subscription-service/internal/biz"
+	"subscription-service/internal/conf"
+	"subscription-service/internal/data"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/google/wire"
@@ -24,13 +24,13 @@ func wireApp(*conf.Bootstrap) (*SchedulerApp, func(), error) {
 		// Logger
 		wire.FieldsOf(new(*conf.Bootstrap), "Log"),
 		newLogger,
-		
+
 		// Data 层
 		data.ProviderSet,
-		
+
 		// Biz 层
 		biz.ProviderSet,
-		
+
 		// App 结构
 		wire.Struct(new(SchedulerApp), "*"),
 	))
@@ -44,4 +44,3 @@ func newLogger(c *conf.Log) log.Logger {
 		"service.name", "subscription-scheduler",
 	)
 }
-

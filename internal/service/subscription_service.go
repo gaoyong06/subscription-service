@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
+	pb "subscription-service/api/subscription/v1"
+	"subscription-service/internal/auth"
+	"subscription-service/internal/biz"
+	"subscription-service/internal/constants"
 	"time"
-	pb "xinyuan_tech/subscription-service/api/subscription/v1"
-	"xinyuan_tech/subscription-service/internal/auth"
-	"xinyuan_tech/subscription-service/internal/biz"
-	"xinyuan_tech/subscription-service/internal/constants"
 
 	pkgErrors "github.com/gaoyong06/go-pkg/errors"
 	"github.com/gaoyong06/go-pkg/middleware/app_id"

@@ -9,9 +9,9 @@ package main
 import (
 	"github.com/go-kratos/kratos/v2/log"
 	"os"
-	"xinyuan_tech/subscription-service/internal/biz"
-	"xinyuan_tech/subscription-service/internal/conf"
-	"xinyuan_tech/subscription-service/internal/data"
+	"subscription-service/internal/biz"
+	"subscription-service/internal/conf"
+	"subscription-service/internal/data"
 )
 
 import (

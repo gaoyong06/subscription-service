@@ -4,7 +4,7 @@ import (
 	"flag"
 	"os"
 
-	"xinyuan_tech/subscription-service/internal/conf"
+	"subscription-service/internal/conf"
 
 	"github.com/gaoyong06/go-pkg/logger"
 	pkgutils "github.com/gaoyong06/go-pkg/utils"

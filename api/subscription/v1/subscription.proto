@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package subscription.v1;
 
-option go_package = "xinyuan_tech/subscription-service/api/subscription/v1;v1";
+option go_package = "subscription-service/api/subscription/v1;v1";
 
 import "google/api/annotations.proto";
 import "validate/validate.proto";

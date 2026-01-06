@@ -2,9 +2,9 @@ package data
 
 import (
 	"context"
+	"subscription-service/internal/biz"
+	"subscription-service/internal/data/model"
 	"time"
-	"xinyuan_tech/subscription-service/internal/biz"
-	"xinyuan_tech/subscription-service/internal/data/model"
 
 	"github.com/go-kratos/kratos/v2/log"
 )
