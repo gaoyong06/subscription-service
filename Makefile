@@ -9,7 +9,8 @@ API_PROTO_DIR=api/subscription/v1
 SERVICE_DISPLAY_NAME=Subscription Service
 HTTP_PORT=8102
 TEST_CONFIG=test/api/api-test-config.yaml
-WIRE_DIRS=cmd/server cmd/cron
+WIRE_DIRS=cmd/server cmd/scheduler
+RUN_MODE=debug
 
 # 引入通用 Makefile
 DEVOPS_TOOLS_DIR := $(shell cd .. && pwd)/devops-tools
@@ -17,46 +18,46 @@ include $(DEVOPS_TOOLS_DIR)/Makefile.common
 
 # 服务特定的目标
 
-.PHONY: build-cron
-# 构建 cron 服务
-build-cron:
+.PHONY: build-scheduler
+# 构建 scheduler 服务
+build-scheduler:
 	mkdir -p bin/
-	go build -ldflags "-X main.Version=$(VERSION)" -o ./bin/cron ./cmd/cron
+	go build -ldflags "-X main.Version=$(VERSION)" -o ./bin/scheduler ./cmd/scheduler
 
 .PHONY: build-all
 # 构建所有服务
-build-all: build build-cron
+build-all: build build-scheduler
 
-.PHONY: run-cron
-# 运行 cron 服务
-run-cron:
-	./bin/cron -conf ./configs/config.yaml
+.PHONY: run-scheduler
+# 运行 scheduler 服务
+run-scheduler:
+	./bin/scheduler -conf ./configs/config.yaml
 
 .PHONY: run-all
-# 同时运行所有服务（cron 后台，server 前台）
+# 同时运行所有服务（scheduler 后台，server 前台）
 run-all:
-	@echo "启动 cron 服务（后台）..."
+	@echo "启动 scheduler 服务（后台）..."
 	@mkdir -p logs
-	@nohup ./bin/cron -conf ./configs/config.yaml > logs/cron.log 2>&1 & echo $$! > logs/cron.pid
+	@nohup ./bin/scheduler -conf ./configs/config.yaml > logs/scheduler.log 2>&1 & echo $$! > logs/scheduler.pid
 	@sleep 1
-	@if [ -f logs/cron.pid ]; then \
-		CRON_PID=$$(cat logs/cron.pid); \
-		if ps -p $$CRON_PID > /dev/null; then \
-			echo "cron 服务已启动，PID: $$CRON_PID"; \
+	@if [ -f logs/scheduler.pid ]; then \
+		SCHEDULER_PID=$$(cat logs/scheduler.pid); \
+		if ps -p $$SCHEDULER_PID > /dev/null; then \
+			echo "scheduler 服务已启动，PID: $$SCHEDULER_PID"; \
 		else \
-			echo "cron 服务启动失败!"; \
+			echo "scheduler 服务启动失败!"; \
 		fi \
 	fi
 	@echo "启动主服务（前台）..."
 	@echo "========================================="
 	@./bin/server -conf ./configs/config.yaml; \
-	if [ -f logs/cron.pid ]; then \
-		CRON_PID=$$(cat logs/cron.pid); \
-		if ps -p $$CRON_PID > /dev/null; then \
-			echo "停止 cron 服务..."; \
-			kill $$CRON_PID; \
+	if [ -f logs/scheduler.pid ]; then \
+		SCHEDULER_PID=$$(cat logs/scheduler.pid); \
+		if ps -p $$SCHEDULER_PID > /dev/null; then \
+			echo "停止 scheduler 服务..."; \
+			kill $$SCHEDULER_PID; \
 		fi; \
-		rm -f logs/cron.pid; \
+		rm -f logs/scheduler.pid; \
 	fi
 
 .PHONY: stop-all
@@ -64,8 +65,8 @@ run-all:
 stop-all:
 	@echo "停止所有服务..."
 	@-pkill -f "bin/server" || true
-	@-pkill -f "bin/cron" || true
-	@-rm -f logs/cron.pid
+	@-pkill -f "bin/scheduler" || true
+	@-rm -f logs/scheduler.pid
 	@echo "所有服务已停止"
 
 .PHONY: all
@@ -80,13 +81,13 @@ help:
 	@echo "  make init         - 安装所需工具"
 	@echo "  make api          - 生成 API 代码"
 	@echo "  make swagger      - 生成 Swagger 文档"
-	@echo "  make wire         - 生成依赖注入代码（server + cron）"
+	@echo "  make wire         - 生成依赖注入代码（server + scheduler）"
 	@echo "  make build        - 编译主服务"
-	@echo "  make build-cron   - 编译 cron 服务"
+	@echo "  make build-scheduler - 编译 scheduler 服务"
 	@echo "  make build-all    - 编译所有服务"
 	@echo "  make run          - 运行主服务（前台）"
-	@echo "  make run-cron     - 运行 cron 服务（前台）"
-	@echo "  make run-all      - 运行所有服务（cron 后台 + server 前台）"
+	@echo "  make run-scheduler - 运行 scheduler 服务（前台）"
+	@echo "  make run-all      - 运行所有服务（scheduler 后台 + server 前台）"
 	@echo "  make restart      - 重启服务（使用 devops-tools）"
 	@echo "  make stop-all     - 停止所有服务"
 	@echo "  make test         - 运行 API 测试"

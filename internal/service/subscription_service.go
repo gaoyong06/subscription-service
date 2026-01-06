@@ -579,7 +579,7 @@ func (s *SubscriptionService) GetSubscriptionOrder(ctx context.Context, req *pb.
 	}
 
 	// 调用业务逻辑
-	order, err := s.uc.orderRepo.GetOrder(ctx, req.OrderId)
+	order, err := s.uc.GetSubscriptionOrder(ctx, req.OrderId)
 	if err != nil {
 		return nil, err
 	}

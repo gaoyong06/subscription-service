@@ -1,15 +1,13 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"os"
 
 	"xinyuan_tech/subscription-service/internal/conf"
 
-	"github.com/gaoyong06/go-pkg/errors"
 	"github.com/gaoyong06/go-pkg/logger"
-
+	pkgutils "github.com/gaoyong06/go-pkg/utils"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
@@ -27,12 +25,15 @@ var (
 	Version string
 	// flagconf is the config flag.
 	flagconf string
+	// runMode is the run mode (debug, release).
+	runMode string
 
 	id, _ = os.Hostname()
 )
 
 func init() {
-	flag.StringVar(&flagconf, "conf", "configs/config.yaml", "config path, eg: -conf config.yaml")
+	flag.StringVar(&flagconf, "conf", "", "config path, eg: -conf config.yaml (deprecated, use -mode instead)")
+	flag.StringVar(&runMode, "mode", "debug", "Run mode (debug, release)")
 }
 
 func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
@@ -52,10 +53,22 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
 func main() {
 	flag.Parse()
 
+	// 根据 mode 自动选择配置文件
+	configPath := flagconf
+	if configPath == "" {
+		// 使用 go-pkg/utils 中的通用配置文件路径解析函数
+		// 支持从不同目录运行（项目根目录、cmd/server 目录等）
+		configPath = pkgutils.FindConfigFileWithMode(runMode, []string{
+			"configs",       // 从项目根目录运行
+			"../../configs", // 从 cmd/server 目录运行
+			"../configs",    // 从 cmd 目录运行
+		})
+	}
+
 	// 初始化 Kratos Config
 	c := config.New(
 		config.WithSource(
-			file.NewSource(flagconf),
+			file.NewSource(configPath),
 		),
 	)
 	defer c.Close()
@@ -69,52 +82,14 @@ func main() {
 		panic(err)
 	}
 
-	// 验证配置
-	if bc.GetServer() == nil {
-		panic("server configuration is required")
+	logCfg := &logger.Config{
+		Level:    "info",
+		Format:   "json",
+		Output:   "stdout",
+		FilePath: "",
 	}
-	if bc.GetServer().GetHttp() == nil || bc.GetServer().GetHttp().GetAddr() == "" {
-		panic("server.http.addr is required")
-	}
-	if bc.GetServer().GetGrpc() == nil || bc.GetServer().GetGrpc().GetAddr() == "" {
-		panic("server.grpc.addr is required")
-	}
-	if bc.GetData() == nil || bc.GetData().GetDatabase() == nil || bc.GetData().GetDatabase().GetSource() == "" {
-		panic("data.database.source is required")
-	}
-	if bc.GetClient() == nil || bc.GetClient().GetPaymentService() == nil || bc.GetClient().GetPaymentService().GetAddr() == "" {
-		panic("client.payment_service.addr is required")
-	}
-	if bc.GetSubscription() == nil {
-		panic("subscription configuration is required")
-	}
-
-	// 初始化日志 (使用 go-pkg/logger)
-	logConfig := &logger.Config{
-		Level:      "info",
-		Format:     "json",
-		Output:     "stdout",
-		FilePath:   "",
-		MaxSize:    100,
-		MaxAge:     7,
-		MaxBackups: 3,
-		Compress:   false,
-	}
-	if bc.GetLog() != nil {
-		logConfig.Level = bc.GetLog().GetLevel()
-		logConfig.Format = bc.GetLog().GetFormat()
-		logConfig.Output = bc.GetLog().GetOutput()
-		logConfig.FilePath = bc.GetLog().GetFilePath()
-		logConfig.MaxSize = int(bc.GetLog().GetMaxSize())
-		logConfig.MaxAge = int(bc.GetLog().GetMaxAge())
-		logConfig.MaxBackups = int(bc.GetLog().GetMaxBackups())
-		logConfig.Compress = bc.GetLog().GetCompress()
-	}
-
-	loggerInstance := logger.NewLogger(logConfig)
-
-	// 添加基本字段
-	loggerInstance = log.With(loggerInstance,
+	appLogger := logger.NewLogger(logCfg)
+	appLogger = log.With(appLogger,
 		"ts", log.DefaultTimestamp,
 		"caller", log.DefaultCaller,
 		"service.id", id,
@@ -122,14 +97,10 @@ func main() {
 		"service.version", Version,
 	)
 
-	// 初始化全局错误管理器
-	// 假设 i18n 配置文件在 configs/i18n 目录下
-	errors.InitGlobalErrorManager("configs/i18n", func(ctx context.Context) string {
-		// 这里可以从 context 中获取语言，暂时返回默认
-		return "zh-CN"
-	})
+	// 注意：错误管理器的初始化在 internal/errors/code.go 的 init() 函数中完成
+	// 服务必须从项目根目录启动，这样相对路径 "i18n" 才能正确工作
 
-	app, cleanup, err := wireApp(&bc, loggerInstance)
+	app, cleanup, err := wireApp(&bc, appLogger)
 	if err != nil {
 		panic(err)
 	}

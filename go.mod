@@ -6,7 +6,7 @@ toolchain go1.24.10
 
 require (
 	github.com/envoyproxy/protoc-gen-validate v1.2.1
-	github.com/gaoyong06/go-pkg v0.0.0-20251204080035-3053421e6266
+	github.com/gaoyong06/go-pkg v0.0.0-20260105101952-4ec82d3d2399
 	github.com/go-kratos/kratos/v2 v2.9.2
 	github.com/go-redsync/redsync/v4 v4.14.1
 	github.com/google/uuid v1.6.0
@@ -19,13 +19,13 @@ require (
 	google.golang.org/protobuf v1.36.11
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.31.1
+	passport-service v0.0.0-00010101000000-000000000000
 )
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/go-kratos/aegis v0.2.0 // indirect
@@ -37,9 +37,6 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/nicksnyder/go-i18n/v2 v2.6.0 // indirect
-	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/rogpeppe/go-internal v1.14.1 // indirect
-	github.com/stretchr/testify v1.11.1 // indirect
 	golang.org/x/net v0.48.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
@@ -50,3 +47,5 @@ require (
 )
 
 replace marketing-service => ../marketing-service
+
+replace passport-service => ../passport-service

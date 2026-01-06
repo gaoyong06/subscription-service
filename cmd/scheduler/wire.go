@@ -13,13 +13,13 @@ import (
 	"github.com/google/wire"
 )
 
-// CronApp Cron 应用结构
-type CronApp struct {
+// SchedulerApp Scheduler 应用结构
+type SchedulerApp struct {
 	subscriptionUsecase *biz.SubscriptionUsecase
 }
 
 // wireApp 初始化应用
-func wireApp(*conf.Bootstrap) (*CronApp, func(), error) {
+func wireApp(*conf.Bootstrap) (*SchedulerApp, func(), error) {
 	panic(wire.Build(
 		// Logger
 		wire.FieldsOf(new(*conf.Bootstrap), "Log"),
@@ -32,7 +32,7 @@ func wireApp(*conf.Bootstrap) (*CronApp, func(), error) {
 		biz.ProviderSet,
 		
 		// App 结构
-		wire.Struct(new(CronApp), "*"),
+		wire.Struct(new(SchedulerApp), "*"),
 	))
 }
 
@@ -41,7 +41,7 @@ func newLogger(c *conf.Log) log.Logger {
 	return log.With(log.NewStdLogger(os.Stdout),
 		"ts", log.DefaultTimestamp,
 		"caller", log.DefaultCaller,
-		"service.name", "subscription-cron",
+		"service.name", "subscription-scheduler",
 	)
 }
 

@@ -29,7 +29,7 @@ type Bootstrap struct {
 	Data          *Data                  `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
 	Client        *Client                `protobuf:"bytes,3,opt,name=client,proto3" json:"client,omitempty"`
 	Subscription  *Subscription          `protobuf:"bytes,4,opt,name=subscription,proto3" json:"subscription,omitempty"` // 订阅业务配置
-	Cron          *Cron                  `protobuf:"bytes,5,opt,name=cron,proto3" json:"cron,omitempty"`                 // 定时任务配置
+	Scheduler     *Scheduler             `protobuf:"bytes,5,opt,name=scheduler,proto3" json:"scheduler,omitempty"`       // 定时任务配置
 	Log           *Log                   `protobuf:"bytes,6,opt,name=log,proto3" json:"log,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -93,9 +93,9 @@ func (x *Bootstrap) GetSubscription() *Subscription {
 	return nil
 }
 
-func (x *Bootstrap) GetCron() *Cron {
+func (x *Bootstrap) GetScheduler() *Scheduler {
 	if x != nil {
-		return x.Cron
+		return x.Scheduler
 	}
 	return nil
 }
@@ -418,29 +418,29 @@ func (x *Subscription) GetExpiryCheckDays() int32 {
 }
 
 // 定时任务配置
-type Cron struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	ExpiryCheck     string                 `protobuf:"bytes,1,opt,name=expiry_check,json=expiryCheck,proto3" json:"expiry_check,omitempty"`             // 过期检查 cron 表达式，默认: "0 0 2 * * *" (每天凌晨2点)
-	RenewalReminder string                 `protobuf:"bytes,2,opt,name=renewal_reminder,json=renewalReminder,proto3" json:"renewal_reminder,omitempty"` // 续费提醒 cron 表达式，默认: "0 0 10 * * *" (每天上午10点)
-	AutoRenewal     string                 `protobuf:"bytes,3,opt,name=auto_renewal,json=autoRenewal,proto3" json:"auto_renewal,omitempty"`             // 自动续费 cron 表达式，默认: "0 0 3 * * *" (每天凌晨3点)
+type Scheduler struct {
+	state           protoimpl.MessageState         `protogen:"open.v1"`
+	ExpiryCheck     *Scheduler_ExpiryCheckTask     `protobuf:"bytes,1,opt,name=expiry_check,json=expiryCheck,proto3" json:"expiry_check,omitempty"`             // 过期检查任务
+	RenewalReminder *Scheduler_RenewalReminderTask `protobuf:"bytes,2,opt,name=renewal_reminder,json=renewalReminder,proto3" json:"renewal_reminder,omitempty"` // 续费提醒任务
+	AutoRenewal     *Scheduler_AutoRenewalTask     `protobuf:"bytes,3,opt,name=auto_renewal,json=autoRenewal,proto3" json:"auto_renewal,omitempty"`             // 自动续费任务
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
 
-func (x *Cron) Reset() {
-	*x = Cron{}
+func (x *Scheduler) Reset() {
+	*x = Scheduler{}
 	mi := &file_conf_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Cron) String() string {
+func (x *Scheduler) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Cron) ProtoMessage() {}
+func (*Scheduler) ProtoMessage() {}
 
-func (x *Cron) ProtoReflect() protoreflect.Message {
+func (x *Scheduler) ProtoReflect() protoreflect.Message {
 	mi := &file_conf_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -452,30 +452,30 @@ func (x *Cron) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Cron.ProtoReflect.Descriptor instead.
-func (*Cron) Descriptor() ([]byte, []int) {
+// Deprecated: Use Scheduler.ProtoReflect.Descriptor instead.
+func (*Scheduler) Descriptor() ([]byte, []int) {
 	return file_conf_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *Cron) GetExpiryCheck() string {
+func (x *Scheduler) GetExpiryCheck() *Scheduler_ExpiryCheckTask {
 	if x != nil {
 		return x.ExpiryCheck
 	}
-	return ""
+	return nil
 }
 
-func (x *Cron) GetRenewalReminder() string {
+func (x *Scheduler) GetRenewalReminder() *Scheduler_RenewalReminderTask {
 	if x != nil {
 		return x.RenewalReminder
 	}
-	return ""
+	return nil
 }
 
-func (x *Cron) GetAutoRenewal() string {
+func (x *Scheduler) GetAutoRenewal() *Scheduler_AutoRenewalTask {
 	if x != nil {
 		return x.AutoRenewal
 	}
-	return ""
+	return nil
 }
 
 // 日志配置
@@ -883,18 +883,174 @@ func (x *Data_Redis) GetMinIdleConns() int32 {
 	return 0
 }
 
+type Scheduler_ExpiryCheckTask struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Cron          string                 `protobuf:"bytes,1,opt,name=cron,proto3" json:"cron,omitempty"`        // Cron 表达式，默认: "0 0 2 * * *" (每天凌晨2点)
+	Enabled       bool                   `protobuf:"varint,2,opt,name=enabled,proto3" json:"enabled,omitempty"` // 是否启用，默认: true
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Scheduler_ExpiryCheckTask) Reset() {
+	*x = Scheduler_ExpiryCheckTask{}
+	mi := &file_conf_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Scheduler_ExpiryCheckTask) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Scheduler_ExpiryCheckTask) ProtoMessage() {}
+
+func (x *Scheduler_ExpiryCheckTask) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Scheduler_ExpiryCheckTask.ProtoReflect.Descriptor instead.
+func (*Scheduler_ExpiryCheckTask) Descriptor() ([]byte, []int) {
+	return file_conf_proto_rawDescGZIP(), []int{7, 0}
+}
+
+func (x *Scheduler_ExpiryCheckTask) GetCron() string {
+	if x != nil {
+		return x.Cron
+	}
+	return ""
+}
+
+func (x *Scheduler_ExpiryCheckTask) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
+type Scheduler_RenewalReminderTask struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Cron          string                 `protobuf:"bytes,1,opt,name=cron,proto3" json:"cron,omitempty"`        // Cron 表达式，默认: "0 0 10 * * *" (每天上午10点)
+	Enabled       bool                   `protobuf:"varint,2,opt,name=enabled,proto3" json:"enabled,omitempty"` // 是否启用，默认: true
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Scheduler_RenewalReminderTask) Reset() {
+	*x = Scheduler_RenewalReminderTask{}
+	mi := &file_conf_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Scheduler_RenewalReminderTask) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Scheduler_RenewalReminderTask) ProtoMessage() {}
+
+func (x *Scheduler_RenewalReminderTask) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Scheduler_RenewalReminderTask.ProtoReflect.Descriptor instead.
+func (*Scheduler_RenewalReminderTask) Descriptor() ([]byte, []int) {
+	return file_conf_proto_rawDescGZIP(), []int{7, 1}
+}
+
+func (x *Scheduler_RenewalReminderTask) GetCron() string {
+	if x != nil {
+		return x.Cron
+	}
+	return ""
+}
+
+func (x *Scheduler_RenewalReminderTask) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
+type Scheduler_AutoRenewalTask struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Cron          string                 `protobuf:"bytes,1,opt,name=cron,proto3" json:"cron,omitempty"`        // Cron 表达式，默认: "0 0 3 * * *" (每天凌晨3点)
+	Enabled       bool                   `protobuf:"varint,2,opt,name=enabled,proto3" json:"enabled,omitempty"` // 是否启用，默认: true
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Scheduler_AutoRenewalTask) Reset() {
+	*x = Scheduler_AutoRenewalTask{}
+	mi := &file_conf_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Scheduler_AutoRenewalTask) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Scheduler_AutoRenewalTask) ProtoMessage() {}
+
+func (x *Scheduler_AutoRenewalTask) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Scheduler_AutoRenewalTask.ProtoReflect.Descriptor instead.
+func (*Scheduler_AutoRenewalTask) Descriptor() ([]byte, []int) {
+	return file_conf_proto_rawDescGZIP(), []int{7, 2}
+}
+
+func (x *Scheduler_AutoRenewalTask) GetCron() string {
+	if x != nil {
+		return x.Cron
+	}
+	return ""
+}
+
+func (x *Scheduler_AutoRenewalTask) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
 var File_conf_proto protoreflect.FileDescriptor
 
 const file_conf_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"conf.proto\x12\x11subscription.conf\x1a\x1egoogle/protobuf/duration.proto\"\xba\x02\n" +
+	"conf.proto\x12\x11subscription.conf\x1a\x1egoogle/protobuf/duration.proto\"\xc9\x02\n" +
 	"\tBootstrap\x121\n" +
 	"\x06server\x18\x01 \x01(\v2\x19.subscription.conf.ServerR\x06server\x12+\n" +
 	"\x04data\x18\x02 \x01(\v2\x17.subscription.conf.DataR\x04data\x121\n" +
 	"\x06client\x18\x03 \x01(\v2\x19.subscription.conf.ClientR\x06client\x12C\n" +
-	"\fsubscription\x18\x04 \x01(\v2\x1f.subscription.conf.SubscriptionR\fsubscription\x12+\n" +
-	"\x04cron\x18\x05 \x01(\v2\x17.subscription.conf.CronR\x04cron\x12(\n" +
+	"\fsubscription\x18\x04 \x01(\v2\x1f.subscription.conf.SubscriptionR\fsubscription\x12:\n" +
+	"\tscheduler\x18\x05 \x01(\v2\x1c.subscription.conf.SchedulerR\tscheduler\x12(\n" +
 	"\x03log\x18\x06 \x01(\v2\x16.subscription.conf.LogR\x03log\"\xc6\x02\n" +
 	"\x06Server\x122\n" +
 	"\x04http\x18\x01 \x01(\v2\x1e.subscription.conf.Server.HTTPR\x04http\x122\n" +
@@ -937,11 +1093,20 @@ const file_conf_proto_rawDesc = "" +
 	"\n" +
 	"return_url\x18\x01 \x01(\tR\treturnUrl\x123\n" +
 	"\x16auto_renew_days_before\x18\x02 \x01(\x05R\x13autoRenewDaysBefore\x12*\n" +
-	"\x11expiry_check_days\x18\x03 \x01(\x05R\x0fexpiryCheckDays\"w\n" +
-	"\x04Cron\x12!\n" +
-	"\fexpiry_check\x18\x01 \x01(\tR\vexpiryCheck\x12)\n" +
-	"\x10renewal_reminder\x18\x02 \x01(\tR\x0frenewalReminder\x12!\n" +
-	"\fauto_renewal\x18\x03 \x01(\tR\vautoRenewal\"\xd9\x01\n" +
+	"\x11expiry_check_days\x18\x03 \x01(\x05R\x0fexpiryCheckDays\"\xd1\x03\n" +
+	"\tScheduler\x12O\n" +
+	"\fexpiry_check\x18\x01 \x01(\v2,.subscription.conf.Scheduler.ExpiryCheckTaskR\vexpiryCheck\x12[\n" +
+	"\x10renewal_reminder\x18\x02 \x01(\v20.subscription.conf.Scheduler.RenewalReminderTaskR\x0frenewalReminder\x12O\n" +
+	"\fauto_renewal\x18\x03 \x01(\v2,.subscription.conf.Scheduler.AutoRenewalTaskR\vautoRenewal\x1a?\n" +
+	"\x0fExpiryCheckTask\x12\x12\n" +
+	"\x04cron\x18\x01 \x01(\tR\x04cron\x12\x18\n" +
+	"\aenabled\x18\x02 \x01(\bR\aenabled\x1aC\n" +
+	"\x13RenewalReminderTask\x12\x12\n" +
+	"\x04cron\x18\x01 \x01(\tR\x04cron\x12\x18\n" +
+	"\aenabled\x18\x02 \x01(\bR\aenabled\x1a?\n" +
+	"\x0fAutoRenewalTask\x12\x12\n" +
+	"\x04cron\x18\x01 \x01(\tR\x04cron\x12\x18\n" +
+	"\aenabled\x18\x02 \x01(\bR\aenabled\"\xd9\x01\n" +
 	"\x03Log\x12\x14\n" +
 	"\x05level\x18\x01 \x01(\tR\x05level\x12\x16\n" +
 	"\x06format\x18\x02 \x01(\tR\x06format\x12\x16\n" +
@@ -965,29 +1130,32 @@ func file_conf_proto_rawDescGZIP() []byte {
 	return file_conf_proto_rawDescData
 }
 
-var file_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_conf_proto_goTypes = []any{
-	(*Bootstrap)(nil),           // 0: subscription.conf.Bootstrap
-	(*Server)(nil),              // 1: subscription.conf.Server
-	(*Data)(nil),                // 2: subscription.conf.Data
-	(*Client)(nil),              // 3: subscription.conf.Client
-	(*PaymentService)(nil),      // 4: subscription.conf.PaymentService
-	(*PassportService)(nil),     // 5: subscription.conf.PassportService
-	(*Subscription)(nil),        // 6: subscription.conf.Subscription
-	(*Cron)(nil),                // 7: subscription.conf.Cron
-	(*Log)(nil),                 // 8: subscription.conf.Log
-	(*Server_HTTP)(nil),         // 9: subscription.conf.Server.HTTP
-	(*Server_GRPC)(nil),         // 10: subscription.conf.Server.GRPC
-	(*Data_Database)(nil),       // 11: subscription.conf.Data.Database
-	(*Data_Redis)(nil),          // 12: subscription.conf.Data.Redis
-	(*durationpb.Duration)(nil), // 13: google.protobuf.Duration
+	(*Bootstrap)(nil),                     // 0: subscription.conf.Bootstrap
+	(*Server)(nil),                        // 1: subscription.conf.Server
+	(*Data)(nil),                          // 2: subscription.conf.Data
+	(*Client)(nil),                        // 3: subscription.conf.Client
+	(*PaymentService)(nil),                // 4: subscription.conf.PaymentService
+	(*PassportService)(nil),               // 5: subscription.conf.PassportService
+	(*Subscription)(nil),                  // 6: subscription.conf.Subscription
+	(*Scheduler)(nil),                     // 7: subscription.conf.Scheduler
+	(*Log)(nil),                           // 8: subscription.conf.Log
+	(*Server_HTTP)(nil),                   // 9: subscription.conf.Server.HTTP
+	(*Server_GRPC)(nil),                   // 10: subscription.conf.Server.GRPC
+	(*Data_Database)(nil),                 // 11: subscription.conf.Data.Database
+	(*Data_Redis)(nil),                    // 12: subscription.conf.Data.Redis
+	(*Scheduler_ExpiryCheckTask)(nil),     // 13: subscription.conf.Scheduler.ExpiryCheckTask
+	(*Scheduler_RenewalReminderTask)(nil), // 14: subscription.conf.Scheduler.RenewalReminderTask
+	(*Scheduler_AutoRenewalTask)(nil),     // 15: subscription.conf.Scheduler.AutoRenewalTask
+	(*durationpb.Duration)(nil),           // 16: google.protobuf.Duration
 }
 var file_conf_proto_depIdxs = []int32{
 	1,  // 0: subscription.conf.Bootstrap.server:type_name -> subscription.conf.Server
 	2,  // 1: subscription.conf.Bootstrap.data:type_name -> subscription.conf.Data
 	3,  // 2: subscription.conf.Bootstrap.client:type_name -> subscription.conf.Client
 	6,  // 3: subscription.conf.Bootstrap.subscription:type_name -> subscription.conf.Subscription
-	7,  // 4: subscription.conf.Bootstrap.cron:type_name -> subscription.conf.Cron
+	7,  // 4: subscription.conf.Bootstrap.scheduler:type_name -> subscription.conf.Scheduler
 	8,  // 5: subscription.conf.Bootstrap.log:type_name -> subscription.conf.Log
 	9,  // 6: subscription.conf.Server.http:type_name -> subscription.conf.Server.HTTP
 	10, // 7: subscription.conf.Server.grpc:type_name -> subscription.conf.Server.GRPC
@@ -995,17 +1163,20 @@ var file_conf_proto_depIdxs = []int32{
 	12, // 9: subscription.conf.Data.redis:type_name -> subscription.conf.Data.Redis
 	4,  // 10: subscription.conf.Client.payment_service:type_name -> subscription.conf.PaymentService
 	5,  // 11: subscription.conf.Client.passport_service:type_name -> subscription.conf.PassportService
-	13, // 12: subscription.conf.Server.HTTP.timeout:type_name -> google.protobuf.Duration
-	13, // 13: subscription.conf.Server.GRPC.timeout:type_name -> google.protobuf.Duration
-	13, // 14: subscription.conf.Data.Database.conn_max_lifetime:type_name -> google.protobuf.Duration
-	13, // 15: subscription.conf.Data.Redis.dial_timeout:type_name -> google.protobuf.Duration
-	13, // 16: subscription.conf.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
-	13, // 17: subscription.conf.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
-	18, // [18:18] is the sub-list for method output_type
-	18, // [18:18] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	13, // 12: subscription.conf.Scheduler.expiry_check:type_name -> subscription.conf.Scheduler.ExpiryCheckTask
+	14, // 13: subscription.conf.Scheduler.renewal_reminder:type_name -> subscription.conf.Scheduler.RenewalReminderTask
+	15, // 14: subscription.conf.Scheduler.auto_renewal:type_name -> subscription.conf.Scheduler.AutoRenewalTask
+	16, // 15: subscription.conf.Server.HTTP.timeout:type_name -> google.protobuf.Duration
+	16, // 16: subscription.conf.Server.GRPC.timeout:type_name -> google.protobuf.Duration
+	16, // 17: subscription.conf.Data.Database.conn_max_lifetime:type_name -> google.protobuf.Duration
+	16, // 18: subscription.conf.Data.Redis.dial_timeout:type_name -> google.protobuf.Duration
+	16, // 19: subscription.conf.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
+	16, // 20: subscription.conf.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
+	21, // [21:21] is the sub-list for method output_type
+	21, // [21:21] is the sub-list for method input_type
+	21, // [21:21] is the sub-list for extension type_name
+	21, // [21:21] is the sub-list for extension extendee
+	0,  // [0:21] is the sub-list for field type_name
 }
 
 func init() { file_conf_proto_init() }
@@ -1019,7 +1190,7 @@ func file_conf_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_conf_proto_rawDesc), len(file_conf_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   13,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

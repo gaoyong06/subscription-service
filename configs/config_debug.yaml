@@ -34,10 +34,16 @@ subscription:
   auto_renew_days_before: 3
   expiry_check_days: 7
 
-cron:
-  expiry_check: "0 0 2 * * *"      # 每天凌晨 2 点执行过期检查
-  renewal_reminder: "0 0 10 * * *" # 每天上午 10 点发送续费提醒
-  auto_renewal: "0 0 3 * * *"      # 每天凌晨 3 点执行自动续费
+scheduler:
+  expiry_check:      # 过期检查任务
+    cron: "0 0 2 * * *"      # 每天凌晨 2 点执行过期检查
+    enabled: true             # 是否启用
+  renewal_reminder:  # 续费提醒任务
+    cron: "0 0 10 * * *"     # 每天上午 10 点发送续费提醒
+    enabled: true             # 是否启用
+  auto_renewal:      # 自动续费任务
+    cron: "0 0 3 * * *"      # 每天凌晨 3 点执行自动续费
+    enabled: true             # 是否启用
 
 log:
   level: info  # debug, info, warn, error

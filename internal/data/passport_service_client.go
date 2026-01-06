@@ -40,9 +40,9 @@ func NewPassportClient(c *conf.Bootstrap) (biz.PassportClient, error) {
 // GetUserCountryCode 获取用户的国家代码
 // TODO: passport-service 的 GetUserRequest.Uid 仍然是 uint64，需要迁移
 // 当前实现：暂时返回空字符串，等待 passport-service 迁移完成
-// 迁移后：可以直接使用字符串 uid 调用 passport-service
-func (c *passportServiceClient) GetUserCountryCode(ctx context.Context, uid string) (string, error) {
-	// TODO: passport-service 迁移后，可以直接使用字符串 uid
+// 迁移后：可以直接使用字符串 userId 调用 passport-service
+func (c *passportServiceClient) GetUserCountryCode(ctx context.Context, userId string) (string, error) {
+	// TODO: passport-service 迁移后，可以直接使用字符串 userId
 	// 当前 passport-service 的 GetUserRequest.Uid 是 uint64，需要转换
 	// 但根据黄金法则，不应该在跨服务调用中使用 user_internal_id
 	// 建议：修改 passport-service 的 proto 文件，将 GetUserRequest.Uid 改为 string
@@ -50,7 +50,7 @@ func (c *passportServiceClient) GetUserCountryCode(ctx context.Context, uid stri
 	// 临时方案：返回空字符串，等待 passport-service 迁移
 	// 迁移后的代码：
 	// req := &passportv1.GetUserRequest{
-	// 	Uid: uid, // 字符串 UUID
+	// 	Uid: userId, // 字符串 UUID
 	// }
 	// resp, err := c.client.GetUser(ctx, req)
 	// if err != nil {
@@ -80,7 +80,7 @@ func (c *passportServiceClient) GetCountryCodeByIP(ctx context.Context, ip strin
 // emptyPassportClient 空的用户服务客户端实现（优雅降级）
 type emptyPassportClient struct{}
 
-func (e *emptyPassportClient) GetUserCountryCode(ctx context.Context, uid string) (string, error) {
+func (e *emptyPassportClient) GetUserCountryCode(ctx context.Context, userId string) (string, error) {
 	return "", nil
 }
 

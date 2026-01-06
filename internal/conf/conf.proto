@@ -12,7 +12,7 @@ message Bootstrap {
   Data data = 2;
   Client client = 3;
   Subscription subscription = 4;  // 订阅业务配置
-  Cron cron = 5;                  // 定时任务配置
+  Scheduler scheduler = 5;         // 定时任务配置
   Log log = 6;
 }
 
@@ -80,10 +80,22 @@ message Subscription {
 }
 
 // 定时任务配置
-message Cron {
-  string expiry_check = 1;          // 过期检查 cron 表达式，默认: "0 0 2 * * *" (每天凌晨2点)
-  string renewal_reminder = 2;      // 续费提醒 cron 表达式，默认: "0 0 10 * * *" (每天上午10点)
-  string auto_renewal = 3;          // 自动续费 cron 表达式，默认: "0 0 3 * * *" (每天凌晨3点)
+message Scheduler {
+  message ExpiryCheckTask {
+    string cron = 1;    // Cron 表达式，默认: "0 0 2 * * *" (每天凌晨2点)
+    bool enabled = 2;   // 是否启用，默认: true
+  }
+  message RenewalReminderTask {
+    string cron = 1;    // Cron 表达式，默认: "0 0 10 * * *" (每天上午10点)
+    bool enabled = 2;   // 是否启用，默认: true
+  }
+  message AutoRenewalTask {
+    string cron = 1;    // Cron 表达式，默认: "0 0 3 * * *" (每天凌晨3点)
+    bool enabled = 2;   // 是否启用，默认: true
+  }
+  ExpiryCheckTask expiry_check = 1;      // 过期检查任务
+  RenewalReminderTask renewal_reminder = 2;  // 续费提醒任务
+  AutoRenewalTask auto_renewal = 3;       // 自动续费任务
 }
 
 // 日志配置

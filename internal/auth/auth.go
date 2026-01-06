@@ -26,8 +26,8 @@ const (
 
 // GetUIDFromContext 从context中获取用户ID（字符串 UUID）
 func GetUIDFromContext(ctx context.Context) (string, bool) {
-	uid, ok := ctx.Value(UserIDKey).(string)
-	return uid, ok
+	userId, ok := ctx.Value(UserIDKey).(string)
+	return userId, ok
 }
 
 // GetRoleFromContext 从context中获取用户角色

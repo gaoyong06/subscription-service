@@ -18,7 +18,7 @@ type RegionDetectionService interface {
 	// 3. HTTP 头 Accept-Language（从语言推断）
 	// 4. HTTP 头 X-Language（从语言推断）
 	// 5. 默认值 "default"
-	DetectRegion(ctx context.Context, uid string, clientIP, acceptLanguage, xLanguage string) (string, error)
+	DetectRegion(ctx context.Context, userId string, clientIP, acceptLanguage, xLanguage string) (string, error)
 }
 
 // regionDetectionService 地区推断服务实现
@@ -36,12 +36,12 @@ func NewRegionDetectionService(passportClient PassportClient, logger log.Logger)
 }
 
 // DetectRegion 推断用户所在地区
-func (s *regionDetectionService) DetectRegion(ctx context.Context, uid string, clientIP, acceptLanguage, xLanguage string) (string, error) {
+func (s *regionDetectionService) DetectRegion(ctx context.Context, userId string, clientIP, acceptLanguage, xLanguage string) (string, error) {
 	// 优先级 1: 从 passport-service 查询用户注册信息中的国家代码（如果用户已注册）
-	if uid != "" && s.passportClient != nil {
-		countryCode, err := s.passportClient.GetUserCountryCode(ctx, uid)
+	if userId != "" && s.passportClient != nil {
+		countryCode, err := s.passportClient.GetUserCountryCode(ctx, userId)
 		if err == nil && countryCode != "" {
-			s.log.WithContext(ctx).Infof("Detected region from user profile: %s (uid: %s)", countryCode, uid)
+			s.log.WithContext(ctx).Infof("Detected region from user profile: %s (userId: %s)", countryCode, userId)
 			return countryCode, nil
 		}
 		if err != nil {

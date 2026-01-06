@@ -289,6 +289,24 @@ func (uc *SubscriptionUsecase) ListSubscriptionOrders(ctx context.Context, appID
 	return orders, total, nil
 }
 
+// GetSubscriptionOrder 获取单个订阅订单
+func (uc *SubscriptionUsecase) GetSubscriptionOrder(ctx context.Context, orderID string) (*SubscriptionOrder, error) {
+	uc.log.Infof("GetSubscriptionOrder: orderID=%s", orderID)
+
+	// 参数验证
+	if orderID == "" {
+		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+	}
+
+	order, err := uc.orderRepo.GetOrder(ctx, orderID)
+	if err != nil {
+		uc.log.Errorf("Failed to get subscription order: %v", err)
+		return nil, err
+	}
+
+	return order, nil
+}
+
 // ListAppSubscriptions 获取应用的订阅用户列表（管理员视角）
 func (uc *SubscriptionUsecase) ListAppSubscriptions(ctx context.Context, appID, status, userID string, page, pageSize int) ([]*UserSubscription, int, error) {
 	uc.log.Infof("ListAppSubscriptions: appID=%s, status=%s, userID=%s, page=%d, pageSize=%d", appID, status, userID, page, pageSize)

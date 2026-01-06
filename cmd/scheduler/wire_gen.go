@@ -21,7 +21,7 @@ import (
 // Injectors from wire.go:
 
 // wireApp 初始化应用
-func wireApp(bootstrap *conf.Bootstrap) (*CronApp, func(), error) {
+func wireApp(bootstrap *conf.Bootstrap) (*SchedulerApp, func(), error) {
 	log := bootstrap.Log
 	logger := newLogger(log)
 	db := data.NewDB(bootstrap)
@@ -47,22 +47,22 @@ func wireApp(bootstrap *conf.Bootstrap) (*CronApp, func(), error) {
 	regionDetectionService := biz.NewRegionDetectionService(passportClient, logger)
 	redsync := data.NewRedsync(client)
 	subscriptionUsecase := biz.NewSubscriptionUsecase(planRepo, userSubscriptionRepo, subscriptionOrderRepo, subscriptionHistoryRepo, paymentClient, regionDetectionService, dataData, redsync, bootstrap, logger)
-	cronApp := &CronApp{
+	schedulerApp := &SchedulerApp{
 		subscriptionUsecase: subscriptionUsecase,
 	}
-	return cronApp, func() {
+	return schedulerApp, func() {
 		cleanup()
 	}, nil
 }
 
 // wire.go:
 
-// CronApp Cron 应用结构
-type CronApp struct {
+// SchedulerApp Scheduler 应用结构
+type SchedulerApp struct {
 	subscriptionUsecase *biz.SubscriptionUsecase
 }
 
 // newLogger 创建 logger
 func newLogger(c *conf.Log) log.Logger {
-	return log.With(log.NewStdLogger(os.Stdout), "ts", log.DefaultTimestamp, "caller", log.DefaultCaller, "service.name", "subscription-cron")
+	return log.With(log.NewStdLogger(os.Stdout), "ts", log.DefaultTimestamp, "caller", log.DefaultCaller, "service.name", "subscription-scheduler")
 }
