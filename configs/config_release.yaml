@@ -27,9 +27,9 @@ data:
 
 client:
   payment_service:
-    addr: payment-service:9101  # 使用服务名
+    addr: payment-service:9101 # 使用服务名
   marketing_service:
-    addr: marketing-service:9105  # 使用服务名
+    addr: marketing-service:9105 # 使用服务名
 
 subscription:
   return_url: "https://www.paopaopaike.com/subscription/success"
@@ -37,25 +37,22 @@ subscription:
   expiry_check_days: 7
 
 scheduler:
-  expiry_check:      # 过期检查任务
-    cron: "0 0 2 * * *"      # 每天凌晨 2 点执行过期检查
-    enabled: true             # 是否启用
-  renewal_reminder:  # 续费提醒任务
-    cron: "0 0 10 * * *"     # 每天上午 10 点发送续费提醒
-    enabled: true             # 是否启用
-  auto_renewal:      # 自动续费任务
-    cron: "0 0 3 * * *"      # 每天凌晨 3 点执行自动续费
-    enabled: true             # 是否启用
+  expiry_check: # 过期检查任务
+    cron: "0 0 2 * * *" # 每天凌晨 2 点执行过期检查
+    enabled: true # 是否启用
+  renewal_reminder: # 续费提醒任务
+    cron: "0 0 10 * * *" # 每天上午 10 点发送续费提醒
+    enabled: true # 是否启用
+  auto_renewal: # 自动续费任务
+    cron: "0 0 3 * * *" # 每天凌晨 3 点执行自动续费
+    enabled: true # 是否启用
 
 log:
-  level: info  # debug, info, warn, error
+  level: info # debug, info, warn, error
   format: json # json, console
   output: both # stdout, file, both
   file_path: /var/log/subscription-service/subscription-service.log
-  max_size: 100  # MB
-  max_age: 30    # days
+  max_size: 100 # MB
+  max_age: 30 # days
   max_backups: 10
   compress: true
-
-
-
