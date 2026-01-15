@@ -1,8 +1,8 @@
 module subscription-service
 
-go 1.24.0
+go 1.25.1
 
-toolchain go1.24.10
+toolchain go1.25.1
 
 require (
 	github.com/envoyproxy/protoc-gen-validate v1.2.1
@@ -20,6 +20,7 @@ require (
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.31.1
 	passport-service v0.0.0-00010101000000-000000000000
+	payment-service v0.0.0-00010101000000-000000000000
 )
 
 require (
@@ -49,3 +50,5 @@ require (
 replace marketing-service => ../marketing-service
 
 replace passport-service => ../passport-service
+
+replace payment-service => ../payment-service
