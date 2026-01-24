@@ -6,7 +6,7 @@ info:
     title: Subscription API
     version: 0.0.1
 paths:
-    /v1/subscription/app/history:
+    /subscription/v1/app/history:
         get:
             tags:
                 - Subscription
@@ -56,7 +56,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/app/subscriptions:
+    /subscription/v1/app/subscriptions:
         get:
             tags:
                 - Subscription
@@ -98,7 +98,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/auto-renew:
+    /subscription/v1/auto-renew:
         post:
             tags:
                 - Subscription
@@ -120,7 +120,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/auto-renew/process:
+    /subscription/v1/auto-renew/process:
         post:
             tags:
                 - Subscription
@@ -145,7 +145,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/cancel:
+    /subscription/v1/cancel:
         post:
             tags:
                 - Subscription
@@ -167,7 +167,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/expired/update:
+    /subscription/v1/expired/update:
         post:
             tags:
                 - Subscription
@@ -192,7 +192,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/expiring:
+    /subscription/v1/expiring:
         get:
             tags:
                 - Subscription
@@ -227,7 +227,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/history/{userId}:
+    /subscription/v1/history/{userId}:
         get:
             tags:
                 - Subscription
@@ -262,7 +262,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/my/{userId}:
+    /subscription/v1/my/{userId}:
         get:
             tags:
                 - Subscription
@@ -287,7 +287,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/order:
+    /subscription/v1/order:
         post:
             tags:
                 - Subscription
@@ -312,7 +312,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/orders:
+    /subscription/v1/orders:
         get:
             tags:
                 - Subscription
@@ -358,7 +358,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/orders/{orderId}:
+    /subscription/v1/orders/{orderId}:
         get:
             tags:
                 - Subscription
@@ -383,7 +383,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/pause:
+    /subscription/v1/pause:
         post:
             tags:
                 - Subscription
@@ -405,7 +405,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/payment/success:
+    /subscription/v1/payment/success:
         post:
             tags:
                 - Subscription
@@ -427,7 +427,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/plans:
+    /subscription/v1/plans:
         get:
             tags:
                 - Subscription
@@ -475,7 +475,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/plans/{planId}:
+    /subscription/v1/plans/{planId}:
         put:
             tags:
                 - Subscription
@@ -530,7 +530,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/plans/{planId}/pricings:
+    /subscription/v1/plans/{planId}/pricings:
         get:
             tags:
                 - Subscription
@@ -585,7 +585,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/pricings/{planPricingId}:
+    /subscription/v1/pricings/{planPricingId}:
         put:
             tags:
                 - Subscription
@@ -640,7 +640,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
-    /v1/subscription/resume:
+    /subscription/v1/resume:
         post:
             tags:
                 - Subscription

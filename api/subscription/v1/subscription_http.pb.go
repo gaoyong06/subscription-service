@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.9.0
 // - protoc             v6.33.1
-// source: subscription.proto
+// source: subscription/v1/subscription.proto
 
 package v1
 
@@ -95,29 +95,29 @@ type SubscriptionHTTPServer interface {
 
 func RegisterSubscriptionHTTPServer(s *http.Server, srv SubscriptionHTTPServer) {
 	r := s.Route("/")
-	r.GET("/v1/subscription/plans", _Subscription_ListPlans0_HTTP_Handler(srv))
-	r.GET("/v1/subscription/my/{userId}", _Subscription_GetMySubscription0_HTTP_Handler(srv))
-	r.POST("/v1/subscription/order", _Subscription_CreateSubscriptionOrder0_HTTP_Handler(srv))
-	r.POST("/v1/subscription/payment/success", _Subscription_HandlePaymentSuccess0_HTTP_Handler(srv))
-	r.POST("/v1/subscription/cancel", _Subscription_CancelSubscription0_HTTP_Handler(srv))
-	r.POST("/v1/subscription/pause", _Subscription_PauseSubscription0_HTTP_Handler(srv))
-	r.POST("/v1/subscription/resume", _Subscription_ResumeSubscription0_HTTP_Handler(srv))
-	r.GET("/v1/subscription/history/{userId}", _Subscription_GetSubscriptionHistory0_HTTP_Handler(srv))
-	r.POST("/v1/subscription/auto-renew", _Subscription_SetAutoRenew0_HTTP_Handler(srv))
-	r.GET("/v1/subscription/expiring", _Subscription_GetExpiringSubscriptions0_HTTP_Handler(srv))
-	r.POST("/v1/subscription/expired/update", _Subscription_UpdateExpiredSubscriptions0_HTTP_Handler(srv))
-	r.POST("/v1/subscription/auto-renew/process", _Subscription_ProcessAutoRenewals0_HTTP_Handler(srv))
-	r.POST("/v1/subscription/plans", _Subscription_CreatePlan0_HTTP_Handler(srv))
-	r.PUT("/v1/subscription/plans/{planId}", _Subscription_UpdatePlan0_HTTP_Handler(srv))
-	r.DELETE("/v1/subscription/plans/{planId}", _Subscription_DeletePlan0_HTTP_Handler(srv))
-	r.GET("/v1/subscription/plans/{planId}/pricings", _Subscription_ListPlanPricings0_HTTP_Handler(srv))
-	r.POST("/v1/subscription/plans/{planId}/pricings", _Subscription_CreatePlanPricing0_HTTP_Handler(srv))
-	r.PUT("/v1/subscription/pricings/{planPricingId}", _Subscription_UpdatePlanPricing0_HTTP_Handler(srv))
-	r.DELETE("/v1/subscription/pricings/{planPricingId}", _Subscription_DeletePlanPricing0_HTTP_Handler(srv))
-	r.GET("/v1/subscription/orders", _Subscription_ListSubscriptionOrders0_HTTP_Handler(srv))
-	r.GET("/v1/subscription/orders/{orderId}", _Subscription_GetSubscriptionOrder0_HTTP_Handler(srv))
-	r.GET("/v1/subscription/app/subscriptions", _Subscription_ListAppSubscriptions0_HTTP_Handler(srv))
-	r.GET("/v1/subscription/app/history", _Subscription_GetAppSubscriptionHistory0_HTTP_Handler(srv))
+	r.GET("/subscription/v1/plans", _Subscription_ListPlans0_HTTP_Handler(srv))
+	r.GET("/subscription/v1/my/{userId}", _Subscription_GetMySubscription0_HTTP_Handler(srv))
+	r.POST("/subscription/v1/order", _Subscription_CreateSubscriptionOrder0_HTTP_Handler(srv))
+	r.POST("/subscription/v1/payment/success", _Subscription_HandlePaymentSuccess0_HTTP_Handler(srv))
+	r.POST("/subscription/v1/cancel", _Subscription_CancelSubscription0_HTTP_Handler(srv))
+	r.POST("/subscription/v1/pause", _Subscription_PauseSubscription0_HTTP_Handler(srv))
+	r.POST("/subscription/v1/resume", _Subscription_ResumeSubscription0_HTTP_Handler(srv))
+	r.GET("/subscription/v1/history/{userId}", _Subscription_GetSubscriptionHistory0_HTTP_Handler(srv))
+	r.POST("/subscription/v1/auto-renew", _Subscription_SetAutoRenew0_HTTP_Handler(srv))
+	r.GET("/subscription/v1/expiring", _Subscription_GetExpiringSubscriptions0_HTTP_Handler(srv))
+	r.POST("/subscription/v1/expired/update", _Subscription_UpdateExpiredSubscriptions0_HTTP_Handler(srv))
+	r.POST("/subscription/v1/auto-renew/process", _Subscription_ProcessAutoRenewals0_HTTP_Handler(srv))
+	r.POST("/subscription/v1/plans", _Subscription_CreatePlan0_HTTP_Handler(srv))
+	r.PUT("/subscription/v1/plans/{planId}", _Subscription_UpdatePlan0_HTTP_Handler(srv))
+	r.DELETE("/subscription/v1/plans/{planId}", _Subscription_DeletePlan0_HTTP_Handler(srv))
+	r.GET("/subscription/v1/plans/{planId}/pricings", _Subscription_ListPlanPricings0_HTTP_Handler(srv))
+	r.POST("/subscription/v1/plans/{planId}/pricings", _Subscription_CreatePlanPricing0_HTTP_Handler(srv))
+	r.PUT("/subscription/v1/pricings/{planPricingId}", _Subscription_UpdatePlanPricing0_HTTP_Handler(srv))
+	r.DELETE("/subscription/v1/pricings/{planPricingId}", _Subscription_DeletePlanPricing0_HTTP_Handler(srv))
+	r.GET("/subscription/v1/orders", _Subscription_ListSubscriptionOrders0_HTTP_Handler(srv))
+	r.GET("/subscription/v1/orders/{orderId}", _Subscription_GetSubscriptionOrder0_HTTP_Handler(srv))
+	r.GET("/subscription/v1/app/subscriptions", _Subscription_ListAppSubscriptions0_HTTP_Handler(srv))
+	r.GET("/subscription/v1/app/history", _Subscription_GetAppSubscriptionHistory0_HTTP_Handler(srv))
 }
 
 func _Subscription_ListPlans0_HTTP_Handler(srv SubscriptionHTTPServer) func(ctx http.Context) error {
@@ -680,7 +680,7 @@ func NewSubscriptionHTTPClient(client *http.Client) SubscriptionHTTPClient {
 // CancelSubscription 取消订阅
 func (c *SubscriptionHTTPClientImpl) CancelSubscription(ctx context.Context, in *CancelSubscriptionRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
-	pattern := "/v1/subscription/cancel"
+	pattern := "/subscription/v1/cancel"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSubscriptionCancelSubscription))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -694,7 +694,7 @@ func (c *SubscriptionHTTPClientImpl) CancelSubscription(ctx context.Context, in 
 // CreatePlan 创建订阅套餐
 func (c *SubscriptionHTTPClientImpl) CreatePlan(ctx context.Context, in *CreatePlanRequest, opts ...http.CallOption) (*CreatePlanReply, error) {
 	var out CreatePlanReply
-	pattern := "/v1/subscription/plans"
+	pattern := "/subscription/v1/plans"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSubscriptionCreatePlan))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -708,7 +708,7 @@ func (c *SubscriptionHTTPClientImpl) CreatePlan(ctx context.Context, in *CreateP
 // CreatePlanPricing 创建区域定价
 func (c *SubscriptionHTTPClientImpl) CreatePlanPricing(ctx context.Context, in *CreatePlanPricingRequest, opts ...http.CallOption) (*CreatePlanPricingReply, error) {
 	var out CreatePlanPricingReply
-	pattern := "/v1/subscription/plans/{planId}/pricings"
+	pattern := "/subscription/v1/plans/{planId}/pricings"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSubscriptionCreatePlanPricing))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -722,7 +722,7 @@ func (c *SubscriptionHTTPClientImpl) CreatePlanPricing(ctx context.Context, in *
 // CreateSubscriptionOrder 创建订阅订单 (调用 Payment Service)
 func (c *SubscriptionHTTPClientImpl) CreateSubscriptionOrder(ctx context.Context, in *CreateSubscriptionOrderRequest, opts ...http.CallOption) (*CreateSubscriptionOrderReply, error) {
 	var out CreateSubscriptionOrderReply
-	pattern := "/v1/subscription/order"
+	pattern := "/subscription/v1/order"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSubscriptionCreateSubscriptionOrder))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -736,7 +736,7 @@ func (c *SubscriptionHTTPClientImpl) CreateSubscriptionOrder(ctx context.Context
 // DeletePlan 删除订阅套餐
 func (c *SubscriptionHTTPClientImpl) DeletePlan(ctx context.Context, in *DeletePlanRequest, opts ...http.CallOption) (*DeletePlanReply, error) {
 	var out DeletePlanReply
-	pattern := "/v1/subscription/plans/{planId}"
+	pattern := "/subscription/v1/plans/{planId}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationSubscriptionDeletePlan))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -750,7 +750,7 @@ func (c *SubscriptionHTTPClientImpl) DeletePlan(ctx context.Context, in *DeleteP
 // DeletePlanPricing 删除区域定价
 func (c *SubscriptionHTTPClientImpl) DeletePlanPricing(ctx context.Context, in *DeletePlanPricingRequest, opts ...http.CallOption) (*DeletePlanPricingReply, error) {
 	var out DeletePlanPricingReply
-	pattern := "/v1/subscription/pricings/{planPricingId}"
+	pattern := "/subscription/v1/pricings/{planPricingId}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationSubscriptionDeletePlanPricing))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -764,7 +764,7 @@ func (c *SubscriptionHTTPClientImpl) DeletePlanPricing(ctx context.Context, in *
 // GetAppSubscriptionHistory 获取应用的订阅历史记录（管理员视角）
 func (c *SubscriptionHTTPClientImpl) GetAppSubscriptionHistory(ctx context.Context, in *GetAppSubscriptionHistoryRequest, opts ...http.CallOption) (*GetAppSubscriptionHistoryReply, error) {
 	var out GetAppSubscriptionHistoryReply
-	pattern := "/v1/subscription/app/history"
+	pattern := "/subscription/v1/app/history"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationSubscriptionGetAppSubscriptionHistory))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -778,7 +778,7 @@ func (c *SubscriptionHTTPClientImpl) GetAppSubscriptionHistory(ctx context.Conte
 // GetExpiringSubscriptions 获取即将过期的订阅（用于定时任务）
 func (c *SubscriptionHTTPClientImpl) GetExpiringSubscriptions(ctx context.Context, in *GetExpiringSubscriptionsRequest, opts ...http.CallOption) (*GetExpiringSubscriptionsReply, error) {
 	var out GetExpiringSubscriptionsReply
-	pattern := "/v1/subscription/expiring"
+	pattern := "/subscription/v1/expiring"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationSubscriptionGetExpiringSubscriptions))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -792,7 +792,7 @@ func (c *SubscriptionHTTPClientImpl) GetExpiringSubscriptions(ctx context.Contex
 // GetMySubscription 获取用户的订阅状态
 func (c *SubscriptionHTTPClientImpl) GetMySubscription(ctx context.Context, in *GetMySubscriptionRequest, opts ...http.CallOption) (*GetMySubscriptionReply, error) {
 	var out GetMySubscriptionReply
-	pattern := "/v1/subscription/my/{userId}"
+	pattern := "/subscription/v1/my/{userId}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationSubscriptionGetMySubscription))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -806,7 +806,7 @@ func (c *SubscriptionHTTPClientImpl) GetMySubscription(ctx context.Context, in *
 // GetSubscriptionHistory 获取订阅历史记录
 func (c *SubscriptionHTTPClientImpl) GetSubscriptionHistory(ctx context.Context, in *GetSubscriptionHistoryRequest, opts ...http.CallOption) (*GetSubscriptionHistoryReply, error) {
 	var out GetSubscriptionHistoryReply
-	pattern := "/v1/subscription/history/{userId}"
+	pattern := "/subscription/v1/history/{userId}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationSubscriptionGetSubscriptionHistory))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -820,7 +820,7 @@ func (c *SubscriptionHTTPClientImpl) GetSubscriptionHistory(ctx context.Context,
 // GetSubscriptionOrder 获取订阅订单详情
 func (c *SubscriptionHTTPClientImpl) GetSubscriptionOrder(ctx context.Context, in *GetSubscriptionOrderRequest, opts ...http.CallOption) (*GetSubscriptionOrderReply, error) {
 	var out GetSubscriptionOrderReply
-	pattern := "/v1/subscription/orders/{orderId}"
+	pattern := "/subscription/v1/orders/{orderId}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationSubscriptionGetSubscriptionOrder))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -834,7 +834,7 @@ func (c *SubscriptionHTTPClientImpl) GetSubscriptionOrder(ctx context.Context, i
 // HandlePaymentSuccess 支付回调处理 (通常由 Payment Service 或 MQ 调用)
 func (c *SubscriptionHTTPClientImpl) HandlePaymentSuccess(ctx context.Context, in *HandlePaymentSuccessRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
-	pattern := "/v1/subscription/payment/success"
+	pattern := "/subscription/v1/payment/success"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSubscriptionHandlePaymentSuccess))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -848,7 +848,7 @@ func (c *SubscriptionHTTPClientImpl) HandlePaymentSuccess(ctx context.Context, i
 // ListAppSubscriptions 获取应用的订阅用户列表（管理员视角）
 func (c *SubscriptionHTTPClientImpl) ListAppSubscriptions(ctx context.Context, in *ListAppSubscriptionsRequest, opts ...http.CallOption) (*ListAppSubscriptionsReply, error) {
 	var out ListAppSubscriptionsReply
-	pattern := "/v1/subscription/app/subscriptions"
+	pattern := "/subscription/v1/app/subscriptions"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationSubscriptionListAppSubscriptions))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -862,7 +862,7 @@ func (c *SubscriptionHTTPClientImpl) ListAppSubscriptions(ctx context.Context, i
 // ListPlanPricings 获取套餐的区域定价列表
 func (c *SubscriptionHTTPClientImpl) ListPlanPricings(ctx context.Context, in *ListPlanPricingsRequest, opts ...http.CallOption) (*ListPlanPricingsReply, error) {
 	var out ListPlanPricingsReply
-	pattern := "/v1/subscription/plans/{planId}/pricings"
+	pattern := "/subscription/v1/plans/{planId}/pricings"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationSubscriptionListPlanPricings))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -876,7 +876,7 @@ func (c *SubscriptionHTTPClientImpl) ListPlanPricings(ctx context.Context, in *L
 // ListPlans 获取所有订阅套餐
 func (c *SubscriptionHTTPClientImpl) ListPlans(ctx context.Context, in *ListPlansRequest, opts ...http.CallOption) (*ListPlansReply, error) {
 	var out ListPlansReply
-	pattern := "/v1/subscription/plans"
+	pattern := "/subscription/v1/plans"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationSubscriptionListPlans))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -890,7 +890,7 @@ func (c *SubscriptionHTTPClientImpl) ListPlans(ctx context.Context, in *ListPlan
 // ListSubscriptionOrders 获取订阅订单列表（管理员视角，按应用查询）
 func (c *SubscriptionHTTPClientImpl) ListSubscriptionOrders(ctx context.Context, in *ListSubscriptionOrdersRequest, opts ...http.CallOption) (*ListSubscriptionOrdersReply, error) {
 	var out ListSubscriptionOrdersReply
-	pattern := "/v1/subscription/orders"
+	pattern := "/subscription/v1/orders"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationSubscriptionListSubscriptionOrders))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -904,7 +904,7 @@ func (c *SubscriptionHTTPClientImpl) ListSubscriptionOrders(ctx context.Context,
 // PauseSubscription 暂停订阅
 func (c *SubscriptionHTTPClientImpl) PauseSubscription(ctx context.Context, in *PauseSubscriptionRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
-	pattern := "/v1/subscription/pause"
+	pattern := "/subscription/v1/pause"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSubscriptionPauseSubscription))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -918,7 +918,7 @@ func (c *SubscriptionHTTPClientImpl) PauseSubscription(ctx context.Context, in *
 // ProcessAutoRenewals 处理自动续费（用于定时任务）
 func (c *SubscriptionHTTPClientImpl) ProcessAutoRenewals(ctx context.Context, in *ProcessAutoRenewalsRequest, opts ...http.CallOption) (*ProcessAutoRenewalsReply, error) {
 	var out ProcessAutoRenewalsReply
-	pattern := "/v1/subscription/auto-renew/process"
+	pattern := "/subscription/v1/auto-renew/process"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSubscriptionProcessAutoRenewals))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -932,7 +932,7 @@ func (c *SubscriptionHTTPClientImpl) ProcessAutoRenewals(ctx context.Context, in
 // ResumeSubscription 恢复订阅
 func (c *SubscriptionHTTPClientImpl) ResumeSubscription(ctx context.Context, in *ResumeSubscriptionRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
-	pattern := "/v1/subscription/resume"
+	pattern := "/subscription/v1/resume"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSubscriptionResumeSubscription))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -946,7 +946,7 @@ func (c *SubscriptionHTTPClientImpl) ResumeSubscription(ctx context.Context, in 
 // SetAutoRenew 设置自动续费
 func (c *SubscriptionHTTPClientImpl) SetAutoRenew(ctx context.Context, in *SetAutoRenewRequest, opts ...http.CallOption) (*emptypb.Empty, error) {
 	var out emptypb.Empty
-	pattern := "/v1/subscription/auto-renew"
+	pattern := "/subscription/v1/auto-renew"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSubscriptionSetAutoRenew))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -960,7 +960,7 @@ func (c *SubscriptionHTTPClientImpl) SetAutoRenew(ctx context.Context, in *SetAu
 // UpdateExpiredSubscriptions 批量更新过期订阅状态（用于定时任务）
 func (c *SubscriptionHTTPClientImpl) UpdateExpiredSubscriptions(ctx context.Context, in *UpdateExpiredSubscriptionsRequest, opts ...http.CallOption) (*UpdateExpiredSubscriptionsReply, error) {
 	var out UpdateExpiredSubscriptionsReply
-	pattern := "/v1/subscription/expired/update"
+	pattern := "/subscription/v1/expired/update"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSubscriptionUpdateExpiredSubscriptions))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -974,7 +974,7 @@ func (c *SubscriptionHTTPClientImpl) UpdateExpiredSubscriptions(ctx context.Cont
 // UpdatePlan 更新订阅套餐
 func (c *SubscriptionHTTPClientImpl) UpdatePlan(ctx context.Context, in *UpdatePlanRequest, opts ...http.CallOption) (*UpdatePlanReply, error) {
 	var out UpdatePlanReply
-	pattern := "/v1/subscription/plans/{planId}"
+	pattern := "/subscription/v1/plans/{planId}"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSubscriptionUpdatePlan))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -988,7 +988,7 @@ func (c *SubscriptionHTTPClientImpl) UpdatePlan(ctx context.Context, in *UpdateP
 // UpdatePlanPricing 更新区域定价
 func (c *SubscriptionHTTPClientImpl) UpdatePlanPricing(ctx context.Context, in *UpdatePlanPricingRequest, opts ...http.CallOption) (*UpdatePlanPricingReply, error) {
 	var out UpdatePlanPricingReply
-	pattern := "/v1/subscription/pricings/{planPricingId}"
+	pattern := "/subscription/v1/pricings/{planPricingId}"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationSubscriptionUpdatePlanPricing))
 	opts = append(opts, http.PathTemplate(pattern))

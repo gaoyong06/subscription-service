@@ -3,7 +3,7 @@
 
 SERVICE_NAME=subscription-service
 API_PROTO_PATH=api/subscription/v1/subscription.proto
-API_PROTO_DIR=api/subscription/v1
+API_PROTO_DIR=api
 
 # 服务特定配置
 SERVICE_DISPLAY_NAME=Subscription Service

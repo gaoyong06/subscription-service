@@ -12,156 +12,156 @@ service Subscription {
   // 获取所有订阅套餐
   rpc ListPlans (ListPlansRequest) returns (ListPlansReply) {
     option (google.api.http) = {
-      get: "/v1/subscription/plans"
+      get: "/subscription/v1/plans"
     };
   }
   // 获取用户的订阅状态
   rpc GetMySubscription (GetMySubscriptionRequest) returns (GetMySubscriptionReply) {
     option (google.api.http) = {
-      get: "/v1/subscription/my/{userId}"
+      get: "/subscription/v1/my/{userId}"
     };
   }
   // 创建订阅订单 (调用 Payment Service)
   rpc CreateSubscriptionOrder (CreateSubscriptionOrderRequest) returns (CreateSubscriptionOrderReply) {
     option (google.api.http) = {
-      post: "/v1/subscription/order"
+      post: "/subscription/v1/order"
       body: "*"
     };
   }
   // 支付回调处理 (通常由 Payment Service 或 MQ 调用)
   rpc HandlePaymentSuccess (HandlePaymentSuccessRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/v1/subscription/payment/success"
+      post: "/subscription/v1/payment/success"
       body: "*"
     };
   }
   // 取消订阅
   rpc CancelSubscription (CancelSubscriptionRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/v1/subscription/cancel"
+      post: "/subscription/v1/cancel"
       body: "*"
     };
   }
   // 暂停订阅
   rpc PauseSubscription (PauseSubscriptionRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/v1/subscription/pause"
+      post: "/subscription/v1/pause"
       body: "*"
     };
   }
   // 恢复订阅
   rpc ResumeSubscription (ResumeSubscriptionRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/v1/subscription/resume"
+      post: "/subscription/v1/resume"
       body: "*"
     };
   }
   // 获取订阅历史记录
   rpc GetSubscriptionHistory (GetSubscriptionHistoryRequest) returns (GetSubscriptionHistoryReply) {
     option (google.api.http) = {
-      get: "/v1/subscription/history/{userId}"
+      get: "/subscription/v1/history/{userId}"
     };
   }
   // 设置自动续费
   rpc SetAutoRenew (SetAutoRenewRequest) returns (google.protobuf.Empty) {
     option (google.api.http) = {
-      post: "/v1/subscription/auto-renew"
+      post: "/subscription/v1/auto-renew"
       body: "*"
     };
   }
   // 获取即将过期的订阅（用于定时任务）
   rpc GetExpiringSubscriptions (GetExpiringSubscriptionsRequest) returns (GetExpiringSubscriptionsReply) {
     option (google.api.http) = {
-      get: "/v1/subscription/expiring"
+      get: "/subscription/v1/expiring"
     };
   }
   // 批量更新过期订阅状态（用于定时任务）
   rpc UpdateExpiredSubscriptions (UpdateExpiredSubscriptionsRequest) returns (UpdateExpiredSubscriptionsReply) {
     option (google.api.http) = {
-      post: "/v1/subscription/expired/update"
+      post: "/subscription/v1/expired/update"
       body: "*"
     };
   }
   // 处理自动续费（用于定时任务）
   rpc ProcessAutoRenewals (ProcessAutoRenewalsRequest) returns (ProcessAutoRenewalsReply) {
     option (google.api.http) = {
-      post: "/v1/subscription/auto-renew/process"
+      post: "/subscription/v1/auto-renew/process"
       body: "*"
     };
   }
   // 创建订阅套餐
   rpc CreatePlan (CreatePlanRequest) returns (CreatePlanReply) {
     option (google.api.http) = {
-      post: "/v1/subscription/plans"
+      post: "/subscription/v1/plans"
       body: "*"
     };
   }
   // 更新订阅套餐
   rpc UpdatePlan (UpdatePlanRequest) returns (UpdatePlanReply) {
     option (google.api.http) = {
-      put: "/v1/subscription/plans/{planId}"
+      put: "/subscription/v1/plans/{planId}"
       body: "*"
     };
   }
   // 删除订阅套餐
   rpc DeletePlan (DeletePlanRequest) returns (DeletePlanReply) {
     option (google.api.http) = {
-      delete: "/v1/subscription/plans/{planId}"
+      delete: "/subscription/v1/plans/{planId}"
     };
   }
   
   // 获取套餐的区域定价列表
   rpc ListPlanPricings (ListPlanPricingsRequest) returns (ListPlanPricingsReply) {
     option (google.api.http) = {
-      get: "/v1/subscription/plans/{planId}/pricings"
+      get: "/subscription/v1/plans/{planId}/pricings"
     };
   }
   // 创建区域定价
   rpc CreatePlanPricing (CreatePlanPricingRequest) returns (CreatePlanPricingReply) {
     option (google.api.http) = {
-      post: "/v1/subscription/plans/{planId}/pricings"
+      post: "/subscription/v1/plans/{planId}/pricings"
       body: "*"
     };
   }
   // 更新区域定价
   rpc UpdatePlanPricing (UpdatePlanPricingRequest) returns (UpdatePlanPricingReply) {
     option (google.api.http) = {
-      put: "/v1/subscription/pricings/{planPricingId}"
+      put: "/subscription/v1/pricings/{planPricingId}"
       body: "*"
     };
   }
   // 删除区域定价
   rpc DeletePlanPricing (DeletePlanPricingRequest) returns (DeletePlanPricingReply) {
     option (google.api.http) = {
-      delete: "/v1/subscription/pricings/{planPricingId}"
+      delete: "/subscription/v1/pricings/{planPricingId}"
     };
   }
   
   // 获取订阅订单列表（管理员视角，按应用查询）
   rpc ListSubscriptionOrders (ListSubscriptionOrdersRequest) returns (ListSubscriptionOrdersReply) {
     option (google.api.http) = {
-      get: "/v1/subscription/orders"
+      get: "/subscription/v1/orders"
     };
   }
   
   // 获取订阅订单详情
   rpc GetSubscriptionOrder (GetSubscriptionOrderRequest) returns (GetSubscriptionOrderReply) {
     option (google.api.http) = {
-      get: "/v1/subscription/orders/{orderId}"
+      get: "/subscription/v1/orders/{orderId}"
     };
   }
   
   // 获取应用的订阅用户列表（管理员视角）
   rpc ListAppSubscriptions (ListAppSubscriptionsRequest) returns (ListAppSubscriptionsReply) {
     option (google.api.http) = {
-      get: "/v1/subscription/app/subscriptions"
+      get: "/subscription/v1/app/subscriptions"
     };
   }
   
   // 获取应用的订阅历史记录（管理员视角）
   rpc GetAppSubscriptionHistory (GetAppSubscriptionHistoryRequest) returns (GetAppSubscriptionHistoryReply) {
     option (google.api.http) = {
-      get: "/v1/subscription/app/history"
+      get: "/subscription/v1/app/history"
     };
   }
 }
