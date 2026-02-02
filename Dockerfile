@@ -55,13 +55,18 @@ RUN go mod edit -replace github.com/gaoyong06/go-pkg=/workspace/go-pkg || true &
     go mod edit -replace marketing-service=/workspace/marketing-service || true && \
     go mod edit -replace payment-service=/workspace/payment-service || true
 
-# 构建二进制文件（包含 wire_gen.go 如果存在）
+# 构建 Server 二进制文件
 RUN if [ -f cmd/server/wire_gen.go ]; then \
       CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o server cmd/server/main.go cmd/server/wire_gen.go; \
-    elif [ -f cmd/scheduler/wire_gen.go ]; then \
-      CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o server cmd/scheduler/main.go cmd/scheduler/wire_gen.go; \
     else \
       CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o server cmd/server/main.go; \
+    fi
+
+# 构建 Scheduler 二进制文件
+RUN if [ -f cmd/scheduler/wire_gen.go ]; then \
+      CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o scheduler cmd/scheduler/main.go cmd/scheduler/wire_gen.go; \
+    else \
+      CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o scheduler cmd/scheduler/main.go; \
     fi
 
 # Stage 2: 运行阶段
@@ -83,6 +88,7 @@ WORKDIR /app
 # 从构建阶段复制二进制文件
 RUN mkdir -p bin
 COPY --from=builder /workspace/subscription-service/server ./bin/
+COPY --from=builder /workspace/subscription-service/scheduler ./bin/
 COPY --from=builder /workspace/subscription-service/configs ./configs
 
 # 创建日志目录
