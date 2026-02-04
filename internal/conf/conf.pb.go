@@ -480,17 +480,19 @@ func (x *Scheduler) GetAutoRenewal() *Scheduler_AutoRenewalTask {
 
 // 日志配置
 type Log struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Level         string                 `protobuf:"bytes,1,opt,name=level,proto3" json:"level,omitempty"`
-	Format        string                 `protobuf:"bytes,2,opt,name=format,proto3" json:"format,omitempty"`
-	Output        string                 `protobuf:"bytes,3,opt,name=output,proto3" json:"output,omitempty"`
-	FilePath      string                 `protobuf:"bytes,4,opt,name=file_path,json=filePath,proto3" json:"file_path,omitempty"`
-	MaxSize       int32                  `protobuf:"varint,5,opt,name=max_size,json=maxSize,proto3" json:"max_size,omitempty"` // MB
-	MaxAge        int32                  `protobuf:"varint,6,opt,name=max_age,json=maxAge,proto3" json:"max_age,omitempty"`    // 天
-	MaxBackups    int32                  `protobuf:"varint,7,opt,name=max_backups,json=maxBackups,proto3" json:"max_backups,omitempty"`
-	Compress      bool                   `protobuf:"varint,8,opt,name=compress,proto3" json:"compress,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Level  string                 `protobuf:"bytes,1,opt,name=level,proto3" json:"level,omitempty"`
+	Format string                 `protobuf:"bytes,2,opt,name=format,proto3" json:"format,omitempty"`
+	Output string                 `protobuf:"bytes,3,opt,name=output,proto3" json:"output,omitempty"`
+	// string file_path = 4;
+	MaxSize           int32  `protobuf:"varint,5,opt,name=max_size,json=maxSize,proto3" json:"max_size,omitempty"` // MB
+	MaxAge            int32  `protobuf:"varint,6,opt,name=max_age,json=maxAge,proto3" json:"max_age,omitempty"`    // 天
+	MaxBackups        int32  `protobuf:"varint,7,opt,name=max_backups,json=maxBackups,proto3" json:"max_backups,omitempty"`
+	Compress          bool   `protobuf:"varint,8,opt,name=compress,proto3" json:"compress,omitempty"`
+	ServerFilePath    string `protobuf:"bytes,9,opt,name=server_file_path,json=serverFilePath,proto3" json:"server_file_path,omitempty"`
+	SchedulerFilePath string `protobuf:"bytes,10,opt,name=scheduler_file_path,json=schedulerFilePath,proto3" json:"scheduler_file_path,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *Log) Reset() {
@@ -544,13 +546,6 @@ func (x *Log) GetOutput() string {
 	return ""
 }
 
-func (x *Log) GetFilePath() string {
-	if x != nil {
-		return x.FilePath
-	}
-	return ""
-}
-
 func (x *Log) GetMaxSize() int32 {
 	if x != nil {
 		return x.MaxSize
@@ -577,6 +572,20 @@ func (x *Log) GetCompress() bool {
 		return x.Compress
 	}
 	return false
+}
+
+func (x *Log) GetServerFilePath() string {
+	if x != nil {
+		return x.ServerFilePath
+	}
+	return ""
+}
+
+func (x *Log) GetSchedulerFilePath() string {
+	if x != nil {
+		return x.SchedulerFilePath
+	}
+	return ""
 }
 
 type Server_HTTP struct {
@@ -1106,17 +1115,19 @@ const file_conf_proto_rawDesc = "" +
 	"\aenabled\x18\x02 \x01(\bR\aenabled\x1a?\n" +
 	"\x0fAutoRenewalTask\x12\x12\n" +
 	"\x04cron\x18\x01 \x01(\tR\x04cron\x12\x18\n" +
-	"\aenabled\x18\x02 \x01(\bR\aenabled\"\xd9\x01\n" +
+	"\aenabled\x18\x02 \x01(\bR\aenabled\"\x96\x02\n" +
 	"\x03Log\x12\x14\n" +
 	"\x05level\x18\x01 \x01(\tR\x05level\x12\x16\n" +
 	"\x06format\x18\x02 \x01(\tR\x06format\x12\x16\n" +
-	"\x06output\x18\x03 \x01(\tR\x06output\x12\x1b\n" +
-	"\tfile_path\x18\x04 \x01(\tR\bfilePath\x12\x19\n" +
+	"\x06output\x18\x03 \x01(\tR\x06output\x12\x19\n" +
 	"\bmax_size\x18\x05 \x01(\x05R\amaxSize\x12\x17\n" +
 	"\amax_age\x18\x06 \x01(\x05R\x06maxAge\x12\x1f\n" +
 	"\vmax_backups\x18\a \x01(\x05R\n" +
 	"maxBackups\x12\x1a\n" +
-	"\bcompress\x18\b \x01(\bR\bcompressB)Z'subscription-service/internal/conf;confb\x06proto3"
+	"\bcompress\x18\b \x01(\bR\bcompress\x12(\n" +
+	"\x10server_file_path\x18\t \x01(\tR\x0eserverFilePath\x12.\n" +
+	"\x13scheduler_file_path\x18\n" +
+	" \x01(\tR\x11schedulerFilePathB)Z'subscription-service/internal/conf;confb\x06proto3"
 
 var (
 	file_conf_proto_rawDescOnce sync.Once

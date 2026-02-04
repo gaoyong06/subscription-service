@@ -21,9 +21,7 @@ import (
 // Injectors from wire.go:
 
 // wireApp 初始化应用
-func wireApp(bootstrap *conf.Bootstrap) (*SchedulerApp, func(), error) {
-	log := bootstrap.Log
-	logger := newLogger(log)
+func wireApp(bootstrap *conf.Bootstrap, logger log.Logger) (*SchedulerApp, func(), error) {
 	db := data.NewDB(bootstrap)
 	client := data.NewRedis(bootstrap)
 	dataData, cleanup, err := data.NewData(bootstrap, logger, db, client)

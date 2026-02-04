@@ -19,11 +19,11 @@ type SchedulerApp struct {
 }
 
 // wireApp 初始化应用
-func wireApp(*conf.Bootstrap) (*SchedulerApp, func(), error) {
+func wireApp(*conf.Bootstrap, log.Logger) (*SchedulerApp, func(), error) {
 	panic(wire.Build(
 		// Logger
-		wire.FieldsOf(new(*conf.Bootstrap), "Log"),
-		newLogger,
+		// wire.FieldsOf(new(*conf.Bootstrap), "Log"),
+		// newLogger,
 
 		// Data 层
 		data.ProviderSet,

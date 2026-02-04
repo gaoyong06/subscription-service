@@ -9,7 +9,7 @@ server:
 data:
   database:
     driver: mysql
-    source: root:@tcp(localhost:3306)/subscription_service?charset=utf8mb4&parseTime=True&loc=Local
+    source: root:@tcp(127.0.0.1:3306)/subscription_service?charset=utf8mb4&parseTime=True&loc=Local
     max_idle_conns: 10
     max_open_conns: 100
     conn_max_lifetime: 3600s
@@ -25,9 +25,9 @@ data:
 
 client:
   payment_service:
-    addr: localhost:9101
+    addr: 127.0.0.1:9101  
   marketing_service:
-    addr: localhost:9105
+    addr: 127.0.0.1:9105
 
 subscription:
   return_url: "http://localhost:8080/subscription/success"
@@ -49,7 +49,8 @@ log:
   level: info  # debug, info, warn, error
   format: json # json, console
   output: both # stdout, file, both
-  file_path: logs/subscription-service.log
+  server_file_path: logs/subscription-server.log
+  scheduler_file_path: logs/subscription-scheduler.log
   max_size: 100  # MB
   max_age: 30    # days
   max_backups: 10

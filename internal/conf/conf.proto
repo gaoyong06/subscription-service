@@ -103,10 +103,12 @@ message Log {
   string level = 1;
   string format = 2;
   string output = 3;
-  string file_path = 4;
+  // string file_path = 4;
   int32 max_size = 5;        // MB
   int32 max_age = 6;         // 天
   int32 max_backups = 7;
   bool compress = 8;
+  string server_file_path = 9;
+  string scheduler_file_path = 10;
 }
 

@@ -2,8 +2,6 @@ module subscription-service
 
 go 1.25.1
 
-toolchain go1.25.1
-
 require (
 	github.com/envoyproxy/protoc-gen-validate v1.2.1
 	github.com/gaoyong06/go-pkg v0.0.0-20260105101952-4ec82d3d2399

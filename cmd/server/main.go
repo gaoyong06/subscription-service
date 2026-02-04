@@ -88,20 +88,25 @@ func main() {
 		panic(fmt.Sprintf("config validation failed: %v", err))
 	}
 
-	logCfg := &logger.Config{
-		Level:    "info",
-		Format:   "json",
-		Output:   "stdout",
-		FilePath: "",
+	// 初始化日志 (使用 go-pkg/logger)
+	var logConfig *logger.Config
+	if bc.Log != nil {
+		logConfig = &logger.Config{
+			Level:      bc.Log.Level,
+			Format:     bc.Log.Format,
+			Output:     bc.Log.Output,
+			FilePath:   bc.Log.ServerFilePath,
+			MaxSize:    int(bc.Log.MaxSize),
+			MaxAge:     int(bc.Log.MaxAge),
+			MaxBackups: int(bc.Log.MaxBackups),
+			Compress:   bc.Log.Compress,
+		}
 	}
-	appLogger := logger.NewLogger(logCfg)
-	appLogger = log.With(appLogger,
-		"ts", log.DefaultTimestamp,
-		"caller", log.DefaultCaller,
-		"service.id", id,
-		"service.name", Name,
-		"service.version", Version,
-	)
+
+	appLogger, _ := logger.InitLogger(logConfig, id, Name, Version)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	// 注意：错误管理器的初始化在 internal/errors/code.go 的 init() 函数中完成
 	// 服务必须从项目根目录启动，这样相对路径 "i18n" 才能正确工作

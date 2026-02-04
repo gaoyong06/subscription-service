@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,16 +10,21 @@ import (
 
 	"subscription-service/internal/conf"
 
+	"github.com/gaoyong06/go-pkg/logger"
 	pkgutils "github.com/gaoyong06/go-pkg/utils"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
+	"github.com/go-kratos/kratos/v2/log"
 	"github.com/robfig/cron/v3"
 	_ "go.uber.org/automaxprocs"
 )
 
 var (
+	Name     = "subscription-scheduler"
+	Version  = "v1.0.0"
 	flagconf string
 	runMode  string
+	id, _    = os.Hostname()
 )
 
 func init() {
@@ -60,8 +64,25 @@ func main() {
 		panic(err)
 	}
 
+	// 初始化日志 (使用 go-pkg/logger)
+	var logConfig *logger.Config
+	if bc.Log != nil {
+		logConfig = &logger.Config{
+			Level:      bc.Log.Level,
+			Format:     bc.Log.Format,
+			Output:     bc.Log.Output,
+			FilePath:   bc.Log.SchedulerFilePath,
+			MaxSize:    int(bc.Log.MaxSize),
+			MaxAge:     int(bc.Log.MaxAge),
+			MaxBackups: int(bc.Log.MaxBackups),
+			Compress:   bc.Log.Compress,
+		}
+	}
+	appLogger, _ := logger.InitLogger(logConfig, id, Name, Version)
+	h := log.NewHelper(appLogger)
+
 	// 初始化应用
-	app, cleanup, err := wireApp(&bc)
+	app, cleanup, err := wireApp(&bc, appLogger)
 	if err != nil {
 		panic(err)
 	}
@@ -69,8 +90,8 @@ func main() {
 
 	// 从配置中获取参数
 	// 订阅业务配置
-	autoRenewDaysBefore := 3  // 默认值
-	expiryCheckDays := 7       // 默认值
+	autoRenewDaysBefore := 3 // 默认值
+	expiryCheckDays := 7     // 默认值
 	if bc.GetSubscription() != nil {
 		subConf := bc.GetSubscription()
 		if subConf.GetAutoRenewDaysBefore() > 0 {
@@ -120,25 +141,25 @@ func main() {
 				cronExpr = expiryCheckTask.GetCron()
 			}
 			_, err := cronScheduler.AddFunc(cronExpr, func() {
-				log.Println("[SCHEDULER] Starting subscription expiration check...")
+				h.Info("[SCHEDULER] Starting subscription expiration check...")
 				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 				defer cancel()
 
 				count, uids, err := app.subscriptionUsecase.UpdateExpiredSubscriptions(ctx)
 				if err != nil {
-					log.Printf("[SCHEDULER] Error updating expired subscriptions: %v", err)
+					h.Errorf("[SCHEDULER] Error updating expired subscriptions: %v", err)
 				} else {
-					log.Printf("[SCHEDULER] Updated %d expired subscriptions: %v", count, uids)
-					log.Println("[SCHEDULER] Finished subscription expiration check")
+					h.Infof("[SCHEDULER] Updated %d expired subscriptions: %v", count, uids)
+					h.Info("[SCHEDULER] Finished subscription expiration check")
 				}
 			})
 			if err != nil {
-				log.Printf("Failed to add expiration check job: %v", err)
+				h.Errorf("Failed to add expiration check job: %v", err)
 				panic(err)
 			}
-			log.Printf("Expiration check task registered: cron=%s", cronExpr)
+			h.Infof("Expiration check task registered: cron=%s", cronExpr)
 		} else {
-			log.Println("Expiration check task is disabled")
+			h.Info("Expiration check task is disabled")
 		}
 	}
 
@@ -151,31 +172,31 @@ func main() {
 				cronExpr = renewalReminderTask.GetCron()
 			}
 			_, err := cronScheduler.AddFunc(cronExpr, func() {
-				log.Println("[SCHEDULER] Starting renewal reminder check...")
+				h.Info("[SCHEDULER] Starting renewal reminder check...")
 				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 				defer cancel()
 
 				subscriptions, total, err := app.subscriptionUsecase.GetExpiringSubscriptions(ctx, expiryCheckDays, 1, 100)
 				if err != nil {
-					log.Printf("[SCHEDULER] Error getting expiring subscriptions: %v", err)
+					h.Errorf("[SCHEDULER] Error getting expiring subscriptions: %v", err)
 					return
 				}
 
-				log.Printf("[SCHEDULER] Found %d subscriptions expiring within %d days", total, expiryCheckDays)
+				h.Infof("[SCHEDULER] Found %d subscriptions expiring within %d days", total, expiryCheckDays)
 				for _, sub := range subscriptions {
 					// TODO: 发送续费提醒通知
-					log.Printf("[SCHEDULER] Reminder: User %s subscription (plan: %s) expires at %s",
+					h.Infof("[SCHEDULER] Reminder: User %s subscription (plan: %s) expires at %s",
 						sub.UserID, sub.PlanID, sub.EndTime.Format("2006-01-02 15:04:05"))
 				}
-				log.Println("[SCHEDULER] Finished renewal reminder check")
+				h.Info("[SCHEDULER] Finished renewal reminder check")
 			})
 			if err != nil {
-				log.Printf("Failed to add renewal reminder job: %v", err)
+				h.Errorf("Failed to add renewal reminder job: %v", err)
 				panic(err)
 			}
-			log.Printf("Renewal reminder task registered: cron=%s", cronExpr)
+			h.Infof("Renewal reminder task registered: cron=%s", cronExpr)
 		} else {
-			log.Println("Renewal reminder task is disabled")
+			h.Info("Renewal reminder task is disabled")
 		}
 	}
 
@@ -188,83 +209,83 @@ func main() {
 				cronExpr = autoRenewalTask.GetCron()
 			}
 			_, err := cronScheduler.AddFunc(cronExpr, func() {
-				log.Println("[SCHEDULER] Starting auto-renewal process...")
+				h.Info("[SCHEDULER] Starting auto-renewal process...")
 				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
 				defer cancel()
 
 				totalCount, successCount, failedCount, results, err := app.subscriptionUsecase.ProcessAutoRenewals(ctx, autoRenewDaysBefore, false)
 				if err != nil {
-					log.Printf("[SCHEDULER] Error processing auto-renewals: %v", err)
+					h.Errorf("[SCHEDULER] Error processing auto-renewals: %v", err)
 				} else {
-					log.Printf("[SCHEDULER] Auto-renewal completed: total=%d, success=%d, failed=%d",
+					h.Infof("[SCHEDULER] Auto-renewal completed: total=%d, success=%d, failed=%d",
 						totalCount, successCount, failedCount)
 
 					// 记录详细结果
 					for _, result := range results {
 						if result.Success {
-							log.Printf("[SCHEDULER] Auto-renewal success: user=%s, plan=%s, order=%s",
+							h.Infof("[SCHEDULER] Auto-renewal success: user=%s, plan=%s, order=%s",
 								result.UserID, result.PlanID, result.OrderID)
 						} else {
-							log.Printf("[SCHEDULER] Auto-renewal failed: user=%s, plan=%s, error=%s",
+							h.Infof("[SCHEDULER] Auto-renewal failed: user=%s, plan=%s, error=%s",
 								result.UserID, result.PlanID, result.ErrorMessage)
 						}
 					}
 				}
-				log.Println("[SCHEDULER] Finished auto-renewal process")
+				h.Info("[SCHEDULER] Finished auto-renewal process")
 			})
 			if err != nil {
-				log.Printf("Failed to add auto-renewal job: %v", err)
+				h.Errorf("Failed to add auto-renewal job: %v", err)
 				panic(err)
 			}
-			log.Printf("Auto-renewal task registered: cron=%s", cronExpr)
+			h.Infof("Auto-renewal task registered: cron=%s", cronExpr)
 		} else {
-			log.Println("Auto-renewal task is disabled")
+			h.Info("Auto-renewal task is disabled")
 		}
 	}
 
 	// 启动定时任务
 	cronScheduler.Start()
-	log.Println("========================================")
-	log.Println("Scheduler started successfully")
-	log.Println("Scheduled jobs:")
+	h.Info("========================================")
+	h.Info("Scheduler started successfully")
+	h.Info("Scheduled jobs:")
 	if bc.GetScheduler() != nil {
 		if bc.GetScheduler().GetExpiryCheck() != nil && bc.GetScheduler().GetExpiryCheck().GetEnabled() {
 			cronExpr := cronExpiryCheck
 			if bc.GetScheduler().GetExpiryCheck().GetCron() != "" {
 				cronExpr = bc.GetScheduler().GetExpiryCheck().GetCron()
 			}
-			log.Printf("  - Expiration check:  %s", cronExpr)
+			h.Infof("  - Expiration check:  %s", cronExpr)
 		}
 		if bc.GetScheduler().GetRenewalReminder() != nil && bc.GetScheduler().GetRenewalReminder().GetEnabled() {
 			cronExpr := cronRenewalReminder
 			if bc.GetScheduler().GetRenewalReminder().GetCron() != "" {
 				cronExpr = bc.GetScheduler().GetRenewalReminder().GetCron()
 			}
-			log.Printf("  - Renewal reminder:  %s", cronExpr)
+			h.Infof("  - Renewal reminder:  %s", cronExpr)
 		}
 		if bc.GetScheduler().GetAutoRenewal() != nil && bc.GetScheduler().GetAutoRenewal().GetEnabled() {
 			cronExpr := cronAutoRenewal
 			if bc.GetScheduler().GetAutoRenewal().GetCron() != "" {
 				cronExpr = bc.GetScheduler().GetAutoRenewal().GetCron()
 			}
-			log.Printf("  - Auto-renewal:      %s", cronExpr)
+			h.Infof("  - Auto-renewal:      %s", cronExpr)
 		}
 	}
-	log.Println("========================================")
+	h.Info("========================================")
 
 	// 优雅退出
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Shutting down gracefully...")
+	h.Info("Shutting down gracefully...")
 
 	// 停止定时任务
 	ctx := cronScheduler.Stop()
 	select {
 	case <-ctx.Done():
-		log.Println("Scheduler stopped gracefully")
+		h.Info("Scheduler stopped gracefully")
 	case <-time.After(5 * time.Second):
-		log.Println("Scheduler forced to stop after timeout")
+		h.Info("Scheduler forced to stop after timeout")
 	}
 }

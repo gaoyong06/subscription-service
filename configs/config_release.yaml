@@ -51,7 +51,9 @@ log:
   level: info # debug, info, warn, error
   format: json # json, console
   output: both # stdout, file, both
-  file_path: /var/log/subscription-service/subscription-service.log
+  # file_path: /var/log/subscription-service/subscription-service.log
+  server_file_path: /var/log/subscription-service/subscription-server.log
+  scheduler_file_path: /var/log/subscription-service/subscription-scheduler.log
   max_size: 100 # MB
   max_age: 30 # days
   max_backups: 10
