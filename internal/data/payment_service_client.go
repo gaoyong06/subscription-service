@@ -9,8 +9,8 @@ import (
 
 	paymentv1 "payment-service/api/payment/v1"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/transport/grpc"
 )
 
 type paymentServiceClient struct {
@@ -26,7 +26,13 @@ func NewPaymentClient(c *conf.Bootstrap) (biz.PaymentClient, error) {
 		return nil, fmt.Errorf("payment service address is required")
 	}
 
-	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.DialInsecure(
+		context.Background(),
+		grpc.WithEndpoint(addr),
+		grpc.WithMiddleware(
+			recovery.Recovery(),
+		),
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -8,8 +8,8 @@ import (
 
 	passportv1 "passport-service/api/passport/v1"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"github.com/go-kratos/kratos/v2/middleware/recovery"
+	"github.com/go-kratos/kratos/v2/transport/grpc"
 )
 
 type passportServiceClient struct {
@@ -27,7 +27,13 @@ func NewPassportClient(c *conf.Bootstrap) (biz.PassportClient, error) {
 		return &emptyPassportClient{}, nil
 	}
 
-	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.DialInsecure(
+		context.Background(),
+		grpc.WithEndpoint(addr),
+		grpc.WithMiddleware(
+			recovery.Recovery(),
+		),
+	)
 	if err != nil {
 		// 如果连接失败，返回空实现（优雅降级）
 		return &emptyPassportClient{}, nil
