@@ -1,6 +1,8 @@
 package errors
 
 import (
+	"net/http"
+
 	pkgErrors "github.com/gaoyong06/go-pkg/errors"
 	i18nPkg "github.com/gaoyong06/go-pkg/middleware/i18n"
 )
@@ -8,6 +10,21 @@ import (
 func init() {
 	// 初始化全局错误管理器（使用项目特定的配置）
 	pkgErrors.InitGlobalErrorManager("i18n", i18nPkg.Language)
+
+	// 业务错误码和http status错误码映射
+	pkgErrors.RegisterHTTPStatusMapping("subscription-service", map[int]int{
+		ErrCodePlanNotFound:         http.StatusNotFound,
+		ErrCodeSubscriptionNotFound: http.StatusNotFound,
+		ErrCodeInvalidStatus:        http.StatusBadRequest,
+		ErrCodeOrderNotFound:        http.StatusNotFound,
+		ErrCodeOrderAlreadyPaid:     http.StatusConflict,
+		ErrCodeCannotCancelStatus:   http.StatusConflict,
+		ErrCodeCannotPauseStatus:    http.StatusConflict,
+		ErrCodeCannotResumeStatus:   http.StatusConflict,
+		ErrCodeCannotSetAutoRenew:   http.StatusConflict,
+		ErrCodeOrderCreateFailed:    http.StatusInternalServerError,
+		ErrCodePaymentFailed:        http.StatusBadGateway,
+	})
 }
 
 // 订阅服务错误码定义
@@ -22,24 +39,14 @@ func init() {
 const (
 	// ErrCodePlanNotFound 套餐不存在错误
 	ErrCodePlanNotFound = 130101
-	// ErrCodePlanPriceInvalid 套餐价格无效错误
-	ErrCodePlanPriceInvalid = 130102
-	// ErrCodePlanPricingNotFound 套餐区域定价不存在错误
-	ErrCodePlanPricingNotFound = 130103
 )
 
 // 订阅生命周期模块 (130200-130299)
 const (
 	// ErrCodeSubscriptionNotFound 订阅不存在错误
 	ErrCodeSubscriptionNotFound = 130201
-	// ErrCodeSubscriptionNotActive 订阅未激活错误
-	ErrCodeSubscriptionNotActive = 130202
-	// ErrCodeSubscriptionExpired 订阅已过期错误
-	ErrCodeSubscriptionExpired = 130203
 	// ErrCodeInvalidStatus 无效的订阅状态错误
 	ErrCodeInvalidStatus = 130204
-	// ErrCodeAlreadySubscribed 用户已有活跃订阅错误
-	ErrCodeAlreadySubscribed = 130205
 	// ErrCodeCannotCancelStatus 当前状态无法取消订阅错误
 	ErrCodeCannotCancelStatus = 130206
 	// ErrCodeCannotPauseStatus 当前状态无法暂停订阅错误
@@ -64,6 +71,4 @@ const (
 const (
 	// ErrCodePaymentFailed 支付服务错误
 	ErrCodePaymentFailed = 130401
-	// ErrCodePaymentInvalidAmount 支付金额无效错误
-	ErrCodePaymentInvalidAmount = 130402
 )

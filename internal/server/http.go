@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/gaoyong06/go-pkg/health"
+	pkgmetrics "github.com/gaoyong06/go-pkg/metrics"
 	"github.com/gaoyong06/go-pkg/middleware/app_id"
 	"github.com/gaoyong06/go-pkg/middleware/developer_id"
 	"github.com/gaoyong06/go-pkg/middleware/i18n"
@@ -30,9 +31,12 @@ func NewHTTPServer(c *conf.Bootstrap, sub *service.SubscriptionService, logger l
 	// 使用默认错误处理器（已支持 Kratos errors 的 HTTP 状态码映射）
 	errorHandler := response.NewDefaultErrorHandler()
 
+	prom := pkgmetrics.NewPrometheusDefaultRegistry("subscription-service", pkgmetrics.NewDefaultHTTPStatusCodeGetter("subscription-service"))
+
 	var opts = []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),
+			prom.HTTPMiddleware(),
 			// 添加 app_id 中间件（优先于其他中间件，确保 app_id 在 Context 中可用）
 			app_id.Middleware(),
 			// 添加 developer_id 中间件（提取开发者 ID，由 API Gateway 的 api-key 插件设置）
@@ -56,6 +60,7 @@ func NewHTTPServer(c *conf.Bootstrap, sub *service.SubscriptionService, logger l
 		}
 	}
 	srv := http.NewServer(opts...)
+	prom.RegisterHTTPMetricsEndpoint(srv)
 
 	// 注册业务路由
 	v1.RegisterSubscriptionHTTPServer(srv, sub)
