@@ -754,6 +754,9 @@ components:
                     format: int32
                 type:
                     type: string
+                appId:
+                    type: string
+                    description: 目标应用 ID（控制台多应用场景下以本字段为准；为空则与 ListPlans 相同，回退到网关上下文）
         CreateSubscriptionOrderReply:
             type: object
             properties:

@@ -331,6 +331,17 @@ func (m *CreatePlanRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
+	if l := utf8.RuneCountInString(m.GetAppId()); l < 1 || l > 64 {
+		err := CreatePlanRequestValidationError{
+			field:  "AppId",
+			reason: "value length must be between 1 and 64 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
 	if len(errors) > 0 {
 		return CreatePlanRequestMultiError(errors)
 	}

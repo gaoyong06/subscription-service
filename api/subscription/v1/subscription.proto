@@ -188,6 +188,8 @@ message CreatePlanRequest {
   string currency = 4 [(validate.rules).string = {len: 3}];
   int32 durationDays = 5 [(validate.rules).int32 = {gt: 0}];
   string type = 6 [(validate.rules).string = {min_len: 1}];
+  // 目标应用 ID（与 SDK / 控制台约定一致，必填）
+  string appId = 7 [(validate.rules).string = {min_len: 1, max_len: 64}];
 }
 
 message CreatePlanReply {

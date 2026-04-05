@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"strings"
+
 	pb "subscription-service/api/subscription/v1"
 	"subscription-service/internal/auth"
 	"subscription-service/internal/biz"
@@ -31,8 +33,11 @@ func NewSubscriptionService(uc *biz.SubscriptionUsecase) *SubscriptionService {
 // ListPlans 获取所有订阅套餐列表
 // 返回系统中所有可用的订阅套餐信息
 func (s *SubscriptionService) ListPlans(ctx context.Context, req *pb.ListPlansRequest) (*pb.ListPlansReply, error) {
-	// 获取 app_id（只从 Context，由中间件从 Header 提取）
-	appID := app_id.GetAppIDFromContext(ctx)
+	// 优先使用 Query 中的 appId（与 ListPlansRequest 绑定），避免控制台代理固定注入的 X-App-Id 与当前应用不一致
+	appID := strings.TrimSpace(req.GetAppId())
+	if appID == "" {
+		appID = app_id.GetAppIDFromContext(ctx)
+	}
 	if appID == "" {
 		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
 	}
@@ -59,10 +64,9 @@ func (s *SubscriptionService) ListPlans(ctx context.Context, req *pb.ListPlansRe
 	return &pb.ListPlansReply{Plans: pbPlans}, nil
 }
 
-// CreatePlan 创建订阅套餐
+// CreatePlan 创建订阅套餐（请求体 appId 必填，与 Proto 校验一致）
 func (s *SubscriptionService) CreatePlan(ctx context.Context, req *pb.CreatePlanRequest) (*pb.CreatePlanReply, error) {
-	// 获取 app_id（只从 Context，由中间件从 Header 提取）
-	appID := app_id.GetAppIDFromContext(ctx)
+	appID := strings.TrimSpace(req.GetAppId())
 	if appID == "" {
 		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
 	}
