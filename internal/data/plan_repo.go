@@ -37,15 +37,17 @@ func (r *planRepo) ListPlans(ctx context.Context, appID string) ([]*biz.Plan, er
 	plans := make([]*biz.Plan, len(models))
 	for i, m := range models {
 		plans[i] = &biz.Plan{
-			PlanID:       m.PlanID,
-			AppID:        m.AppID,
-			UserID:       m.UserID,
-			Name:         m.Name,
-			Description:  m.Description,
-			Price:        m.Price,
-			Currency:     m.Currency,
-			DurationDays: m.DurationDays,
-			Type:         m.Type,
+			PlanID:        m.PlanID,
+			AppID:         m.AppID,
+			UserID:        m.UserID,
+			Name:          m.Name,
+			Description:   m.Description,
+			Price:         m.Price,
+			Currency:      m.Currency,
+			PeriodType:    m.PeriodType,
+			IntervalCount: m.IntervalCount,
+			Features:      decodePlanFeaturesJSON(m.Features),
+			Type:          m.Type,
 		}
 	}
 	return plans, nil
@@ -59,30 +61,34 @@ func (r *planRepo) GetPlan(ctx context.Context, id string) (*biz.Plan, error) {
 		return nil, err
 	}
 	return &biz.Plan{
-		PlanID:       m.PlanID,
-		AppID:        m.AppID,
-		UserID:       m.UserID,
-		Name:         m.Name,
-		Description:  m.Description,
-		Price:        m.Price,
-		Currency:     m.Currency,
-		DurationDays: m.DurationDays,
-		Type:         m.Type,
+		PlanID:        m.PlanID,
+		AppID:         m.AppID,
+		UserID:        m.UserID,
+		Name:          m.Name,
+		Description:   m.Description,
+		Price:         m.Price,
+		Currency:      m.Currency,
+		PeriodType:    m.PeriodType,
+		IntervalCount: m.IntervalCount,
+		Features:      decodePlanFeaturesJSON(m.Features),
+		Type:          m.Type,
 	}, nil
 }
 
 // CreatePlan 创建套餐
 func (r *planRepo) CreatePlan(ctx context.Context, plan *biz.Plan) error {
 	m := &model.Plan{
-		PlanID:       plan.PlanID,
-		AppID:        plan.AppID,
-		UserID:       plan.UserID,
-		Name:         plan.Name,
-		Description:  plan.Description,
-		Price:        plan.Price,
-		Currency:     plan.Currency,
-		DurationDays: plan.DurationDays,
-		Type:         plan.Type,
+		PlanID:        plan.PlanID,
+		AppID:         plan.AppID,
+		UserID:        plan.UserID,
+		Name:          plan.Name,
+		Description:   plan.Description,
+		Price:         plan.Price,
+		Currency:      plan.Currency,
+		PeriodType:    plan.PeriodType,
+		IntervalCount: plan.IntervalCount,
+		Features:      encodePlanFeaturesJSON(plan.Features),
+		Type:          plan.Type,
 	}
 	if err := r.data.db.WithContext(ctx).Create(m).Error; err != nil {
 		r.log.Errorf("Failed to create plan: %v", err)
@@ -94,15 +100,17 @@ func (r *planRepo) CreatePlan(ctx context.Context, plan *biz.Plan) error {
 // UpdatePlan 更新套餐
 func (r *planRepo) UpdatePlan(ctx context.Context, plan *biz.Plan) error {
 	m := &model.Plan{
-		PlanID:       plan.PlanID,
-		AppID:        plan.AppID,
-		UserID:       plan.UserID,
-		Name:         plan.Name,
-		Description:  plan.Description,
-		Price:        plan.Price,
-		Currency:     plan.Currency,
-		DurationDays: plan.DurationDays,
-		Type:         plan.Type,
+		PlanID:        plan.PlanID,
+		AppID:         plan.AppID,
+		UserID:        plan.UserID,
+		Name:          plan.Name,
+		Description:   plan.Description,
+		Price:         plan.Price,
+		Currency:      plan.Currency,
+		PeriodType:    plan.PeriodType,
+		IntervalCount: plan.IntervalCount,
+		Features:      encodePlanFeaturesJSON(plan.Features),
+		Type:          plan.Type,
 	}
 	if err := r.data.db.WithContext(ctx).Model(&model.Plan{}).Where("plan_id = ?", plan.PlanID).Updates(m).Error; err != nil {
 		r.log.Errorf("Failed to update plan: %v", err)

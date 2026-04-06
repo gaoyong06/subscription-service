@@ -9,10 +9,12 @@ type Plan struct {
 	UserID       string    `gorm:"column:user_id;not null;index:idx_user_id;index:idx_app_user_id"` // 开发者ID（用户ID）
 	Name         string    `gorm:"column:name"`
 	Description  string    `gorm:"column:description"`
-	Price        float64   `gorm:"column:price"`                  // 默认价格（用于兜底）
-	Currency     string    `gorm:"column:currency;default:'USD'"` // 默认币种（用于兜底）
-	DurationDays int       `gorm:"column:duration_days"`
-	Type         string    `gorm:"column:type"`
+	Price          float64 `gorm:"column:price"`                  // 默认价格（用于兜底）
+	Currency       string  `gorm:"column:currency;default:'USD'"` // 默认币种（用于兜底）
+	PeriodType     string  `gorm:"column:period_type;type:varchar(16);not null;default:'MONTH'"`
+	IntervalCount  int32   `gorm:"column:interval_count;not null;default:1"`
+	Features       string  `gorm:"column:features;type:json"` // JSON 数组，元素为 i18n key
+	Type           string  `gorm:"column:type"`
 	CreatedAt    time.Time `gorm:"column:created_at;autoCreateTime"`
 	UpdatedAt    time.Time `gorm:"column:updated_at;autoUpdateTime"`
 }

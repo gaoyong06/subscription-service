@@ -7,8 +7,9 @@ type UserSubscription struct {
 	SubscriptionID uint64    `gorm:"primaryKey;column:subscription_id;autoIncrement"`
 	UserID         string    `gorm:"column:user_id;type:varchar(36);uniqueIndex;not null"`          // 用户ID（字符串 UUID）
 	PlanID         string    `gorm:"column:plan_id;not null"`                                       // 套餐ID
-	AppID          string    `gorm:"column:app_id;not null;index:idx_app_id;index:idx_app_user_id"` // 应用ID（冗余字段，便于按app统计和查询）
-	StartTime      time.Time `gorm:"column:start_time;not null"`
+	AppID             string    `gorm:"column:app_id;not null;index:idx_app_id;index:idx_app_user_id"` // 应用ID（冗余字段，便于按app统计和查询）
+	BillingAnchorDay  int32     `gorm:"column:billing_anchor_day;not null;default:0"`
+	StartTime         time.Time `gorm:"column:start_time;not null"`
 	EndTime        time.Time `gorm:"column:end_time;not null"`
 	Status         string    `gorm:"column:status;type:enum('active','expired','paused','cancelled');not null;default:'active'"` // 订阅状态: active-活跃(订阅有效中), expired-过期(订阅已过期), paused-暂停(用户主动暂停), cancelled-已取消(用户主动取消)
 	OrderID        string    `gorm:"column:order_id;not null;index"`

@@ -49,16 +49,11 @@ func (s *SubscriptionService) ListPlans(ctx context.Context, req *pb.ListPlansRe
 
 	pbPlans := make([]*pb.Plan, len(plans))
 	for i, p := range plans {
-		pbPlans[i] = &pb.Plan{
-			PlanId:       p.PlanID,
-			AppId:        p.AppID,
-			Name:         p.Name,
-			Description:  p.Description,
-			Price:        p.Price,
-			Currency:     p.Currency,
-			DurationDays: int32(p.DurationDays),
-			Type:         p.Type,
+		pp, err := s.bizPlanToPB(ctx, p)
+		if err != nil {
+			return nil, err
 		}
+		pbPlans[i] = pp
 	}
 
 	return &pb.ListPlansReply{Plans: pbPlans}, nil
@@ -77,32 +72,36 @@ func (s *SubscriptionService) CreatePlan(ctx context.Context, req *pb.CreatePlan
 		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
 	}
 
+	periodType := biz.NormalizePeriodType(req.GetPeriodType())
+	if err := biz.ValidatePlanPeriod(periodType, req.GetIntervalCount()); err != nil {
+		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+	}
+	intervalCount := req.GetIntervalCount()
+	if periodType == constants.PeriodTypeForever {
+		intervalCount = 0
+	}
+
 	plan := &biz.Plan{
-		PlanID:       uuid.New().String(),
-		AppID:        appID,
-		UserID:       developerID, // 开发者 ID（用户 ID）
-		Name:         req.Name,
-		Description:  req.Description,
-		Price:        req.Price,
-		Currency:     req.Currency,
-		DurationDays: int(req.DurationDays),
-		Type:         req.Type,
+		PlanID:        uuid.New().String(),
+		AppID:         appID,
+		UserID:        developerID, // 开发者 ID（用户 ID）
+		Name:          req.Name,
+		Description:   req.Description,
+		Price:         req.Price,
+		Currency:      req.Currency,
+		PeriodType:    periodType,
+		IntervalCount: intervalCount,
+		Features:      append([]string(nil), req.GetFeatures()...),
+		Type:          req.Type,
 	}
 	if err := s.uc.CreatePlan(ctx, plan); err != nil {
 		return nil, err
 	}
-	return &pb.CreatePlanReply{
-		Plan: &pb.Plan{
-			PlanId:       plan.PlanID,
-			AppId:        plan.AppID,
-			Name:         plan.Name,
-			Description:  plan.Description,
-			Price:        plan.Price,
-			Currency:     plan.Currency,
-			DurationDays: int32(plan.DurationDays),
-			Type:         plan.Type,
-		},
-	}, nil
+	pp, err := s.bizPlanToPB(ctx, plan)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.CreatePlanReply{Plan: pp}, nil
 }
 
 // UpdatePlan 更新订阅套餐
@@ -114,30 +113,49 @@ func (s *SubscriptionService) UpdatePlan(ctx context.Context, req *pb.UpdatePlan
 	}
 
 	plan := &biz.Plan{
-		PlanID:       req.PlanId,
-		AppID:        existing.AppID, // 保留原有的 AppID
-		Name:         req.Name,
-		Description:  req.Description,
-		Price:        req.Price,
-		Currency:     req.Currency,
-		DurationDays: int(req.DurationDays),
-		Type:         req.Type,
+		PlanID:        req.PlanId,
+		AppID:         existing.AppID,
+		UserID:        existing.UserID,
+		Name:          req.GetName(),
+		Description:   req.GetDescription(),
+		Price:         req.GetPrice(),
+		Currency:      req.GetCurrency(),
+		Type:          req.GetType(),
+		PeriodType:    existing.PeriodType,
+		IntervalCount: existing.IntervalCount,
+		Features:      append([]string(nil), existing.Features...),
+	}
+	if strings.TrimSpace(plan.Name) == "" {
+		plan.Name = existing.Name
+	}
+	if strings.TrimSpace(plan.Currency) == "" {
+		plan.Currency = existing.Currency
+	}
+	if strings.TrimSpace(plan.Type) == "" {
+		plan.Type = existing.Type
+	}
+	if strings.TrimSpace(req.GetPeriodType()) != "" {
+		plan.PeriodType = biz.NormalizePeriodType(req.GetPeriodType())
+	}
+	if plan.PeriodType == constants.PeriodTypeForever {
+		plan.IntervalCount = 0
+	} else if req.GetIntervalCount() > 0 {
+		plan.IntervalCount = req.GetIntervalCount()
+	}
+	if req.Features != nil {
+		plan.Features = append([]string(nil), req.Features...)
+	}
+	if err := biz.ValidatePlanPeriod(plan.PeriodType, plan.IntervalCount); err != nil {
+		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
 	}
 	if err := s.uc.UpdatePlan(ctx, plan); err != nil {
 		return nil, err
 	}
-	return &pb.UpdatePlanReply{
-		Plan: &pb.Plan{
-			PlanId:       plan.PlanID,
-			AppId:        plan.AppID,
-			Name:         plan.Name,
-			Description:  plan.Description,
-			Price:        plan.Price,
-			Currency:     plan.Currency,
-			DurationDays: int32(plan.DurationDays),
-			Type:         plan.Type,
-		},
-	}, nil
+	pp, err := s.bizPlanToPB(ctx, plan)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UpdatePlanReply{Plan: pp}, nil
 }
 
 // DeletePlan 删除订阅套餐

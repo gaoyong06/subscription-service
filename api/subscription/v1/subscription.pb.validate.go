@@ -66,11 +66,47 @@ func (m *Plan) validate(all bool) error {
 
 	// no validation rules for Currency
 
-	// no validation rules for DurationDays
-
 	// no validation rules for Type
 
 	// no validation rules for AppId
+
+	// no validation rules for PeriodType
+
+	// no validation rules for IntervalCount
+
+	for idx, item := range m.GetPricings() {
+		_, _ = idx, item
+
+		if all {
+			switch v := interface{}(item).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, PlanValidationError{
+						field:  fmt.Sprintf("Pricings[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, PlanValidationError{
+						field:  fmt.Sprintf("Pricings[%v]", idx),
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(item).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return PlanValidationError{
+					field:  fmt.Sprintf("Pricings[%v]", idx),
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
 
 	if len(errors) > 0 {
 		return PlanMultiError(errors)
@@ -309,17 +345,6 @@ func (m *CreatePlanRequest) validate(all bool) error {
 
 	}
 
-	if m.GetDurationDays() <= 0 {
-		err := CreatePlanRequestValidationError{
-			field:  "DurationDays",
-			reason: "value must be greater than 0",
-		}
-		if !all {
-			return err
-		}
-		errors = append(errors, err)
-	}
-
 	if utf8.RuneCountInString(m.GetType()) < 1 {
 		err := CreatePlanRequestValidationError{
 			field:  "Type",
@@ -335,6 +360,28 @@ func (m *CreatePlanRequest) validate(all bool) error {
 		err := CreatePlanRequestValidationError{
 			field:  "AppId",
 			reason: "value length must be between 1 and 64 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if _, ok := _CreatePlanRequest_PeriodType_InLookup[m.GetPeriodType()]; !ok {
+		err := CreatePlanRequestValidationError{
+			field:  "PeriodType",
+			reason: "value must be in list [DAY MONTH YEAR FOREVER]",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetIntervalCount() < 0 {
+		err := CreatePlanRequestValidationError{
+			field:  "IntervalCount",
+			reason: "value must be greater than or equal to 0",
 		}
 		if !all {
 			return err
@@ -421,6 +468,13 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = CreatePlanRequestValidationError{}
+
+var _CreatePlanRequest_PeriodType_InLookup = map[string]struct{}{
+	"DAY":     {},
+	"MONTH":   {},
+	"YEAR":    {},
+	"FOREVER": {},
+}
 
 // Validate checks the field values on CreatePlanReply with the rules defined
 // in the proto definition for this message. If any rules are violated, the
@@ -592,9 +646,11 @@ func (m *UpdatePlanRequest) validate(all bool) error {
 
 	// no validation rules for Currency
 
-	// no validation rules for DurationDays
-
 	// no validation rules for Type
+
+	// no validation rules for PeriodType
+
+	// no validation rules for IntervalCount
 
 	if len(errors) > 0 {
 		return UpdatePlanRequestMultiError(errors)

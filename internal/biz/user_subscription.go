@@ -18,9 +18,10 @@ type UserSubscription struct {
 	SubscriptionID uint64
 	UserID         string // 用户ID（字符串 UUID）
 	PlanID         string
-	AppID          string // 应用ID（冗余字段，便于按app统计和查询）
-	StartTime      time.Time
-	EndTime        time.Time
+	AppID             string // 应用ID（冗余字段，便于按app统计和查询）
+	BillingAnchorDay  int32  // 自然月/自然年续费锚点日（1–31）；DAY/FOREVER 为 0
+	StartTime         time.Time
+	EndTime           time.Time
 	Status         string // active, expired, paused, cancelled
 	OrderID        string
 	IsAutoRenew    bool

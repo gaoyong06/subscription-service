@@ -77,6 +77,14 @@ const (
 	PaymentStatusPartiallyRefunded = "partially_refunded" // 部分退款
 )
 
+// 套餐计费周期类型（与 subscription.v1 Plan.period_type 一致，UTC 自然历）
+const (
+	PeriodTypeDay     = "DAY"     // 每 interval_count 个自然日
+	PeriodTypeMonth   = "MONTH"   // 每 interval_count 个自然月（锚点日 + 短月取月末）
+	PeriodTypeYear    = "YEAR"    // 每 interval_count 个自然年
+	PeriodTypeForever = "FOREVER" // 终身/免费等，无周期扣款
+)
+
 // 支付来源常量（用于 payment-service）
 const (
 	// PaymentSourceBilling 充值来源

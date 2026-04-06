@@ -25,15 +25,21 @@ const (
 )
 
 type Plan struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	PlanId        string                 `protobuf:"bytes,1,opt,name=planId,proto3" json:"planId,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
-	Price         float64                `protobuf:"fixed64,4,opt,name=price,proto3" json:"price,omitempty"`
-	Currency      string                 `protobuf:"bytes,5,opt,name=currency,proto3" json:"currency,omitempty"`
-	DurationDays  int32                  `protobuf:"varint,6,opt,name=durationDays,proto3" json:"durationDays,omitempty"` // 持续天数
-	Type          string                 `protobuf:"bytes,7,opt,name=type,proto3" json:"type,omitempty"`                  // free, pro, enterprise
-	AppId         string                 `protobuf:"bytes,8,opt,name=appId,proto3" json:"appId,omitempty"`                // 应用ID
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	PlanId      string                 `protobuf:"bytes,1,opt,name=planId,proto3" json:"planId,omitempty"`
+	Name        string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Description string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
+	Price       float64                `protobuf:"fixed64,4,opt,name=price,proto3" json:"price,omitempty"`
+	Currency    string                 `protobuf:"bytes,5,opt,name=currency,proto3" json:"currency,omitempty"`
+	Type        string                 `protobuf:"bytes,7,opt,name=type,proto3" json:"type,omitempty"`   // free, pro, enterprise
+	AppId       string                 `protobuf:"bytes,8,opt,name=appId,proto3" json:"appId,omitempty"` // 应用ID
+	// 计费周期：DAY=每 interval_count 日；MONTH=自然月；YEAR=自然年；FOREVER=终身/免费（interval_count 忽略）
+	PeriodType    string `protobuf:"bytes,9,opt,name=period_type,json=periodType,proto3" json:"period_type,omitempty"`
+	IntervalCount int32  `protobuf:"varint,10,opt,name=interval_count,json=intervalCount,proto3" json:"interval_count,omitempty"`
+	// 权益文案 i18n key 列表（JSON 存储为字符串数组，仅 key）
+	Features []string `protobuf:"bytes,11,rep,name=features,proto3" json:"features,omitempty"`
+	// 区域定价（ListPlans 一次性返回，避免前端二次请求）
+	Pricings      []*PlanPricing `protobuf:"bytes,12,rep,name=pricings,proto3" json:"pricings,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -103,13 +109,6 @@ func (x *Plan) GetCurrency() string {
 	return ""
 }
 
-func (x *Plan) GetDurationDays() int32 {
-	if x != nil {
-		return x.DurationDays
-	}
-	return 0
-}
-
 func (x *Plan) GetType() string {
 	if x != nil {
 		return x.Type
@@ -122,6 +121,34 @@ func (x *Plan) GetAppId() string {
 		return x.AppId
 	}
 	return ""
+}
+
+func (x *Plan) GetPeriodType() string {
+	if x != nil {
+		return x.PeriodType
+	}
+	return ""
+}
+
+func (x *Plan) GetIntervalCount() int32 {
+	if x != nil {
+		return x.IntervalCount
+	}
+	return 0
+}
+
+func (x *Plan) GetFeatures() []string {
+	if x != nil {
+		return x.Features
+	}
+	return nil
+}
+
+func (x *Plan) GetPricings() []*PlanPricing {
+	if x != nil {
+		return x.Pricings
+	}
+	return nil
 }
 
 type ListPlansRequest struct {
@@ -169,15 +196,17 @@ func (x *ListPlansRequest) GetAppId() string {
 }
 
 type CreatePlanRequest struct {
-	state        protoimpl.MessageState `protogen:"open.v1"`
-	Name         string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Description  string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	Price        float64                `protobuf:"fixed64,3,opt,name=price,proto3" json:"price,omitempty"`
-	Currency     string                 `protobuf:"bytes,4,opt,name=currency,proto3" json:"currency,omitempty"`
-	DurationDays int32                  `protobuf:"varint,5,opt,name=durationDays,proto3" json:"durationDays,omitempty"`
-	Type         string                 `protobuf:"bytes,6,opt,name=type,proto3" json:"type,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Name        string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Description string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	Price       float64                `protobuf:"fixed64,3,opt,name=price,proto3" json:"price,omitempty"`
+	Currency    string                 `protobuf:"bytes,4,opt,name=currency,proto3" json:"currency,omitempty"`
+	Type        string                 `protobuf:"bytes,6,opt,name=type,proto3" json:"type,omitempty"`
 	// 目标应用 ID（与 SDK / 控制台约定一致，必填）
-	AppId         string `protobuf:"bytes,7,opt,name=appId,proto3" json:"appId,omitempty"`
+	AppId         string   `protobuf:"bytes,7,opt,name=appId,proto3" json:"appId,omitempty"`
+	PeriodType    string   `protobuf:"bytes,8,opt,name=period_type,json=periodType,proto3" json:"period_type,omitempty"`
+	IntervalCount int32    `protobuf:"varint,9,opt,name=interval_count,json=intervalCount,proto3" json:"interval_count,omitempty"`
+	Features      []string `protobuf:"bytes,10,rep,name=features,proto3" json:"features,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -240,13 +269,6 @@ func (x *CreatePlanRequest) GetCurrency() string {
 	return ""
 }
 
-func (x *CreatePlanRequest) GetDurationDays() int32 {
-	if x != nil {
-		return x.DurationDays
-	}
-	return 0
-}
-
 func (x *CreatePlanRequest) GetType() string {
 	if x != nil {
 		return x.Type
@@ -259,6 +281,27 @@ func (x *CreatePlanRequest) GetAppId() string {
 		return x.AppId
 	}
 	return ""
+}
+
+func (x *CreatePlanRequest) GetPeriodType() string {
+	if x != nil {
+		return x.PeriodType
+	}
+	return ""
+}
+
+func (x *CreatePlanRequest) GetIntervalCount() int32 {
+	if x != nil {
+		return x.IntervalCount
+	}
+	return 0
+}
+
+func (x *CreatePlanRequest) GetFeatures() []string {
+	if x != nil {
+		return x.Features
+	}
+	return nil
 }
 
 type CreatePlanReply struct {
@@ -312,8 +355,10 @@ type UpdatePlanRequest struct {
 	Description   string                 `protobuf:"bytes,3,opt,name=description,proto3" json:"description,omitempty"`
 	Price         float64                `protobuf:"fixed64,4,opt,name=price,proto3" json:"price,omitempty"`
 	Currency      string                 `protobuf:"bytes,5,opt,name=currency,proto3" json:"currency,omitempty"`
-	DurationDays  int32                  `protobuf:"varint,6,opt,name=durationDays,proto3" json:"durationDays,omitempty"`
 	Type          string                 `protobuf:"bytes,7,opt,name=type,proto3" json:"type,omitempty"`
+	PeriodType    string                 `protobuf:"bytes,8,opt,name=period_type,json=periodType,proto3" json:"period_type,omitempty"`
+	IntervalCount int32                  `protobuf:"varint,9,opt,name=interval_count,json=intervalCount,proto3" json:"interval_count,omitempty"`
+	Features      []string               `protobuf:"bytes,10,rep,name=features,proto3" json:"features,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -383,18 +428,32 @@ func (x *UpdatePlanRequest) GetCurrency() string {
 	return ""
 }
 
-func (x *UpdatePlanRequest) GetDurationDays() int32 {
-	if x != nil {
-		return x.DurationDays
-	}
-	return 0
-}
-
 func (x *UpdatePlanRequest) GetType() string {
 	if x != nil {
 		return x.Type
 	}
 	return ""
+}
+
+func (x *UpdatePlanRequest) GetPeriodType() string {
+	if x != nil {
+		return x.PeriodType
+	}
+	return ""
+}
+
+func (x *UpdatePlanRequest) GetIntervalCount() int32 {
+	if x != nil {
+		return x.IntervalCount
+	}
+	return 0
+}
+
+func (x *UpdatePlanRequest) GetFeatures() []string {
+	if x != nil {
+		return x.Features
+	}
+	return nil
 }
 
 type UpdatePlanReply struct {
@@ -3136,36 +3195,49 @@ var File_subscription_v1_subscription_proto protoreflect.FileDescriptor
 
 const file_subscription_v1_subscription_proto_rawDesc = "" +
 	"\n" +
-	"\"subscription/v1/subscription.proto\x12\x0fsubscription.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x17validate/validate.proto\x1a\x1bgoogle/protobuf/empty.proto\"\xd4\x01\n" +
+	"\"subscription/v1/subscription.proto\x12\x0fsubscription.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x17validate/validate.proto\x1a\x1bgoogle/protobuf/empty.proto\"\xe2\x02\n" +
 	"\x04Plan\x12\x16\n" +
 	"\x06planId\x18\x01 \x01(\tR\x06planId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x14\n" +
 	"\x05price\x18\x04 \x01(\x01R\x05price\x12\x1a\n" +
-	"\bcurrency\x18\x05 \x01(\tR\bcurrency\x12\"\n" +
-	"\fdurationDays\x18\x06 \x01(\x05R\fdurationDays\x12\x12\n" +
+	"\bcurrency\x18\x05 \x01(\tR\bcurrency\x12\x12\n" +
 	"\x04type\x18\a \x01(\tR\x04type\x12\x14\n" +
-	"\x05appId\x18\b \x01(\tR\x05appId\"(\n" +
+	"\x05appId\x18\b \x01(\tR\x05appId\x12\x1f\n" +
+	"\vperiod_type\x18\t \x01(\tR\n" +
+	"periodType\x12%\n" +
+	"\x0einterval_count\x18\n" +
+	" \x01(\x05R\rintervalCount\x12\x1a\n" +
+	"\bfeatures\x18\v \x03(\tR\bfeatures\x128\n" +
+	"\bpricings\x18\f \x03(\v2\x1c.subscription.v1.PlanPricingR\bpricingsJ\x04\b\x06\x10\aR\fdurationDays\"(\n" +
 	"\x10ListPlansRequest\x12\x14\n" +
-	"\x05appId\x18\x01 \x01(\tR\x05appId\"\x8b\x02\n" +
+	"\x05appId\x18\x01 \x01(\tR\x05appId\"\x81\x03\n" +
 	"\x11CreatePlanRequest\x12\x1d\n" +
 	"\x04name\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18dR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12$\n" +
 	"\x05price\x18\x03 \x01(\x01B\x0e\xfaB\v\x12\t)\x00\x00\x00\x00\x00\x00\x00\x00R\x05price\x12$\n" +
-	"\bcurrency\x18\x04 \x01(\tB\b\xfaB\x05r\x03\x98\x01\x03R\bcurrency\x12+\n" +
-	"\fdurationDays\x18\x05 \x01(\x05B\a\xfaB\x04\x1a\x02 \x00R\fdurationDays\x12\x1b\n" +
+	"\bcurrency\x18\x04 \x01(\tB\b\xfaB\x05r\x03\x98\x01\x03R\bcurrency\x12\x1b\n" +
 	"\x04type\x18\x06 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x04type\x12\x1f\n" +
-	"\x05appId\x18\a \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18@R\x05appId\"<\n" +
+	"\x05appId\x18\a \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18@R\x05appId\x12A\n" +
+	"\vperiod_type\x18\b \x01(\tB \xfaB\x1dr\x1bR\x03DAYR\x05MONTHR\x04YEARR\aFOREVERR\n" +
+	"periodType\x12.\n" +
+	"\x0einterval_count\x18\t \x01(\x05B\a\xfaB\x04\x1a\x02(\x00R\rintervalCount\x12\x1a\n" +
+	"\bfeatures\x18\n" +
+	" \x03(\tR\bfeaturesJ\x04\b\x05\x10\x06R\fdurationDays\"<\n" +
 	"\x0fCreatePlanReply\x12)\n" +
-	"\x04plan\x18\x01 \x01(\v2\x15.subscription.v1.PlanR\x04plan\"\xd4\x01\n" +
+	"\x04plan\x18\x01 \x01(\v2\x15.subscription.v1.PlanR\x04plan\"\xa8\x02\n" +
 	"\x11UpdatePlanRequest\x12\x1f\n" +
 	"\x06planId\x18\x01 \x01(\tB\a\xfaB\x04r\x02\x10\x01R\x06planId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x03 \x01(\tR\vdescription\x12\x14\n" +
 	"\x05price\x18\x04 \x01(\x01R\x05price\x12\x1a\n" +
-	"\bcurrency\x18\x05 \x01(\tR\bcurrency\x12\"\n" +
-	"\fdurationDays\x18\x06 \x01(\x05R\fdurationDays\x12\x12\n" +
-	"\x04type\x18\a \x01(\tR\x04type\"<\n" +
+	"\bcurrency\x18\x05 \x01(\tR\bcurrency\x12\x12\n" +
+	"\x04type\x18\a \x01(\tR\x04type\x12\x1f\n" +
+	"\vperiod_type\x18\b \x01(\tR\n" +
+	"periodType\x12%\n" +
+	"\x0einterval_count\x18\t \x01(\x05R\rintervalCount\x12\x1a\n" +
+	"\bfeatures\x18\n" +
+	" \x03(\tR\bfeaturesJ\x04\b\x06\x10\aR\fdurationDays\"<\n" +
 	"\x0fUpdatePlanReply\x12)\n" +
 	"\x04plan\x18\x01 \x01(\v2\x15.subscription.v1.PlanR\x04plan\"4\n" +
 	"\x11DeletePlanRequest\x12\x1f\n" +
@@ -3452,70 +3524,71 @@ var file_subscription_v1_subscription_proto_goTypes = []any{
 	(*emptypb.Empty)(nil),                     // 48: google.protobuf.Empty
 }
 var file_subscription_v1_subscription_proto_depIdxs = []int32{
-	0,  // 0: subscription.v1.CreatePlanReply.plan:type_name -> subscription.v1.Plan
-	0,  // 1: subscription.v1.UpdatePlanReply.plan:type_name -> subscription.v1.Plan
-	0,  // 2: subscription.v1.ListPlansReply.plans:type_name -> subscription.v1.Plan
-	17, // 3: subscription.v1.GetSubscriptionHistoryReply.items:type_name -> subscription.v1.SubscriptionHistoryItem
-	22, // 4: subscription.v1.GetExpiringSubscriptionsReply.subscriptions:type_name -> subscription.v1.SubscriptionInfo
-	27, // 5: subscription.v1.ProcessAutoRenewalsReply.results:type_name -> subscription.v1.AutoRenewResult
-	29, // 6: subscription.v1.ListPlanPricingsReply.pricings:type_name -> subscription.v1.PlanPricing
-	29, // 7: subscription.v1.CreatePlanPricingReply.pricing:type_name -> subscription.v1.PlanPricing
-	29, // 8: subscription.v1.UpdatePlanPricingReply.pricing:type_name -> subscription.v1.PlanPricing
-	39, // 9: subscription.v1.ListSubscriptionOrdersReply.orders:type_name -> subscription.v1.SubscriptionOrderInfo
-	39, // 10: subscription.v1.GetSubscriptionOrderReply.order:type_name -> subscription.v1.SubscriptionOrderInfo
-	44, // 11: subscription.v1.ListAppSubscriptionsReply.subscriptions:type_name -> subscription.v1.AppSubscriptionInfo
-	17, // 12: subscription.v1.GetAppSubscriptionHistoryReply.items:type_name -> subscription.v1.SubscriptionHistoryItem
-	1,  // 13: subscription.v1.Subscription.ListPlans:input_type -> subscription.v1.ListPlansRequest
-	9,  // 14: subscription.v1.Subscription.GetMySubscription:input_type -> subscription.v1.GetMySubscriptionRequest
-	11, // 15: subscription.v1.Subscription.CreateSubscriptionOrder:input_type -> subscription.v1.CreateSubscriptionOrderRequest
-	13, // 16: subscription.v1.Subscription.HandlePaymentSuccess:input_type -> subscription.v1.HandlePaymentSuccessRequest
-	14, // 17: subscription.v1.Subscription.CancelSubscription:input_type -> subscription.v1.CancelSubscriptionRequest
-	15, // 18: subscription.v1.Subscription.PauseSubscription:input_type -> subscription.v1.PauseSubscriptionRequest
-	16, // 19: subscription.v1.Subscription.ResumeSubscription:input_type -> subscription.v1.ResumeSubscriptionRequest
-	18, // 20: subscription.v1.Subscription.GetSubscriptionHistory:input_type -> subscription.v1.GetSubscriptionHistoryRequest
-	20, // 21: subscription.v1.Subscription.SetAutoRenew:input_type -> subscription.v1.SetAutoRenewRequest
-	21, // 22: subscription.v1.Subscription.GetExpiringSubscriptions:input_type -> subscription.v1.GetExpiringSubscriptionsRequest
-	24, // 23: subscription.v1.Subscription.UpdateExpiredSubscriptions:input_type -> subscription.v1.UpdateExpiredSubscriptionsRequest
-	26, // 24: subscription.v1.Subscription.ProcessAutoRenewals:input_type -> subscription.v1.ProcessAutoRenewalsRequest
-	2,  // 25: subscription.v1.Subscription.CreatePlan:input_type -> subscription.v1.CreatePlanRequest
-	4,  // 26: subscription.v1.Subscription.UpdatePlan:input_type -> subscription.v1.UpdatePlanRequest
-	6,  // 27: subscription.v1.Subscription.DeletePlan:input_type -> subscription.v1.DeletePlanRequest
-	30, // 28: subscription.v1.Subscription.ListPlanPricings:input_type -> subscription.v1.ListPlanPricingsRequest
-	32, // 29: subscription.v1.Subscription.CreatePlanPricing:input_type -> subscription.v1.CreatePlanPricingRequest
-	34, // 30: subscription.v1.Subscription.UpdatePlanPricing:input_type -> subscription.v1.UpdatePlanPricingRequest
-	36, // 31: subscription.v1.Subscription.DeletePlanPricing:input_type -> subscription.v1.DeletePlanPricingRequest
-	38, // 32: subscription.v1.Subscription.ListSubscriptionOrders:input_type -> subscription.v1.ListSubscriptionOrdersRequest
-	41, // 33: subscription.v1.Subscription.GetSubscriptionOrder:input_type -> subscription.v1.GetSubscriptionOrderRequest
-	43, // 34: subscription.v1.Subscription.ListAppSubscriptions:input_type -> subscription.v1.ListAppSubscriptionsRequest
-	46, // 35: subscription.v1.Subscription.GetAppSubscriptionHistory:input_type -> subscription.v1.GetAppSubscriptionHistoryRequest
-	8,  // 36: subscription.v1.Subscription.ListPlans:output_type -> subscription.v1.ListPlansReply
-	10, // 37: subscription.v1.Subscription.GetMySubscription:output_type -> subscription.v1.GetMySubscriptionReply
-	12, // 38: subscription.v1.Subscription.CreateSubscriptionOrder:output_type -> subscription.v1.CreateSubscriptionOrderReply
-	48, // 39: subscription.v1.Subscription.HandlePaymentSuccess:output_type -> google.protobuf.Empty
-	48, // 40: subscription.v1.Subscription.CancelSubscription:output_type -> google.protobuf.Empty
-	48, // 41: subscription.v1.Subscription.PauseSubscription:output_type -> google.protobuf.Empty
-	48, // 42: subscription.v1.Subscription.ResumeSubscription:output_type -> google.protobuf.Empty
-	19, // 43: subscription.v1.Subscription.GetSubscriptionHistory:output_type -> subscription.v1.GetSubscriptionHistoryReply
-	48, // 44: subscription.v1.Subscription.SetAutoRenew:output_type -> google.protobuf.Empty
-	23, // 45: subscription.v1.Subscription.GetExpiringSubscriptions:output_type -> subscription.v1.GetExpiringSubscriptionsReply
-	25, // 46: subscription.v1.Subscription.UpdateExpiredSubscriptions:output_type -> subscription.v1.UpdateExpiredSubscriptionsReply
-	28, // 47: subscription.v1.Subscription.ProcessAutoRenewals:output_type -> subscription.v1.ProcessAutoRenewalsReply
-	3,  // 48: subscription.v1.Subscription.CreatePlan:output_type -> subscription.v1.CreatePlanReply
-	5,  // 49: subscription.v1.Subscription.UpdatePlan:output_type -> subscription.v1.UpdatePlanReply
-	7,  // 50: subscription.v1.Subscription.DeletePlan:output_type -> subscription.v1.DeletePlanReply
-	31, // 51: subscription.v1.Subscription.ListPlanPricings:output_type -> subscription.v1.ListPlanPricingsReply
-	33, // 52: subscription.v1.Subscription.CreatePlanPricing:output_type -> subscription.v1.CreatePlanPricingReply
-	35, // 53: subscription.v1.Subscription.UpdatePlanPricing:output_type -> subscription.v1.UpdatePlanPricingReply
-	37, // 54: subscription.v1.Subscription.DeletePlanPricing:output_type -> subscription.v1.DeletePlanPricingReply
-	40, // 55: subscription.v1.Subscription.ListSubscriptionOrders:output_type -> subscription.v1.ListSubscriptionOrdersReply
-	42, // 56: subscription.v1.Subscription.GetSubscriptionOrder:output_type -> subscription.v1.GetSubscriptionOrderReply
-	45, // 57: subscription.v1.Subscription.ListAppSubscriptions:output_type -> subscription.v1.ListAppSubscriptionsReply
-	47, // 58: subscription.v1.Subscription.GetAppSubscriptionHistory:output_type -> subscription.v1.GetAppSubscriptionHistoryReply
-	36, // [36:59] is the sub-list for method output_type
-	13, // [13:36] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	29, // 0: subscription.v1.Plan.pricings:type_name -> subscription.v1.PlanPricing
+	0,  // 1: subscription.v1.CreatePlanReply.plan:type_name -> subscription.v1.Plan
+	0,  // 2: subscription.v1.UpdatePlanReply.plan:type_name -> subscription.v1.Plan
+	0,  // 3: subscription.v1.ListPlansReply.plans:type_name -> subscription.v1.Plan
+	17, // 4: subscription.v1.GetSubscriptionHistoryReply.items:type_name -> subscription.v1.SubscriptionHistoryItem
+	22, // 5: subscription.v1.GetExpiringSubscriptionsReply.subscriptions:type_name -> subscription.v1.SubscriptionInfo
+	27, // 6: subscription.v1.ProcessAutoRenewalsReply.results:type_name -> subscription.v1.AutoRenewResult
+	29, // 7: subscription.v1.ListPlanPricingsReply.pricings:type_name -> subscription.v1.PlanPricing
+	29, // 8: subscription.v1.CreatePlanPricingReply.pricing:type_name -> subscription.v1.PlanPricing
+	29, // 9: subscription.v1.UpdatePlanPricingReply.pricing:type_name -> subscription.v1.PlanPricing
+	39, // 10: subscription.v1.ListSubscriptionOrdersReply.orders:type_name -> subscription.v1.SubscriptionOrderInfo
+	39, // 11: subscription.v1.GetSubscriptionOrderReply.order:type_name -> subscription.v1.SubscriptionOrderInfo
+	44, // 12: subscription.v1.ListAppSubscriptionsReply.subscriptions:type_name -> subscription.v1.AppSubscriptionInfo
+	17, // 13: subscription.v1.GetAppSubscriptionHistoryReply.items:type_name -> subscription.v1.SubscriptionHistoryItem
+	1,  // 14: subscription.v1.Subscription.ListPlans:input_type -> subscription.v1.ListPlansRequest
+	9,  // 15: subscription.v1.Subscription.GetMySubscription:input_type -> subscription.v1.GetMySubscriptionRequest
+	11, // 16: subscription.v1.Subscription.CreateSubscriptionOrder:input_type -> subscription.v1.CreateSubscriptionOrderRequest
+	13, // 17: subscription.v1.Subscription.HandlePaymentSuccess:input_type -> subscription.v1.HandlePaymentSuccessRequest
+	14, // 18: subscription.v1.Subscription.CancelSubscription:input_type -> subscription.v1.CancelSubscriptionRequest
+	15, // 19: subscription.v1.Subscription.PauseSubscription:input_type -> subscription.v1.PauseSubscriptionRequest
+	16, // 20: subscription.v1.Subscription.ResumeSubscription:input_type -> subscription.v1.ResumeSubscriptionRequest
+	18, // 21: subscription.v1.Subscription.GetSubscriptionHistory:input_type -> subscription.v1.GetSubscriptionHistoryRequest
+	20, // 22: subscription.v1.Subscription.SetAutoRenew:input_type -> subscription.v1.SetAutoRenewRequest
+	21, // 23: subscription.v1.Subscription.GetExpiringSubscriptions:input_type -> subscription.v1.GetExpiringSubscriptionsRequest
+	24, // 24: subscription.v1.Subscription.UpdateExpiredSubscriptions:input_type -> subscription.v1.UpdateExpiredSubscriptionsRequest
+	26, // 25: subscription.v1.Subscription.ProcessAutoRenewals:input_type -> subscription.v1.ProcessAutoRenewalsRequest
+	2,  // 26: subscription.v1.Subscription.CreatePlan:input_type -> subscription.v1.CreatePlanRequest
+	4,  // 27: subscription.v1.Subscription.UpdatePlan:input_type -> subscription.v1.UpdatePlanRequest
+	6,  // 28: subscription.v1.Subscription.DeletePlan:input_type -> subscription.v1.DeletePlanRequest
+	30, // 29: subscription.v1.Subscription.ListPlanPricings:input_type -> subscription.v1.ListPlanPricingsRequest
+	32, // 30: subscription.v1.Subscription.CreatePlanPricing:input_type -> subscription.v1.CreatePlanPricingRequest
+	34, // 31: subscription.v1.Subscription.UpdatePlanPricing:input_type -> subscription.v1.UpdatePlanPricingRequest
+	36, // 32: subscription.v1.Subscription.DeletePlanPricing:input_type -> subscription.v1.DeletePlanPricingRequest
+	38, // 33: subscription.v1.Subscription.ListSubscriptionOrders:input_type -> subscription.v1.ListSubscriptionOrdersRequest
+	41, // 34: subscription.v1.Subscription.GetSubscriptionOrder:input_type -> subscription.v1.GetSubscriptionOrderRequest
+	43, // 35: subscription.v1.Subscription.ListAppSubscriptions:input_type -> subscription.v1.ListAppSubscriptionsRequest
+	46, // 36: subscription.v1.Subscription.GetAppSubscriptionHistory:input_type -> subscription.v1.GetAppSubscriptionHistoryRequest
+	8,  // 37: subscription.v1.Subscription.ListPlans:output_type -> subscription.v1.ListPlansReply
+	10, // 38: subscription.v1.Subscription.GetMySubscription:output_type -> subscription.v1.GetMySubscriptionReply
+	12, // 39: subscription.v1.Subscription.CreateSubscriptionOrder:output_type -> subscription.v1.CreateSubscriptionOrderReply
+	48, // 40: subscription.v1.Subscription.HandlePaymentSuccess:output_type -> google.protobuf.Empty
+	48, // 41: subscription.v1.Subscription.CancelSubscription:output_type -> google.protobuf.Empty
+	48, // 42: subscription.v1.Subscription.PauseSubscription:output_type -> google.protobuf.Empty
+	48, // 43: subscription.v1.Subscription.ResumeSubscription:output_type -> google.protobuf.Empty
+	19, // 44: subscription.v1.Subscription.GetSubscriptionHistory:output_type -> subscription.v1.GetSubscriptionHistoryReply
+	48, // 45: subscription.v1.Subscription.SetAutoRenew:output_type -> google.protobuf.Empty
+	23, // 46: subscription.v1.Subscription.GetExpiringSubscriptions:output_type -> subscription.v1.GetExpiringSubscriptionsReply
+	25, // 47: subscription.v1.Subscription.UpdateExpiredSubscriptions:output_type -> subscription.v1.UpdateExpiredSubscriptionsReply
+	28, // 48: subscription.v1.Subscription.ProcessAutoRenewals:output_type -> subscription.v1.ProcessAutoRenewalsReply
+	3,  // 49: subscription.v1.Subscription.CreatePlan:output_type -> subscription.v1.CreatePlanReply
+	5,  // 50: subscription.v1.Subscription.UpdatePlan:output_type -> subscription.v1.UpdatePlanReply
+	7,  // 51: subscription.v1.Subscription.DeletePlan:output_type -> subscription.v1.DeletePlanReply
+	31, // 52: subscription.v1.Subscription.ListPlanPricings:output_type -> subscription.v1.ListPlanPricingsReply
+	33, // 53: subscription.v1.Subscription.CreatePlanPricing:output_type -> subscription.v1.CreatePlanPricingReply
+	35, // 54: subscription.v1.Subscription.UpdatePlanPricing:output_type -> subscription.v1.UpdatePlanPricingReply
+	37, // 55: subscription.v1.Subscription.DeletePlanPricing:output_type -> subscription.v1.DeletePlanPricingReply
+	40, // 56: subscription.v1.Subscription.ListSubscriptionOrders:output_type -> subscription.v1.ListSubscriptionOrdersReply
+	42, // 57: subscription.v1.Subscription.GetSubscriptionOrder:output_type -> subscription.v1.GetSubscriptionOrderReply
+	45, // 58: subscription.v1.Subscription.ListAppSubscriptions:output_type -> subscription.v1.ListAppSubscriptionsReply
+	47, // 59: subscription.v1.Subscription.GetAppSubscriptionHistory:output_type -> subscription.v1.GetAppSubscriptionHistoryReply
+	37, // [37:60] is the sub-list for method output_type
+	14, // [14:37] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_subscription_v1_subscription_proto_init() }

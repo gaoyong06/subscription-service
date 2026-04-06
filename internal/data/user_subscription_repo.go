@@ -60,17 +60,18 @@ func (r *subscriptionRepo) GetSubscription(ctx context.Context, userId string) (
 	}
 
 	sub := &biz.UserSubscription{
-		SubscriptionID: m.SubscriptionID,
-		UserID:         m.UserID,
-		PlanID:         m.PlanID,
-		AppID:          m.AppID,
-		StartTime:      m.StartTime,
-		EndTime:        m.EndTime,
-		Status:         m.Status,
-		OrderID:        m.OrderID,
-		IsAutoRenew:    m.IsAutoRenew,
-		CreatedAt:      m.CreatedAt,
-		UpdatedAt:      m.UpdatedAt,
+		SubscriptionID:   m.SubscriptionID,
+		UserID:           m.UserID,
+		PlanID:           m.PlanID,
+		AppID:            m.AppID,
+		BillingAnchorDay: m.BillingAnchorDay,
+		StartTime:        m.StartTime,
+		EndTime:          m.EndTime,
+		Status:           m.Status,
+		OrderID:          m.OrderID,
+		IsAutoRenew:      m.IsAutoRenew,
+		CreatedAt:        m.CreatedAt,
+		UpdatedAt:        m.UpdatedAt,
 	}
 
 	// 3. 写入 Redis 缓存 (1小时 + 随机时间,防止缓存雪崩)
@@ -95,17 +96,18 @@ func (r *subscriptionRepo) SaveSubscription(ctx context.Context, sub *biz.UserSu
 	}
 
 	m := &model.UserSubscription{
-		SubscriptionID: sub.SubscriptionID,
-		UserID:         sub.UserID,
-		PlanID:         sub.PlanID,
-		AppID:          appID,
-		StartTime:      sub.StartTime,
-		EndTime:        sub.EndTime,
-		Status:         sub.Status,
-		OrderID:        sub.OrderID,
-		IsAutoRenew:    sub.IsAutoRenew,
-		CreatedAt:      sub.CreatedAt,
-		UpdatedAt:      sub.UpdatedAt,
+		SubscriptionID:   sub.SubscriptionID,
+		UserID:           sub.UserID,
+		PlanID:           sub.PlanID,
+		AppID:            appID,
+		BillingAnchorDay: sub.BillingAnchorDay,
+		StartTime:        sub.StartTime,
+		EndTime:          sub.EndTime,
+		Status:           sub.Status,
+		OrderID:          sub.OrderID,
+		IsAutoRenew:      sub.IsAutoRenew,
+		CreatedAt:        sub.CreatedAt,
+		UpdatedAt:        sub.UpdatedAt,
 	}
 	if err := r.data.db.WithContext(ctx).Save(m).Error; err != nil {
 		r.log.Errorf("Failed to save subscription for user %s: %v", sub.UserID, err)
@@ -157,16 +159,18 @@ func (r *subscriptionRepo) GetExpiringSubscriptions(ctx context.Context, daysBef
 	subscriptions := make([]*biz.UserSubscription, len(models))
 	for i, m := range models {
 		subscriptions[i] = &biz.UserSubscription{
-			SubscriptionID: m.SubscriptionID,
-			UserID:         m.UserID,
-			PlanID:         m.PlanID,
-			StartTime:      m.StartTime,
-			EndTime:        m.EndTime,
-			Status:         m.Status,
-			OrderID:        m.OrderID,
-			IsAutoRenew:    m.IsAutoRenew,
-			CreatedAt:      m.CreatedAt,
-			UpdatedAt:      m.UpdatedAt,
+			SubscriptionID:   m.SubscriptionID,
+			UserID:           m.UserID,
+			PlanID:           m.PlanID,
+			AppID:            m.AppID,
+			BillingAnchorDay: m.BillingAnchorDay,
+			StartTime:        m.StartTime,
+			EndTime:          m.EndTime,
+			Status:           m.Status,
+			OrderID:          m.OrderID,
+			IsAutoRenew:      m.IsAutoRenew,
+			CreatedAt:        m.CreatedAt,
+			UpdatedAt:        m.UpdatedAt,
 		}
 	}
 
@@ -231,16 +235,18 @@ func (r *subscriptionRepo) GetAutoRenewSubscriptions(ctx context.Context, daysBe
 	subscriptions := make([]*biz.UserSubscription, len(models))
 	for i, m := range models {
 		subscriptions[i] = &biz.UserSubscription{
-			SubscriptionID: m.SubscriptionID,
-			UserID:         m.UserID,
-			PlanID:         m.PlanID,
-			StartTime:      m.StartTime,
-			EndTime:        m.EndTime,
-			Status:         m.Status,
-			OrderID:        m.OrderID,
-			IsAutoRenew:    m.IsAutoRenew,
-			CreatedAt:      m.CreatedAt,
-			UpdatedAt:      m.UpdatedAt,
+			SubscriptionID:   m.SubscriptionID,
+			UserID:           m.UserID,
+			PlanID:           m.PlanID,
+			AppID:            m.AppID,
+			BillingAnchorDay: m.BillingAnchorDay,
+			StartTime:        m.StartTime,
+			EndTime:          m.EndTime,
+			Status:           m.Status,
+			OrderID:          m.OrderID,
+			IsAutoRenew:      m.IsAutoRenew,
+			CreatedAt:        m.CreatedAt,
+			UpdatedAt:        m.UpdatedAt,
 		}
 	}
 
@@ -286,17 +292,18 @@ func (r *subscriptionRepo) ListAppSubscriptions(ctx context.Context, appID, stat
 	subscriptions := make([]*biz.UserSubscription, len(models))
 	for i, m := range models {
 		subscriptions[i] = &biz.UserSubscription{
-			SubscriptionID: m.SubscriptionID,
-			UserID:         m.UserID,
-			PlanID:         m.PlanID,
-			AppID:          m.AppID,
-			StartTime:      m.StartTime,
-			EndTime:        m.EndTime,
-			Status:         m.Status,
-			OrderID:        m.OrderID,
-			IsAutoRenew:    m.IsAutoRenew,
-			CreatedAt:      m.CreatedAt,
-			UpdatedAt:      m.UpdatedAt,
+			SubscriptionID:   m.SubscriptionID,
+			UserID:           m.UserID,
+			PlanID:           m.PlanID,
+			AppID:            m.AppID,
+			BillingAnchorDay: m.BillingAnchorDay,
+			StartTime:        m.StartTime,
+			EndTime:          m.EndTime,
+			Status:           m.Status,
+			OrderID:          m.OrderID,
+			IsAutoRenew:      m.IsAutoRenew,
+			CreatedAt:        m.CreatedAt,
+			UpdatedAt:        m.UpdatedAt,
 		}
 	}
 

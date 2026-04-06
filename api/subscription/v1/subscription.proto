@@ -172,9 +172,17 @@ message Plan {
   string description = 3;
   double price = 4;
   string currency = 5;
-  int32 durationDays = 6; // 持续天数
+  reserved 6;
+  reserved "durationDays";
   string type = 7;         // free, pro, enterprise
   string appId = 8;       // 应用ID
+  // 计费周期：DAY=每 interval_count 日；MONTH=自然月；YEAR=自然年；FOREVER=终身/免费（interval_count 忽略）
+  string period_type = 9;
+  int32 interval_count = 10;
+  // 权益文案 i18n key 列表（JSON 存储为字符串数组，仅 key）
+  repeated string features = 11;
+  // 区域定价（ListPlans 一次性返回，避免前端二次请求）
+  repeated PlanPricing pricings = 12;
 }
 
 message ListPlansRequest {
@@ -186,10 +194,14 @@ message CreatePlanRequest {
   string description = 2;
   double price = 3 [(validate.rules).double = {gte: 0}];
   string currency = 4 [(validate.rules).string = {len: 3}];
-  int32 durationDays = 5 [(validate.rules).int32 = {gt: 0}];
+  reserved 5;
+  reserved "durationDays";
   string type = 6 [(validate.rules).string = {min_len: 1}];
   // 目标应用 ID（与 SDK / 控制台约定一致，必填）
   string appId = 7 [(validate.rules).string = {min_len: 1, max_len: 64}];
+  string period_type = 8 [(validate.rules).string = {in: ["DAY", "MONTH", "YEAR", "FOREVER"]}];
+  int32 interval_count = 9 [(validate.rules).int32 = {gte: 0}];
+  repeated string features = 10;
 }
 
 message CreatePlanReply {
@@ -202,8 +214,12 @@ message UpdatePlanRequest {
   string description = 3;
   double price = 4;
   string currency = 5;
-  int32 durationDays = 6;
+  reserved 6;
+  reserved "durationDays";
   string type = 7;
+  string period_type = 8;
+  int32 interval_count = 9;
+  repeated string features = 10;
 }
 
 message UpdatePlanReply {

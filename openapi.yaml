@@ -749,14 +749,20 @@ components:
                     format: double
                 currency:
                     type: string
-                durationDays:
-                    type: integer
-                    format: int32
                 type:
                     type: string
                 appId:
                     type: string
-                    description: 目标应用 ID（控制台多应用场景下以本字段为准；为空则与 ListPlans 相同，回退到网关上下文）
+                    description: 目标应用 ID（与 SDK / 控制台约定一致，必填）
+                periodType:
+                    type: string
+                intervalCount:
+                    type: integer
+                    format: int32
+                features:
+                    type: array
+                    items:
+                        type: string
         CreateSubscriptionOrderReply:
             type: object
             properties:
@@ -949,13 +955,26 @@ components:
                     format: double
                 currency:
                     type: string
-                durationDays:
-                    type: integer
-                    format: int32
                 type:
                     type: string
                 appId:
                     type: string
+                periodType:
+                    type: string
+                    description: 计费周期：DAY=每 interval_count 日；MONTH=自然月；YEAR=自然年；FOREVER=终身/免费（interval_count 忽略）
+                intervalCount:
+                    type: integer
+                    format: int32
+                features:
+                    type: array
+                    items:
+                        type: string
+                    description: 权益文案 i18n key 列表（JSON 存储为字符串数组，仅 key）
+                pricings:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/PlanPricing'
+                    description: 区域定价（ListPlans 一次性返回，避免前端二次请求）
         PlanPricing:
             type: object
             properties:
@@ -1139,10 +1158,16 @@ components:
                     format: double
                 currency:
                     type: string
-                durationDays:
-                    type: integer
-                    format: int32
                 type:
                     type: string
+                periodType:
+                    type: string
+                intervalCount:
+                    type: integer
+                    format: int32
+                features:
+                    type: array
+                    items:
+                        type: string
 tags:
     - name: Subscription

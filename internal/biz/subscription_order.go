@@ -183,48 +183,71 @@ func (uc *SubscriptionUsecase) HandlePaymentSuccess(ctx context.Context, orderID
 		}
 		uc.log.Infof("Order updated to paid status")
 
-		// 3. 获取套餐时长
+		// 3. 获取套餐周期配置（UTC 自然历 / FOREVER）
 		plan, err := uc.planRepo.GetPlan(ctx, order.PlanID)
 		if err != nil {
 			uc.log.Errorf("Failed to get plan: %v", err)
 			return pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodePlanNotFound)
 		}
-		uc.log.Infof("Found plan: %s, duration: %d days", plan.Name, plan.DurationDays)
+		if err := ValidatePlanPeriod(plan.PeriodType, plan.IntervalCount); err != nil {
+			uc.log.Errorf("Invalid plan billing config: %v", err)
+			return pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+		}
+		periodType := NormalizePeriodType(plan.PeriodType)
+		uc.log.Infof("Found plan: %s, periodType=%s intervalCount=%d", plan.Name, periodType, plan.IntervalCount)
 
 		// 4. 更新或创建用户订阅
 		sub, err := uc.subRepo.GetSubscription(ctx, order.UserID)
 		now := time.Now().UTC()
 
 		if sub == nil {
-			// 新订阅
+			endTime, err := FirstPeriodEndUTC(now, periodType, plan.IntervalCount)
+			if err != nil {
+				uc.log.Errorf("FirstPeriodEndUTC: %v", err)
+				return pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+			}
 			uc.log.Infof("Creating new subscription for user %s", order.UserID)
 			sub = &UserSubscription{
-				UserID:    order.UserID,
-				PlanID:    order.PlanID,
-				AppID:     order.AppID, // 从订单中获取 app_id
-				StartTime: now,
-				EndTime:   now.AddDate(0, 0, plan.DurationDays),
-				Status:    constants.StatusActive,
-				OrderID:   order.OrderID,
-				CreatedAt: now,
-				UpdatedAt: now,
+				UserID:           order.UserID,
+				PlanID:           order.PlanID,
+				AppID:            order.AppID,
+				BillingAnchorDay: BillingAnchorDayFromPurchase(now, periodType),
+				StartTime:        now,
+				EndTime:          endTime,
+				Status:           constants.StatusActive,
+				OrderID:          order.OrderID,
+				CreatedAt:        now,
+				UpdatedAt:        now,
 			}
 		} else {
-			// 续费
 			uc.log.Infof("Renewing subscription for user %s, current end time: %v", order.UserID, sub.EndTime)
-			// 更新 app_id（如果为空或需要更新）
 			if sub.AppID == "" || sub.AppID != order.AppID {
 				sub.AppID = order.AppID
 			}
+			anchor := sub.BillingAnchorDay
+			if anchor == 0 && (periodType == constants.PeriodTypeMonth || periodType == constants.PeriodTypeYear) {
+				anchor = BillingAnchorDayFromPurchase(sub.StartTime, periodType)
+			}
 			if sub.EndTime.Before(now) {
 				sub.StartTime = now
-				sub.EndTime = now.AddDate(0, 0, plan.DurationDays)
+				endTime, err := FirstPeriodEndUTC(now, periodType, plan.IntervalCount)
+				if err != nil {
+					uc.log.Errorf("FirstPeriodEndUTC: %v", err)
+					return pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+				}
+				sub.EndTime = endTime
+				sub.BillingAnchorDay = BillingAnchorDayFromPurchase(now, periodType)
 			} else {
-				sub.EndTime = sub.EndTime.AddDate(0, 0, plan.DurationDays)
+				nextEnd, err := NextPeriodEndUTC(sub.EndTime, anchor, periodType, plan.IntervalCount)
+				if err != nil {
+					uc.log.Errorf("NextPeriodEndUTC: %v", err)
+					return pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+				}
+				sub.EndTime = nextEnd
 			}
-			sub.PlanID = order.PlanID // 更新为最新购买的套餐
+			sub.PlanID = order.PlanID
 			sub.Status = constants.StatusActive
-			sub.OrderID = order.OrderID // 更新为最新订单ID
+			sub.OrderID = order.OrderID
 			sub.UpdatedAt = now
 		}
 
