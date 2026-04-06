@@ -2,12 +2,14 @@ package service
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	pb "subscription-service/api/subscription/v1"
 	"subscription-service/internal/auth"
 	"subscription-service/internal/biz"
 	"subscription-service/internal/constants"
+	svcerrors "subscription-service/internal/errors"
 	"time"
 
 	pkgErrors "github.com/gaoyong06/go-pkg/errors"
@@ -17,6 +19,7 @@ import (
 	"github.com/go-kratos/kratos/v2/transport"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"gorm.io/gorm"
 )
 
 // SubscriptionService 订阅服务
@@ -158,9 +161,12 @@ func (s *SubscriptionService) UpdatePlan(ctx context.Context, req *pb.UpdatePlan
 	return &pb.UpdatePlanReply{Plan: pp}, nil
 }
 
-// DeletePlan 删除订阅套餐
+// DeletePlan 软删除订阅套餐（写入 deleted_at）
 func (s *SubscriptionService) DeletePlan(ctx context.Context, req *pb.DeletePlanRequest) (*pb.DeletePlanReply, error) {
 	if err := s.uc.DeletePlan(ctx, req.PlanId); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, pkgErrors.NewBizErrorWithLang(ctx, svcerrors.ErrCodePlanNotFound)
+		}
 		return nil, err
 	}
 	return &pb.DeletePlanReply{PlanId: req.PlanId}, nil

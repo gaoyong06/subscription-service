@@ -33,6 +33,7 @@ CREATE TABLE `plan` (
   `interval_count` int NOT NULL DEFAULT 1 COMMENT '周期倍数；FOREVER 为 0',
   `features` json DEFAULT NULL COMMENT '权益 i18n key 数组（JSON，空为[]）',
   `type` varchar(20) NOT NULL COMMENT '类型',
+  `deleted_at` datetime(3) DEFAULT NULL COMMENT '软删除时间，非空表示已删除',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`plan_id`),

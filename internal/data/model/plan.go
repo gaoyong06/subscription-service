@@ -1,8 +1,12 @@
 package model
 
-import "time"
+import (
+	"time"
 
-// Plan 套餐模型
+	"gorm.io/gorm"
+)
+
+// Plan 套餐模型（删除为软删除：DeletedAt 非空表示已删除）
 type Plan struct {
 	PlanID       string    `gorm:"primaryKey;column:plan_id"`
 	AppID        string    `gorm:"column:app_id;not null;index:idx_app_id;index:idx_app_user_id"`
@@ -14,9 +18,10 @@ type Plan struct {
 	PeriodType     string  `gorm:"column:period_type;type:varchar(16);not null;default:'MONTH'"`
 	IntervalCount  int32   `gorm:"column:interval_count;not null;default:1"`
 	Features       string  `gorm:"column:features;type:json"` // JSON 数组，元素为 i18n key
-	Type           string  `gorm:"column:type"`
-	CreatedAt    time.Time `gorm:"column:created_at;autoCreateTime"`
-	UpdatedAt    time.Time `gorm:"column:updated_at;autoUpdateTime"`
+	Type           string         `gorm:"column:type"`
+	DeletedAt      gorm.DeletedAt `gorm:"column:deleted_at;index"` // 软删除时间
+	CreatedAt      time.Time      `gorm:"column:created_at;autoCreateTime"`
+	UpdatedAt      time.Time      `gorm:"column:updated_at;autoUpdateTime"`
 }
 
 func (Plan) TableName() string { return "plan" }

@@ -6,6 +6,7 @@ import (
 	"subscription-service/internal/data/model"
 
 	"github.com/go-kratos/kratos/v2/log"
+	"gorm.io/gorm"
 )
 
 // planRepo Plan 仓库实现
@@ -119,11 +120,16 @@ func (r *planRepo) UpdatePlan(ctx context.Context, plan *biz.Plan) error {
 	return nil
 }
 
-// DeletePlan 删除套餐
+// DeletePlan 软删除套餐（设置 deleted_at，不做物理删除）
 func (r *planRepo) DeletePlan(ctx context.Context, id string) error {
-	if err := r.data.db.WithContext(ctx).Delete(&model.Plan{}, "plan_id = ?", id).Error; err != nil {
-		r.log.Errorf("Failed to delete plan: %v", err)
-		return err
+	res := r.data.db.WithContext(ctx).Where("plan_id = ?", id).Delete(&model.Plan{})
+	if res.Error != nil {
+		r.log.Errorf("Failed to soft-delete plan: %v", res.Error)
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		r.log.Warnf("Soft-delete plan: no row updated for plan_id=%s (not found or already deleted)", id)
+		return gorm.ErrRecordNotFound
 	}
 	return nil
 }

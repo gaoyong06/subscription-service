@@ -103,7 +103,7 @@ service Subscription {
       body: "*"
     };
   }
-  // 删除订阅套餐
+  // 删除订阅套餐（软删除：仅标记删除时间，数据保留；ListPlans 不再返回）
   rpc DeletePlan (DeletePlanRequest) returns (DeletePlanReply) {
     option (google.api.http) = {
       delete: "/subscription/v1/plans/{planId}"
@@ -231,7 +231,7 @@ message DeletePlanRequest {
 }
 
 message DeletePlanReply {
-  string planId = 1; // 被删除的套餐ID
+  string planId = 1; // 被软删除的套餐 ID（与请求一致）
 }
 
 message ListPlansReply {
