@@ -1,6 +1,10 @@
 package biz
 
-import "context"
+import (
+	"context"
+	"sort"
+	"strings"
+)
 
 // Plan 订阅套餐
 type Plan struct {
@@ -42,9 +46,54 @@ type PlanRepo interface {
 	DeletePlanPricing(ctx context.Context, planPricingID uint64) error
 }
 
-// ListPlans 获取所有订阅套餐列表
+// planListSortTier 用于 ListPlans 稳定排序：free → pro → enterprise → 其它
+func planListSortTier(typ string) int {
+	switch strings.ToLower(strings.TrimSpace(typ)) {
+	case "free":
+		return 0
+	case "pro":
+		return 1
+	case "enterprise":
+		return 2
+	default:
+		return 99
+	}
+}
+
+// planListSortPeriod 同档位内：FOREVER → MONTH → YEAR → DAY
+func planListSortPeriod(periodType string) int {
+	switch strings.ToUpper(strings.TrimSpace(periodType)) {
+	case "FOREVER":
+		return 0
+	case "MONTH":
+		return 1
+	case "YEAR":
+		return 2
+	case "DAY":
+		return 3
+	default:
+		return 50
+	}
+}
+
+// ListPlans 获取所有订阅套餐列表（按档位与计费周期稳定排序，便于前台与消费者端展示多 SKU）
 func (uc *SubscriptionUsecase) ListPlans(ctx context.Context, appID string) ([]*Plan, error) {
-	return uc.planRepo.ListPlans(ctx, appID)
+	plans, err := uc.planRepo.ListPlans(ctx, appID)
+	if err != nil {
+		return nil, err
+	}
+	sort.SliceStable(plans, func(i, j int) bool {
+		ti, tj := planListSortTier(plans[i].Type), planListSortTier(plans[j].Type)
+		if ti != tj {
+			return ti < tj
+		}
+		pi, pj := planListSortPeriod(plans[i].PeriodType), planListSortPeriod(plans[j].PeriodType)
+		if pi != pj {
+			return pi < pj
+		}
+		return plans[i].PlanID < plans[j].PlanID
+	})
+	return plans, nil
 }
 
 // CreatePlan 创建套餐

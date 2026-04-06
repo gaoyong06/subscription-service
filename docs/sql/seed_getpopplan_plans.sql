@@ -1,14 +1,15 @@
 /*
   初始化 getpopplan.com（PopPlan / table-plan）默认订阅套餐
-  
+
   说明：
   - app_id 固定为官方应用 UUID（与 table-plan-web / dev-share 默认 APP_ID 一致）
   - 文案与 table-plan-web messages/*/modules/pricing.json 对齐；features 存 i18n key（命名空间 modules.pricing 下相对路径为 plans.*.features.*）
+  - 方案 A：plan_id 带计费维度后缀：free-forever、pro/enterprise 的 month / year；pro 与 enterprise 月年成对，勿再使用 gpplan-* 简写
   - user_id：创建该应用时在 api-key-service 中的开发者用户 UUID —— 执行前请将 @seed_developer_uid 改为真实值
-  
+
   用法示例：
     mysql -u root -p subscription_service < docs/sql/seed_getpopplan_plans.sql
-  
+
   幂等：按 plan_id 主键 UPSERT，可重复执行。
 */
 
@@ -23,7 +24,7 @@ INSERT INTO `plan` (
   `price`, `currency`, `period_type`, `interval_count`, `features`, `type`,
   `deleted_at`, `created_at`, `updated_at`
 ) VALUES (
-  'gpplan-free-v1',
+  'getpopplan-free-forever-v1',
   @getpopplan_app_id,
   @seed_developer_uid,
   'Basic',
@@ -38,7 +39,7 @@ INSERT INTO `plan` (
   NOW(),
   NOW()
 ), (
-  'gpplan-pro-v1',
+  'getpopplan-pro-month-v1',
   @getpopplan_app_id,
   @seed_developer_uid,
   'Professional',
@@ -53,7 +54,22 @@ INSERT INTO `plan` (
   NOW(),
   NOW()
 ), (
-  'gpplan-enterprise-v1',
+  'getpopplan-pro-year-v1',
+  @getpopplan_app_id,
+  @seed_developer_uid,
+  'Professional',
+  'Ideal for medium-sized weddings and events',
+  299.99,
+  'USD',
+  'YEAR',
+  1,
+  CAST('["modules.pricing.plans.pro.features.1","modules.pricing.plans.pro.features.2","modules.pricing.plans.pro.features.3","modules.pricing.plans.pro.features.4","modules.pricing.plans.pro.features.5","modules.pricing.plans.pro.features.6"]' AS JSON),
+  'pro',
+  NULL,
+  NOW(),
+  NOW()
+), (
+  'getpopplan-enterprise-month-v1',
   @getpopplan_app_id,
   @seed_developer_uid,
   'Enterprise',
@@ -61,6 +77,21 @@ INSERT INTO `plan` (
   99.99,
   'USD',
   'MONTH',
+  1,
+  CAST('["modules.pricing.plans.enterprise.features.1","modules.pricing.plans.enterprise.features.2","modules.pricing.plans.enterprise.features.3","modules.pricing.plans.enterprise.features.4","modules.pricing.plans.enterprise.features.5","modules.pricing.plans.enterprise.features.6","modules.pricing.plans.enterprise.features.7"]' AS JSON),
+  'enterprise',
+  NULL,
+  NOW(),
+  NOW()
+), (
+  'getpopplan-enterprise-year-v1',
+  @getpopplan_app_id,
+  @seed_developer_uid,
+  'Enterprise',
+  'For large events and corporate clients',
+  999.99,
+  'USD',
+  'YEAR',
   1,
   CAST('["modules.pricing.plans.enterprise.features.1","modules.pricing.plans.enterprise.features.2","modules.pricing.plans.enterprise.features.3","modules.pricing.plans.enterprise.features.4","modules.pricing.plans.enterprise.features.5","modules.pricing.plans.enterprise.features.6","modules.pricing.plans.enterprise.features.7"]' AS JSON),
   'enterprise',

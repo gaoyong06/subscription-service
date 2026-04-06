@@ -174,7 +174,8 @@ message Plan {
   string currency = 5;
   reserved 6;
   reserved "durationDays";
-  string type = 7;         // free, pro, enterprise
+  // 产品线档位：free / pro / enterprise；同一档位可有多个 plan（如 MONTH 与 YEAR 不同 plan_id，方案 A 双 SKU）
+  string type = 7;
   string appId = 8;       // 应用ID
   // 计费周期：DAY=每 interval_count 日；MONTH=自然月；YEAR=自然年；FOREVER=终身/免费（interval_count 忽略）
   string period_type = 9;
