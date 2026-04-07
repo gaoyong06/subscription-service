@@ -6,6 +6,7 @@ import (
 	"subscription-service/internal/service"
 
 	"github.com/gaoyong06/go-pkg/middleware/i18n"
+	"github.com/gaoyong06/go-pkg/middleware/user_id"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
@@ -20,6 +21,8 @@ func NewGRPCServer(c *conf.Bootstrap, sub *service.SubscriptionService, logger l
 			recovery.Recovery(),
 			// 添加参数验证中间件
 			validate.Validator(),
+			// 添加 user_id 中间件（提取终端用户 ID，支持 gRPC metadata: x-end-user-id）
+			user_id.Middleware(),
 			// 添加 i18n 中间件
 			i18n.Middleware(),
 		),

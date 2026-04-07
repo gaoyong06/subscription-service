@@ -7,6 +7,7 @@ import (
 	"github.com/gaoyong06/go-pkg/middleware/developer_id"
 	"github.com/gaoyong06/go-pkg/middleware/i18n"
 	"github.com/gaoyong06/go-pkg/middleware/response"
+	"github.com/gaoyong06/go-pkg/middleware/user_id"
 
 	v1 "subscription-service/api/subscription/v1"
 	"subscription-service/internal/conf"
@@ -41,6 +42,8 @@ func NewHTTPServer(c *conf.Bootstrap, sub *service.SubscriptionService, logger l
 			app_id.Middleware(),
 			// 添加 developer_id 中间件（提取开发者 ID，由 API Gateway 的 api-key 插件设置）
 			developer_id.Middleware(),
+			// 添加 user_id 中间件（提取终端用户 ID，由 API Gateway 的 jwt-user 插件设置）
+			user_id.Middleware(),
 			// 添加参数验证中间件
 			validate.Validator(),
 			// 添加 i18n 中间件
