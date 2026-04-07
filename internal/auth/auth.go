@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 
+	"github.com/gaoyong06/go-pkg/middleware/user_id"
 	"github.com/go-kratos/kratos/v2/errors"
 )
 
@@ -26,8 +27,15 @@ const (
 
 // GetUIDFromContext 从context中获取用户ID（字符串 UUID）
 func GetUIDFromContext(ctx context.Context) (string, bool) {
-	userId, ok := ctx.Value(UserIDKey).(string)
-	return userId, ok
+	// 优先读取本服务历史 key
+	if userID, ok := ctx.Value(UserIDKey).(string); ok && userID != "" {
+		return userID, true
+	}
+	// 兼容 APISIX jwt-user -> user_id 中间件链路
+	if userID := user_id.GetUserIDFromContext(ctx); userID != "" {
+		return userID, true
+	}
+	return "", false
 }
 
 // GetRoleFromContext 从context中获取用户角色
