@@ -34,7 +34,7 @@
 - 管理员后台需要的是**管理用户订阅**的功能
 
 **用户视角 API（供开发者使用，不在 dev-share-web 中实现）：**
-- `GetMySubscription` - 获取我的订阅状态
+- `GetOrEnsureMySubscription`（HTTP: `GET /subscription/v1/my/{userId}`）- 获取或初始化我的订阅
 - `CancelSubscription` - 取消订阅
 - `PauseSubscription` - 暂停订阅
 - `ResumeSubscription` - 恢复订阅
@@ -187,7 +187,7 @@
 
 ```typescript
 // 管理员视角：查看用户的订阅状态
-export async function getUserSubscription(userId: string): Promise<ApiResponse<GetMySubscriptionReply>>
+export async function getUserSubscription(userId: string): Promise<ApiResponse<GetOrEnsureMySubscriptionReply>>
 
 // 管理员视角：取消用户的订阅（如果需要）
 export async function cancelUserSubscription(userId: string, reason?: string): Promise<ApiResponse<void>>

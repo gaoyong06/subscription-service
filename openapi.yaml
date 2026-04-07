@@ -262,12 +262,51 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /subscription/v1/my/ensure-free:
+        post:
+            tags:
+                - Subscription
+            description: |-
+                显式幂等开通默认免费档（与 GetOrEnsureMySubscription 内 Ensure 逻辑一致）。
+                 一般客户端只需 GET GetOrEnsure；本接口可用于显式「同步」或调试。
+            operationId: Subscription_EnsureDefaultFreeSubscription
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/EnsureDefaultFreeSubscriptionRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/EnsureDefaultFreeSubscriptionReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /subscription/v1/my/{userId}:
         get:
             tags:
                 - Subscription
-            description: 获取用户的订阅状态
-            operationId: Subscription_GetMySubscription
+            description: |-
+                获取（并必要时初始化）当前用户的订阅 —— 推荐唯一入口
+
+                 使用背景：
+                 - 产品约定「每位注册用户应有 user_subscription 事实行」；历史上可能存在无行用户（老数据、仅注册未打开客户端等）。
+                 - 本 RPC 在「已登录且仅能查自己」的前提下：若 DB 中尚无订阅行，则在本次请求内幂等写入当前应用下的默认免费档（FOREVER + type=free），再返回。
+
+                 语义说明：
+                 - 非「纯只读」：首次查询可能对当前用户产生 INSERT（与惰性迁移 / read-through 默认状态一致）。
+                 - 幂等：重复调用不会重复创建（已有任意档位订阅时不会覆盖）。
+                 - 须携带 X-App-Id（或与网关约定等价的 app 上下文），以便解析应用维度的免费套餐。
+
+                 鉴权：仅允许查询 JWT 对应用户本人（CheckOwnership）。
+            operationId: Subscription_GetOrEnsureMySubscription
             parameters:
                 - name: userId
                   in: path
@@ -280,7 +319,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/GetMySubscriptionReply'
+                                $ref: '#/components/schemas/GetOrEnsureMySubscriptionReply'
                 default:
                     description: Default error response
                     content:
@@ -509,7 +548,7 @@ paths:
         delete:
             tags:
                 - Subscription
-            description: 删除订阅套餐
+            description: 删除订阅套餐（软删除：仅标记删除时间，数据保留；ListPlans 不再返回）
             operationId: Subscription_DeletePlan
             parameters:
                 - name: planId
@@ -797,6 +836,18 @@ components:
             properties:
                 planId:
                     type: string
+        EnsureDefaultFreeSubscriptionReply:
+            type: object
+            properties:
+                created:
+                    type: boolean
+                alreadySubscribed:
+                    type: boolean
+        EnsureDefaultFreeSubscriptionRequest:
+            type: object
+            properties:
+                userId:
+                    type: string
         GetAppSubscriptionHistoryReply:
             type: object
             properties:
@@ -830,7 +881,7 @@ components:
                 pageSize:
                     type: integer
                     format: int32
-        GetMySubscriptionReply:
+        GetOrEnsureMySubscriptionReply:
             type: object
             properties:
                 isActive:
@@ -845,6 +896,16 @@ components:
                     type: string
                 autoRenew:
                     type: boolean
+                planName:
+                    type: string
+                    description: 以下字段来自 plan 表，便于前端展示（name 常为 i18n key）
+                planType:
+                    type: string
+                periodType:
+                    type: string
+                defaultFreeMaterialized:
+                    type: boolean
+                    description: true 表示本次调用中「因原先无订阅行而新写入了默认免费档」；已存在记录时为 false
         GetSubscriptionHistoryReply:
             type: object
             properties:
@@ -948,8 +1009,10 @@ components:
                     type: string
                 name:
                     type: string
+                    description: 套餐标题 i18n key（如 modules.pricing.plans.pro.name），与前端 messages/modules/pricing 对齐；非展示终稿
                 description:
                     type: string
+                    description: 套餐描述 i18n key（如 modules.pricing.plans.pro.description）
                 price:
                     type: number
                     format: double
@@ -957,6 +1020,7 @@ components:
                     type: string
                 type:
                     type: string
+                    description: 产品线档位：free / pro / enterprise；同一档位可有多个 plan（如 MONTH 与 YEAR 不同 plan_id，方案 A 双 SKU）
                 appId:
                     type: string
                 periodType:

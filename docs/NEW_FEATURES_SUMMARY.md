@@ -19,7 +19,7 @@
 
 **API**:
 - gRPC: `CancelSubscription`
-- HTTP: `POST /v1/subscription/cancel`
+- HTTP: `POST /subscription/v1/cancel`
 
 **业务规则**:
 - 只能取消 `active` 或 `paused` 状态的订阅
@@ -34,8 +34,8 @@
 - 适用于临时不使用但不想取消的场景
 
 **API**:
-- 暂停: `POST /v1/subscription/pause`
-- 恢复: `POST /v1/subscription/resume`
+- 暂停: `POST /subscription/v1/pause`
+- 恢复: `POST /subscription/v1/resume`
 
 **业务规则**:
 - 只能暂停 `active` 状态的订阅
@@ -50,7 +50,7 @@
 - 包含详细的操作信息
 
 **API**:
-- HTTP: `GET /v1/subscription/history/{uid}`
+- HTTP: `GET /subscription/v1/history/{userId}`（`userId` 为字符串 UUID）
 
 **记录的操作类型**:
 - `created`: 创建订阅
@@ -62,7 +62,7 @@
 
 **查询参数**:
 - `page`: 页码，从1开始，默认1
-- `page_size`: 每页数量，默认10，最大100
+- `pageSize`: 每页数量，默认10，最大100
 
 ### 4. 自动续费功能 (SetAutoRenew)
 
@@ -72,7 +72,7 @@
 - 为未来的自动续费逻辑提供基础
 
 **API**:
-- HTTP: `POST /v1/subscription/auto-renew`
+- HTTP: `POST /subscription/v1/auto-renew`
 
 **业务规则**:
 - 只有 `active` 状态的订阅可以设置自动续费
@@ -90,7 +90,7 @@
 - `GetSubscriptionHistory`
 - `SetAutoRenew`
 
-更新了 `GetMySubscriptionReply`，添加 `auto_renew` 字段。
+`GetOrEnsureMySubscriptionReply` 含 `autoRenew`、`planName`、`planType`、`periodType` 及 `default_free_materialized`（本次是否新写入默认免费档）等字段；领域层只读查询订阅行为 `FindUserSubscription`。
 
 ### 2. 数据库变更
 
@@ -214,40 +214,42 @@ CREATE TABLE `subscription_history` (
 
 ```bash
 # 1. 创建订阅
-curl -X POST http://localhost:8102/v1/subscription/order \
+curl -X POST http://localhost:8102/subscription/v1/order \
   -H "Content-Type: application/json" \
-  -d '{"uid": 1001, "plan_id": "plan_monthly", "payment_method": "alipay"}'
+  -d '{"userId":"550e8400-e29b-41d4-a716-446655440000","planId":"plan_monthly","paymentMethod":"alipay","region":"default"}'
 
 # 2. 支付成功回调
-curl -X POST http://localhost:8102/v1/subscription/payment/success \
+curl -X POST http://localhost:8102/subscription/v1/payment/success \
   -H "Content-Type: application/json" \
-  -d '{"order_id": "SUB...", "payment_id": "PAY...", "amount": 9.99}'
+  -d '{"orderId":"SUB...","paymentId":"PAY...","amount":9.99}'
 
 # 3. 开启自动续费
-curl -X POST http://localhost:8102/v1/subscription/auto-renew \
+curl -X POST http://localhost:8102/subscription/v1/auto-renew \
   -H "Content-Type: application/json" \
-  -d '{"uid": 1001, "auto_renew": true}'
+  -d '{"userId":"550e8400-e29b-41d4-a716-446655440000","autoRenew":true}'
 
-# 4. 查询订阅状态（包含auto_renew字段）
-curl http://localhost:8102/v1/subscription/my/1001
+# 4. 查询或初始化订阅（含 autoRenew、defaultFreeMaterialized 等）
+curl "http://localhost:8102/subscription/v1/my/550e8400-e29b-41d4-a716-446655440000" \
+  -H "Authorization: Bearer <access_token>" \
+  -H "X-App-Id: demo-app"
 
 # 5. 暂停订阅
-curl -X POST http://localhost:8102/v1/subscription/pause \
+curl -X POST http://localhost:8102/subscription/v1/pause \
   -H "Content-Type: application/json" \
-  -d '{"uid": 1001, "reason": "临时不用"}'
+  -d '{"userId":"550e8400-e29b-41d4-a716-446655440000","reason":"临时不用"}'
 
 # 6. 恢复订阅
-curl -X POST http://localhost:8102/v1/subscription/resume \
+curl -X POST http://localhost:8102/subscription/v1/resume \
   -H "Content-Type: application/json" \
-  -d '{"uid": 1001}'
+  -d '{"userId":"550e8400-e29b-41d4-a716-446655440000"}'
 
 # 7. 查看历史记录
-curl "http://localhost:8102/v1/subscription/history/1001?page=1&page_size=10"
+curl "http://localhost:8102/subscription/v1/history/550e8400-e29b-41d4-a716-446655440000?page=1&pageSize=10"
 
 # 8. 取消订阅
-curl -X POST http://localhost:8102/v1/subscription/cancel \
+curl -X POST http://localhost:8102/subscription/v1/cancel \
   -H "Content-Type: application/json" \
-  -d '{"uid": 1001, "reason": "不再需要"}'
+  -d '{"userId":"550e8400-e29b-41d4-a716-446655440000","reason":"不再需要"}'
 ```
 
 ## 后续优化建议

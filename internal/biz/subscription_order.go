@@ -199,6 +199,12 @@ func (uc *SubscriptionUsecase) HandlePaymentSuccess(ctx context.Context, orderID
 		// 4. 更新或创建用户订阅
 		sub, err := uc.subRepo.GetSubscription(ctx, order.UserID)
 		now := time.Now().UTC()
+		prevPlanID := ""
+		hadSubscription := false
+		if sub != nil {
+			hadSubscription = true
+			prevPlanID = sub.PlanID
+		}
 
 		if sub == nil {
 			endTime, err := FirstPeriodEndUTC(now, periodType, plan.IntervalCount)
@@ -257,10 +263,14 @@ func (uc *SubscriptionUsecase) HandlePaymentSuccess(ctx context.Context, orderID
 		}
 		uc.log.Infof("Subscription saved successfully, new end time: %v", sub.EndTime)
 
-		// 记录历史
+		// 记录历史：新建 | 同档续费 | 换档升级
 		action := constants.ActionCreated
-		if sub.SubscriptionID > 0 {
-			action = constants.ActionRenewed
+		if hadSubscription {
+			if prevPlanID != order.PlanID {
+				action = constants.ActionUpgraded
+			} else {
+				action = constants.ActionRenewed
+			}
 		}
 		history := &SubscriptionHistory{
 			UserID:    order.UserID,

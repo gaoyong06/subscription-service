@@ -36,7 +36,7 @@
 - **状态**: ✅ 通过
 - **描述**: 测试订阅套餐的查询
 - **测试步骤**:
-  - 获取所有套餐列表 (GET /v1/subscription/plans)
+  - 获取所有套餐列表 (GET /subscription/v1/plans?appId=...)
   - 验证套餐数据结构
 - **结果**: 
   - 成功获取套餐列表
@@ -179,7 +179,7 @@
 ### 优先级 P0（核心功能）
 
 1. **实现用户订阅查询功能**
-   - GetMySubscription 接口实现
+   - GetOrEnsureMySubscription 接口实现
    - 数据库查询逻辑
    - 订阅状态计算（active/expired）
 

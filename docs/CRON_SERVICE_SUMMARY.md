@@ -13,7 +13,7 @@
 
 ### 1. 获取即将过期的订阅
 
-**接口**: `GET /v1/subscription/expiring`
+**接口**: `GET /subscription/v1/expiring`
 
 **参数**:
 - `days_before_expiry`: 过期前多少天（1-30，默认7天）
@@ -51,7 +51,7 @@
 
 ### 2. 批量更新过期订阅状态
 
-**接口**: `POST /v1/subscription/expired/update`
+**接口**: `POST /subscription/v1/expired/update`
 
 **请求体**: 空（自动处理所有过期订阅）
 
@@ -74,7 +74,7 @@
 
 ### 3. 处理自动续费
 
-**接口**: `POST /v1/subscription/auto-renew/process`
+**接口**: `POST /subscription/v1/auto-renew/process`
 
 **请求体**:
 ```json
@@ -247,15 +247,15 @@ bash test_cron_apis.sh
 
 ```bash
 # 1. 获取即将过期的订阅
-curl "http://localhost:8102/v1/subscription/expiring?days_before_expiry=7&page=1&page_size=10" | jq '.'
+curl "http://localhost:8102/subscription/v1/expiring?days_before_expiry=7&page=1&page_size=10" | jq '.'
 
 # 2. 批量更新过期订阅
-curl -X POST http://localhost:8102/v1/subscription/expired/update \
+curl -X POST http://localhost:8102/subscription/v1/expired/update \
   -H "Content-Type: application/json" \
   -d '{}' | jq '.'
 
 # 3. 测试自动续费（dry run）
-curl -X POST http://localhost:8102/v1/subscription/auto-renew/process \
+curl -X POST http://localhost:8102/subscription/v1/auto-renew/process \
   -H "Content-Type: application/json" \
   -d '{"days_before_expiry": 3, "dry_run": true}' | jq '.'
 ```
@@ -348,9 +348,9 @@ ORDER BY end_time ASC;
 
 2. **调用 Subscription-Service 的 API**
    ```go
-   // 获取用户订阅状态
-   resp, err := subscriptionClient.GetMySubscription(ctx, &pb.GetMySubscriptionRequest{
-       Uid: userID,
+   // 获取或初始化用户订阅（仅读状态可改用内部 FindUserSubscription；跨服务调用用 RPC）
+   resp, err := subscriptionClient.GetOrEnsureMySubscription(ctx, &pb.GetOrEnsureMySubscriptionRequest{
+       UserId: userID, // 字符串 UUID
    })
    ```
 

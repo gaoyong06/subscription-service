@@ -2,6 +2,7 @@ package data
 
 import (
 	"context"
+	"errors"
 	"subscription-service/internal/biz"
 	"subscription-service/internal/data/model"
 
@@ -52,6 +53,38 @@ func (r *planRepo) ListPlans(ctx context.Context, appID string) ([]*biz.Plan, er
 		}
 	}
 	return plans, nil
+}
+
+// FindFreeForeverPlanByApp 查找应用下 type=free 且 period_type=FOREVER 的套餐（软删排除）
+func (r *planRepo) FindFreeForeverPlanByApp(ctx context.Context, appID string) (*biz.Plan, error) {
+	if appID == "" {
+		return nil, nil
+	}
+	var m model.Plan
+	err := r.data.db.WithContext(ctx).
+		Where("app_id = ? AND LOWER(TRIM(type)) = ? AND UPPER(TRIM(period_type)) = ?", appID, "free", "FOREVER").
+		Order("plan_id ASC").
+		First(&m).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	if err != nil {
+		r.log.Errorf("FindFreeForeverPlanByApp failed: %v", err)
+		return nil, err
+	}
+	return &biz.Plan{
+		PlanID:        m.PlanID,
+		AppID:         m.AppID,
+		UserID:        m.UserID,
+		Name:          m.Name,
+		Description:   m.Description,
+		Price:         m.Price,
+		Currency:      m.Currency,
+		PeriodType:    m.PeriodType,
+		IntervalCount: m.IntervalCount,
+		Features:      decodePlanFeaturesJSON(m.Features),
+		Type:          m.Type,
+	}, nil
 }
 
 // GetPlan 根据ID获取套餐

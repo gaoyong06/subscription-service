@@ -244,30 +244,81 @@ func (s *SubscriptionService) DeletePlanPricing(ctx context.Context, req *pb.Del
 	return &pb.DeletePlanPricingReply{PlanPricingId: req.PlanPricingId}, nil
 }
 
-// GetMySubscription 获取用户当前订阅信息
-// 查询指定用户的当前订阅状态、套餐信息和有效期
-func (s *SubscriptionService) GetMySubscription(ctx context.Context, req *pb.GetMySubscriptionRequest) (*pb.GetMySubscriptionReply, error) {
-	// 权限验证: 只能查询自己的订阅或管理员可以查询所有
-	if err := auth.CheckOwnership(ctx, req.UserId); err != nil {
+// userSubscriptionToOrEnsureReply 将领域订阅模型转为 GetOrEnsure 应答（含 plan 展示字段）
+func (s *SubscriptionService) userSubscriptionToOrEnsureReply(ctx context.Context, sub *biz.UserSubscription, defaultFreeMaterialized bool) (*pb.GetOrEnsureMySubscriptionReply, error) {
+	if sub == nil {
+		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInternalError)
+	}
+	reply := &pb.GetOrEnsureMySubscriptionReply{
+		IsActive:                 sub.Status == "active",
+		PlanId:                   sub.PlanID,
+		StartTime:                sub.StartTime.Unix(),
+		EndTime:                  sub.EndTime.Unix(),
+		Status:                   sub.Status,
+		AutoRenew:                sub.IsAutoRenew,
+		DefaultFreeMaterialized:    defaultFreeMaterialized,
+	}
+	if plan, err := s.uc.GetPlan(ctx, sub.PlanID); err == nil && plan != nil {
+		reply.PlanName = plan.Name
+		reply.PlanType = plan.Type
+		reply.PeriodType = plan.PeriodType
+	}
+	return reply, nil
+}
+
+// GetOrEnsureMySubscription 获取当前用户订阅；若无 user_subscription 行则本次请求内幂等写入默认免费档后再返回（见 proto 说明）
+func (s *SubscriptionService) GetOrEnsureMySubscription(ctx context.Context, req *pb.GetOrEnsureMySubscriptionRequest) (*pb.GetOrEnsureMySubscriptionReply, error) {
+	if err := req.Validate(); err != nil {
+		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+	}
+	userID := strings.TrimSpace(req.GetUserId())
+	if err := auth.CheckOwnership(ctx, userID); err != nil {
 		return nil, err
 	}
+	appID := app_id.GetAppIDFromContext(ctx)
+	if appID == "" {
+		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+	}
 
-	sub, err := s.uc.GetMySubscription(ctx, req.UserId)
+	materialized := false
+	sub, err := s.uc.FindUserSubscription(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-
 	if sub == nil {
-		return &pb.GetMySubscriptionReply{IsActive: false}, nil
+		created, _, err := s.uc.EnsureDefaultFreeSubscription(ctx, userID, appID)
+		if err != nil {
+			return nil, err
+		}
+		materialized = created
+		sub, err = s.uc.FindUserSubscription(ctx, userID)
+		if err != nil {
+			return nil, err
+		}
 	}
+	return s.userSubscriptionToOrEnsureReply(ctx, sub, materialized)
+}
 
-	return &pb.GetMySubscriptionReply{
-		IsActive:  sub.Status == "active",
-		PlanId:    sub.PlanID,
-		StartTime: sub.StartTime.Unix(),
-		EndTime:   sub.EndTime.Unix(),
-		Status:    sub.Status,
-		AutoRenew: sub.IsAutoRenew,
+// EnsureDefaultFreeSubscription 幂等开通默认免费档（见 proto 说明）
+func (s *SubscriptionService) EnsureDefaultFreeSubscription(ctx context.Context, req *pb.EnsureDefaultFreeSubscriptionRequest) (*pb.EnsureDefaultFreeSubscriptionReply, error) {
+	if err := req.Validate(); err != nil {
+		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+	}
+	userID := strings.TrimSpace(req.GetUserId())
+	appID := app_id.GetAppIDFromContext(ctx)
+	if appID == "" {
+		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInvalidArgument)
+	}
+	if err := auth.CheckOwnership(ctx, userID); err != nil {
+		return nil, err
+	}
+	created, already, err := s.uc.EnsureDefaultFreeSubscription(ctx, userID, appID)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.EnsureDefaultFreeSubscriptionReply{
+		Created:             created,
+		AlreadySubscribed:   already,
 	}, nil
 }
 

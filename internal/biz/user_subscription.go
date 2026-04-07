@@ -87,8 +87,8 @@ func NewSubscriptionUsecase(
 	}
 }
 
-// GetMySubscription 获取用户当前订阅信息
-func (uc *SubscriptionUsecase) GetMySubscription(ctx context.Context, userId string) (*UserSubscription, error) {
+// FindUserSubscription 从仓储读取用户当前订阅（无则 nil，不创建）
+func (uc *SubscriptionUsecase) FindUserSubscription(ctx context.Context, userId string) (*UserSubscription, error) {
 	sub, err := uc.subRepo.GetSubscription(ctx, userId)
 	if err != nil {
 		return nil, err

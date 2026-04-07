@@ -34,6 +34,8 @@ type PlanPricing struct {
 // PlanRepo 套餐仓库接口
 type PlanRepo interface {
 	ListPlans(ctx context.Context, appID string) ([]*Plan, error)
+	// FindFreeForeverPlanByApp 每个应用一条「type=free + period=FOREVER」默认免费 SKU；无则返回 nil
+	FindFreeForeverPlanByApp(ctx context.Context, appID string) (*Plan, error)
 	GetPlan(ctx context.Context, id string) (*Plan, error)
 	CreatePlan(ctx context.Context, plan *Plan) error
 	UpdatePlan(ctx context.Context, plan *Plan) error

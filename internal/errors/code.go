@@ -13,7 +13,8 @@ func init() {
 
 	// 业务错误码和http status错误码映射
 	pkgErrors.RegisterHTTPStatusMapping("subscription-service", map[int]int{
-		ErrCodePlanNotFound:         http.StatusNotFound,
+		ErrCodePlanNotFound:              http.StatusNotFound,
+		ErrCodeDefaultFreePlanNotFound:  http.StatusNotFound,
 		ErrCodeSubscriptionNotFound: http.StatusNotFound,
 		ErrCodeInvalidStatus:        http.StatusBadRequest,
 		ErrCodeOrderNotFound:        http.StatusNotFound,
@@ -39,6 +40,8 @@ func init() {
 const (
 	// ErrCodePlanNotFound 套餐不存在错误
 	ErrCodePlanNotFound = 130101
+	// ErrCodeDefaultFreePlanNotFound 当前应用未配置免费 FOREVER 套餐，无法开通默认免费档
+	ErrCodeDefaultFreePlanNotFound = 130102
 )
 
 // 订阅生命周期模块 (130200-130299)

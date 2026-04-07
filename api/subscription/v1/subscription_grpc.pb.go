@@ -20,29 +20,30 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Subscription_ListPlans_FullMethodName                  = "/subscription.v1.Subscription/ListPlans"
-	Subscription_GetMySubscription_FullMethodName          = "/subscription.v1.Subscription/GetMySubscription"
-	Subscription_CreateSubscriptionOrder_FullMethodName    = "/subscription.v1.Subscription/CreateSubscriptionOrder"
-	Subscription_HandlePaymentSuccess_FullMethodName       = "/subscription.v1.Subscription/HandlePaymentSuccess"
-	Subscription_CancelSubscription_FullMethodName         = "/subscription.v1.Subscription/CancelSubscription"
-	Subscription_PauseSubscription_FullMethodName          = "/subscription.v1.Subscription/PauseSubscription"
-	Subscription_ResumeSubscription_FullMethodName         = "/subscription.v1.Subscription/ResumeSubscription"
-	Subscription_GetSubscriptionHistory_FullMethodName     = "/subscription.v1.Subscription/GetSubscriptionHistory"
-	Subscription_SetAutoRenew_FullMethodName               = "/subscription.v1.Subscription/SetAutoRenew"
-	Subscription_GetExpiringSubscriptions_FullMethodName   = "/subscription.v1.Subscription/GetExpiringSubscriptions"
-	Subscription_UpdateExpiredSubscriptions_FullMethodName = "/subscription.v1.Subscription/UpdateExpiredSubscriptions"
-	Subscription_ProcessAutoRenewals_FullMethodName        = "/subscription.v1.Subscription/ProcessAutoRenewals"
-	Subscription_CreatePlan_FullMethodName                 = "/subscription.v1.Subscription/CreatePlan"
-	Subscription_UpdatePlan_FullMethodName                 = "/subscription.v1.Subscription/UpdatePlan"
-	Subscription_DeletePlan_FullMethodName                 = "/subscription.v1.Subscription/DeletePlan"
-	Subscription_ListPlanPricings_FullMethodName           = "/subscription.v1.Subscription/ListPlanPricings"
-	Subscription_CreatePlanPricing_FullMethodName          = "/subscription.v1.Subscription/CreatePlanPricing"
-	Subscription_UpdatePlanPricing_FullMethodName          = "/subscription.v1.Subscription/UpdatePlanPricing"
-	Subscription_DeletePlanPricing_FullMethodName          = "/subscription.v1.Subscription/DeletePlanPricing"
-	Subscription_ListSubscriptionOrders_FullMethodName     = "/subscription.v1.Subscription/ListSubscriptionOrders"
-	Subscription_GetSubscriptionOrder_FullMethodName       = "/subscription.v1.Subscription/GetSubscriptionOrder"
-	Subscription_ListAppSubscriptions_FullMethodName       = "/subscription.v1.Subscription/ListAppSubscriptions"
-	Subscription_GetAppSubscriptionHistory_FullMethodName  = "/subscription.v1.Subscription/GetAppSubscriptionHistory"
+	Subscription_ListPlans_FullMethodName                     = "/subscription.v1.Subscription/ListPlans"
+	Subscription_GetOrEnsureMySubscription_FullMethodName     = "/subscription.v1.Subscription/GetOrEnsureMySubscription"
+	Subscription_EnsureDefaultFreeSubscription_FullMethodName = "/subscription.v1.Subscription/EnsureDefaultFreeSubscription"
+	Subscription_CreateSubscriptionOrder_FullMethodName       = "/subscription.v1.Subscription/CreateSubscriptionOrder"
+	Subscription_HandlePaymentSuccess_FullMethodName          = "/subscription.v1.Subscription/HandlePaymentSuccess"
+	Subscription_CancelSubscription_FullMethodName            = "/subscription.v1.Subscription/CancelSubscription"
+	Subscription_PauseSubscription_FullMethodName             = "/subscription.v1.Subscription/PauseSubscription"
+	Subscription_ResumeSubscription_FullMethodName            = "/subscription.v1.Subscription/ResumeSubscription"
+	Subscription_GetSubscriptionHistory_FullMethodName        = "/subscription.v1.Subscription/GetSubscriptionHistory"
+	Subscription_SetAutoRenew_FullMethodName                  = "/subscription.v1.Subscription/SetAutoRenew"
+	Subscription_GetExpiringSubscriptions_FullMethodName      = "/subscription.v1.Subscription/GetExpiringSubscriptions"
+	Subscription_UpdateExpiredSubscriptions_FullMethodName    = "/subscription.v1.Subscription/UpdateExpiredSubscriptions"
+	Subscription_ProcessAutoRenewals_FullMethodName           = "/subscription.v1.Subscription/ProcessAutoRenewals"
+	Subscription_CreatePlan_FullMethodName                    = "/subscription.v1.Subscription/CreatePlan"
+	Subscription_UpdatePlan_FullMethodName                    = "/subscription.v1.Subscription/UpdatePlan"
+	Subscription_DeletePlan_FullMethodName                    = "/subscription.v1.Subscription/DeletePlan"
+	Subscription_ListPlanPricings_FullMethodName              = "/subscription.v1.Subscription/ListPlanPricings"
+	Subscription_CreatePlanPricing_FullMethodName             = "/subscription.v1.Subscription/CreatePlanPricing"
+	Subscription_UpdatePlanPricing_FullMethodName             = "/subscription.v1.Subscription/UpdatePlanPricing"
+	Subscription_DeletePlanPricing_FullMethodName             = "/subscription.v1.Subscription/DeletePlanPricing"
+	Subscription_ListSubscriptionOrders_FullMethodName        = "/subscription.v1.Subscription/ListSubscriptionOrders"
+	Subscription_GetSubscriptionOrder_FullMethodName          = "/subscription.v1.Subscription/GetSubscriptionOrder"
+	Subscription_ListAppSubscriptions_FullMethodName          = "/subscription.v1.Subscription/ListAppSubscriptions"
+	Subscription_GetAppSubscriptionHistory_FullMethodName     = "/subscription.v1.Subscription/GetAppSubscriptionHistory"
 )
 
 // SubscriptionClient is the client API for Subscription service.
@@ -51,8 +52,22 @@ const (
 type SubscriptionClient interface {
 	// 获取所有订阅套餐
 	ListPlans(ctx context.Context, in *ListPlansRequest, opts ...grpc.CallOption) (*ListPlansReply, error)
-	// 获取用户的订阅状态
-	GetMySubscription(ctx context.Context, in *GetMySubscriptionRequest, opts ...grpc.CallOption) (*GetMySubscriptionReply, error)
+	// 获取（并必要时初始化）当前用户的订阅 —— 推荐唯一入口
+	//
+	// 使用背景：
+	// - 产品约定「每位注册用户应有 user_subscription 事实行」；历史上可能存在无行用户（老数据、仅注册未打开客户端等）。
+	// - 本 RPC 在「已登录且仅能查自己」的前提下：若 DB 中尚无订阅行，则在本次请求内幂等写入当前应用下的默认免费档（FOREVER + type=free），再返回。
+	//
+	// 语义说明：
+	// - 非「纯只读」：首次查询可能对当前用户产生 INSERT（与惰性迁移 / read-through 默认状态一致）。
+	// - 幂等：重复调用不会重复创建（已有任意档位订阅时不会覆盖）。
+	// - 须携带 X-App-Id（或与网关约定等价的 app 上下文），以便解析应用维度的免费套餐。
+	//
+	// 鉴权：仅允许查询 JWT 对应用户本人（CheckOwnership）。
+	GetOrEnsureMySubscription(ctx context.Context, in *GetOrEnsureMySubscriptionRequest, opts ...grpc.CallOption) (*GetOrEnsureMySubscriptionReply, error)
+	// 显式幂等开通默认免费档（与 GetOrEnsureMySubscription 内 Ensure 逻辑一致）。
+	// 一般客户端只需 GET GetOrEnsure；本接口可用于显式「同步」或调试。
+	EnsureDefaultFreeSubscription(ctx context.Context, in *EnsureDefaultFreeSubscriptionRequest, opts ...grpc.CallOption) (*EnsureDefaultFreeSubscriptionReply, error)
 	// 创建订阅订单 (调用 Payment Service)
 	CreateSubscriptionOrder(ctx context.Context, in *CreateSubscriptionOrderRequest, opts ...grpc.CallOption) (*CreateSubscriptionOrderReply, error)
 	// 支付回调处理 (通常由 Payment Service 或 MQ 调用)
@@ -77,7 +92,7 @@ type SubscriptionClient interface {
 	CreatePlan(ctx context.Context, in *CreatePlanRequest, opts ...grpc.CallOption) (*CreatePlanReply, error)
 	// 更新订阅套餐
 	UpdatePlan(ctx context.Context, in *UpdatePlanRequest, opts ...grpc.CallOption) (*UpdatePlanReply, error)
-	// 删除订阅套餐
+	// 删除订阅套餐（软删除：仅标记删除时间，数据保留；ListPlans 不再返回）
 	DeletePlan(ctx context.Context, in *DeletePlanRequest, opts ...grpc.CallOption) (*DeletePlanReply, error)
 	// 获取套餐的区域定价列表
 	ListPlanPricings(ctx context.Context, in *ListPlanPricingsRequest, opts ...grpc.CallOption) (*ListPlanPricingsReply, error)
@@ -115,10 +130,20 @@ func (c *subscriptionClient) ListPlans(ctx context.Context, in *ListPlansRequest
 	return out, nil
 }
 
-func (c *subscriptionClient) GetMySubscription(ctx context.Context, in *GetMySubscriptionRequest, opts ...grpc.CallOption) (*GetMySubscriptionReply, error) {
+func (c *subscriptionClient) GetOrEnsureMySubscription(ctx context.Context, in *GetOrEnsureMySubscriptionRequest, opts ...grpc.CallOption) (*GetOrEnsureMySubscriptionReply, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetMySubscriptionReply)
-	err := c.cc.Invoke(ctx, Subscription_GetMySubscription_FullMethodName, in, out, cOpts...)
+	out := new(GetOrEnsureMySubscriptionReply)
+	err := c.cc.Invoke(ctx, Subscription_GetOrEnsureMySubscription_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subscriptionClient) EnsureDefaultFreeSubscription(ctx context.Context, in *EnsureDefaultFreeSubscriptionRequest, opts ...grpc.CallOption) (*EnsureDefaultFreeSubscriptionReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(EnsureDefaultFreeSubscriptionReply)
+	err := c.cc.Invoke(ctx, Subscription_EnsureDefaultFreeSubscription_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -341,8 +366,22 @@ func (c *subscriptionClient) GetAppSubscriptionHistory(ctx context.Context, in *
 type SubscriptionServer interface {
 	// 获取所有订阅套餐
 	ListPlans(context.Context, *ListPlansRequest) (*ListPlansReply, error)
-	// 获取用户的订阅状态
-	GetMySubscription(context.Context, *GetMySubscriptionRequest) (*GetMySubscriptionReply, error)
+	// 获取（并必要时初始化）当前用户的订阅 —— 推荐唯一入口
+	//
+	// 使用背景：
+	// - 产品约定「每位注册用户应有 user_subscription 事实行」；历史上可能存在无行用户（老数据、仅注册未打开客户端等）。
+	// - 本 RPC 在「已登录且仅能查自己」的前提下：若 DB 中尚无订阅行，则在本次请求内幂等写入当前应用下的默认免费档（FOREVER + type=free），再返回。
+	//
+	// 语义说明：
+	// - 非「纯只读」：首次查询可能对当前用户产生 INSERT（与惰性迁移 / read-through 默认状态一致）。
+	// - 幂等：重复调用不会重复创建（已有任意档位订阅时不会覆盖）。
+	// - 须携带 X-App-Id（或与网关约定等价的 app 上下文），以便解析应用维度的免费套餐。
+	//
+	// 鉴权：仅允许查询 JWT 对应用户本人（CheckOwnership）。
+	GetOrEnsureMySubscription(context.Context, *GetOrEnsureMySubscriptionRequest) (*GetOrEnsureMySubscriptionReply, error)
+	// 显式幂等开通默认免费档（与 GetOrEnsureMySubscription 内 Ensure 逻辑一致）。
+	// 一般客户端只需 GET GetOrEnsure；本接口可用于显式「同步」或调试。
+	EnsureDefaultFreeSubscription(context.Context, *EnsureDefaultFreeSubscriptionRequest) (*EnsureDefaultFreeSubscriptionReply, error)
 	// 创建订阅订单 (调用 Payment Service)
 	CreateSubscriptionOrder(context.Context, *CreateSubscriptionOrderRequest) (*CreateSubscriptionOrderReply, error)
 	// 支付回调处理 (通常由 Payment Service 或 MQ 调用)
@@ -367,7 +406,7 @@ type SubscriptionServer interface {
 	CreatePlan(context.Context, *CreatePlanRequest) (*CreatePlanReply, error)
 	// 更新订阅套餐
 	UpdatePlan(context.Context, *UpdatePlanRequest) (*UpdatePlanReply, error)
-	// 删除订阅套餐
+	// 删除订阅套餐（软删除：仅标记删除时间，数据保留；ListPlans 不再返回）
 	DeletePlan(context.Context, *DeletePlanRequest) (*DeletePlanReply, error)
 	// 获取套餐的区域定价列表
 	ListPlanPricings(context.Context, *ListPlanPricingsRequest) (*ListPlanPricingsReply, error)
@@ -398,8 +437,11 @@ type UnimplementedSubscriptionServer struct{}
 func (UnimplementedSubscriptionServer) ListPlans(context.Context, *ListPlansRequest) (*ListPlansReply, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListPlans not implemented")
 }
-func (UnimplementedSubscriptionServer) GetMySubscription(context.Context, *GetMySubscriptionRequest) (*GetMySubscriptionReply, error) {
-	return nil, status.Error(codes.Unimplemented, "method GetMySubscription not implemented")
+func (UnimplementedSubscriptionServer) GetOrEnsureMySubscription(context.Context, *GetOrEnsureMySubscriptionRequest) (*GetOrEnsureMySubscriptionReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetOrEnsureMySubscription not implemented")
+}
+func (UnimplementedSubscriptionServer) EnsureDefaultFreeSubscription(context.Context, *EnsureDefaultFreeSubscriptionRequest) (*EnsureDefaultFreeSubscriptionReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method EnsureDefaultFreeSubscription not implemented")
 }
 func (UnimplementedSubscriptionServer) CreateSubscriptionOrder(context.Context, *CreateSubscriptionOrderRequest) (*CreateSubscriptionOrderReply, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateSubscriptionOrder not implemented")
@@ -503,20 +545,38 @@ func _Subscription_ListPlans_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Subscription_GetMySubscription_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetMySubscriptionRequest)
+func _Subscription_GetOrEnsureMySubscription_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetOrEnsureMySubscriptionRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(SubscriptionServer).GetMySubscription(ctx, in)
+		return srv.(SubscriptionServer).GetOrEnsureMySubscription(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Subscription_GetMySubscription_FullMethodName,
+		FullMethod: Subscription_GetOrEnsureMySubscription_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SubscriptionServer).GetMySubscription(ctx, req.(*GetMySubscriptionRequest))
+		return srv.(SubscriptionServer).GetOrEnsureMySubscription(ctx, req.(*GetOrEnsureMySubscriptionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Subscription_EnsureDefaultFreeSubscription_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EnsureDefaultFreeSubscriptionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubscriptionServer).EnsureDefaultFreeSubscription(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Subscription_EnsureDefaultFreeSubscription_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubscriptionServer).EnsureDefaultFreeSubscription(ctx, req.(*EnsureDefaultFreeSubscriptionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -911,8 +971,12 @@ var Subscription_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Subscription_ListPlans_Handler,
 		},
 		{
-			MethodName: "GetMySubscription",
-			Handler:    _Subscription_GetMySubscription_Handler,
+			MethodName: "GetOrEnsureMySubscription",
+			Handler:    _Subscription_GetOrEnsureMySubscription_Handler,
+		},
+		{
+			MethodName: "EnsureDefaultFreeSubscription",
+			Handler:    _Subscription_EnsureDefaultFreeSubscription_Handler,
 		},
 		{
 			MethodName: "CreateSubscriptionOrder",

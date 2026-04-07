@@ -74,9 +74,10 @@ message PassportService {
 
 // 订阅业务配置
 message Subscription {
-  string return_url = 1;                 // 支付成功返回 URL
-  int32 auto_renew_days_before = 2;      // 自动续费提前天数
-  int32 expiry_check_days = 3;           // 过期检查天数
+  string return_url = 1;            // 支付成功返回 URL
+  int32 auto_renew_days_before = 2; // 自动续费提前天数
+  int32 expiry_check_days = 3;      // 过期检查天数
+  reserved 4;                       // 曾为 internal_ensure_free_token，已废弃
 }
 
 // 定时任务配置

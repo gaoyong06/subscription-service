@@ -185,37 +185,51 @@ for _, plan := range resp.Plans {
 }
 ```
 
-#### 2. 获取我的订阅 (GetMySubscription)
+#### 2. 获取或初始化我的订阅 (GetOrEnsureMySubscription)
+
+推荐唯一入口：`GET /subscription/v1/my/{userId}`。若该用户尚无 `user_subscription` 行，**本次请求内**会幂等写入当前应用默认免费档后再返回（须登录且仅能查本人，并携带 `X-App-Id`）。详见 `api/subscription/v1/subscription.proto` 中 RPC 注释。
 
 ```protobuf
-rpc GetMySubscription (GetMySubscriptionRequest) returns (GetMySubscriptionReply);
+rpc GetOrEnsureMySubscription (GetOrEnsureMySubscriptionRequest) returns (GetOrEnsureMySubscriptionReply);
 
-message GetMySubscriptionRequest {
-  uint64 uid = 1;
+message GetOrEnsureMySubscriptionRequest {
+  string userId = 1;  // 用户 ID（字符串 UUID）
 }
 
-message GetMySubscriptionReply {
-  bool is_active = 1;        // 是否激活
-  string plan_id = 2;        // 当前套餐ID
-  int64 start_time = 3;      // 开始时间（Unix时间戳）
-  int64 end_time = 4;        // 结束时间（Unix时间戳）
+message GetOrEnsureMySubscriptionReply {
+  bool isActive = 1;
+  string planId = 2;
+  int64 startTime = 3;
+  int64 endTime = 4;
   string status = 5;         // active, expired, paused, cancelled
-  bool auto_renew = 6;       // 是否自动续费
+  bool autoRenew = 6;
+  string planName = 7;       // 套餐展示名（常为 i18n key）
+  string planType = 8;       // free | pro | enterprise
+  string periodType = 9;     // MONTH | YEAR | FOREVER | DAY
+  bool default_free_materialized = 10;  // 本次是否新写入默认免费档
 }
 ```
 
 **示例**:
 ```go
-resp, err := client.GetMySubscription(context.Background(), &subscriptionv1.GetMySubscriptionRequest{
-    Uid: 1001,
+resp, err := client.GetOrEnsureMySubscription(context.Background(), &subscriptionv1.GetOrEnsureMySubscriptionRequest{
+    UserId: "550e8400-e29b-41d4-a716-446655440000",
 })
 
+if err != nil {
+    log.Fatal(err)
+}
 if resp.IsActive {
     fmt.Printf("会员有效期至: %s\n", time.Unix(resp.EndTime, 0))
+    if resp.DefaultFreeMaterialized {
+        fmt.Println("本次已自动写入默认免费档")
+    }
 } else {
-    fmt.Println("当前不是会员")
+    fmt.Println("当前不是有效会员")
 }
 ```
+
+领域层只读查询订阅行（不创建）的方法名为 **`FindUserSubscription`**。
 
 #### 3. 创建订阅订单 (CreateSubscriptionOrder)
 
@@ -498,7 +512,7 @@ curl http://localhost:8102/health
 
 #### 获取套餐列表
 ```bash
-curl -X GET http://localhost:8102/v1/subscription/plans
+curl -X GET "http://localhost:8102/subscription/v1/plans?appId=demo-app"
 ```
 
 响应示例：
@@ -535,9 +549,11 @@ curl -X GET http://localhost:8102/v1/subscription/plans
 }
 ```
 
-#### 获取我的订阅
+#### 获取或初始化我的订阅
 ```bash
-curl -X GET http://localhost:8102/v1/subscription/my/1001
+curl -X GET "http://localhost:8102/subscription/v1/my/550e8400-e29b-41d4-a716-446655440000" \
+  -H "Authorization: Bearer <access_token>" \
+  -H "X-App-Id: demo-app"
 ```
 
 响应示例：
@@ -545,11 +561,13 @@ curl -X GET http://localhost:8102/v1/subscription/my/1001
 {
   "success": true,
   "data": {
-    "is_active": true,
-    "plan_id": "plan_monthly",
-    "start_time": 1700726400,
-    "end_time": 1703318400,
-    "status": "active"
+    "isActive": true,
+    "planId": "plan_monthly",
+    "startTime": 1700726400,
+    "endTime": 1703318400,
+    "status": "active",
+    "autoRenew": true,
+    "defaultFreeMaterialized": false
   },
   "errorCode": "",
   "errorMessage": "",
@@ -561,12 +579,13 @@ curl -X GET http://localhost:8102/v1/subscription/my/1001
 
 #### 创建订阅订单
 ```bash
-curl -X POST http://localhost:8102/v1/subscription/order \
+curl -X POST http://localhost:8102/subscription/v1/order \
   -H "Content-Type: application/json" \
   -d '{
-    "uid": 1001,
-    "plan_id": "plan_monthly",
-    "payment_method": "alipay"
+    "userId": "550e8400-e29b-41d4-a716-446655440000",
+    "planId": "plan_monthly",
+    "paymentMethod": "alipay",
+    "region": "default"
   }'
 ```
 

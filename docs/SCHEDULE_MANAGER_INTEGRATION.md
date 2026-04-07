@@ -309,11 +309,11 @@ HasActiveSubscription(uid uint) (bool, error)
 
 ### Subscription-Service API
 ```protobuf
-// 获取用户订阅
-GetMySubscription(uid) -> GetMySubscriptionReply
+// 获取或初始化用户订阅（推荐唯一入口；userId 为字符串 UUID）
+GetOrEnsureMySubscription(userId) -> GetOrEnsureMySubscriptionReply
 
 // 创建订阅订单
-CreateSubscriptionOrder(uid, plan_id, payment_method) -> CreateSubscriptionOrderReply
+CreateSubscriptionOrder(userId, plan_id, payment_method) -> CreateSubscriptionOrderReply
 
 // 处理支付成功
 HandlePaymentSuccess(order_id, payment_id, amount) -> HandlePaymentSuccessReply

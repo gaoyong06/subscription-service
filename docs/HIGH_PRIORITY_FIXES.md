@@ -67,7 +67,7 @@
 **文件**: `internal/service/subscription_service.go`
 
 添加权限验证的方法:
-- ✅ `GetMySubscription` - 查询订阅信息
+- ✅ `GetOrEnsureMySubscription` - 获取或初始化当前用户订阅（推荐唯一入口）
 - ✅ `CreateSubscriptionOrder` - 创建订单
 - ✅ `CancelSubscription` - 取消订阅
 - ✅ `PauseSubscription` - 暂停订阅
@@ -77,12 +77,12 @@
 
 **示例代码**:
 ```go
-func (s *SubscriptionService) GetMySubscription(ctx context.Context, req *pb.GetMySubscriptionRequest) (*pb.GetMySubscriptionReply, error) {
-    // 权限验证: 只能查询自己的订阅或管理员可以查询所有
-    if err := auth.CheckOwnership(ctx, req.Uid); err != nil {
+func (s *SubscriptionService) GetOrEnsureMySubscription(ctx context.Context, req *pb.GetOrEnsureMySubscriptionRequest) (*pb.GetOrEnsureMySubscriptionReply, error) {
+    // 权限验证: 只能查询自己的订阅或管理员可查询所有
+    if err := auth.CheckOwnership(ctx, req.UserId); err != nil {
         return nil, err
     }
-    // ... 业务逻辑
+    // ... 业务逻辑（FindUserSubscription + 必要时 EnsureDefaultFree）
 }
 ```
 
@@ -219,24 +219,27 @@ make wire
 ### 1. 权限验证测试
 ```bash
 # 测试未登录访问
-curl -X GET http://localhost:8102/v1/subscription/my/1001
+curl -X GET "http://localhost:8102/subscription/v1/my/550e8400-e29b-41d4-a716-446655440000" \
+  -H "X-App-Id: demo-app"
 
 # 测试访问其他用户资源
-curl -X GET http://localhost:8102/v1/subscription/my/1002 \
-  -H "X-User-ID: 1001" \
-  -H "X-User-Role: user"
+curl -X GET "http://localhost:8102/subscription/v1/my/550e8400-e29b-41d4-a716-446655440001" \
+  -H "X-User-ID: 550e8400-e29b-41d4-a716-446655440000" \
+  -H "X-User-Role: user" \
+  -H "X-App-Id: demo-app"
 
 # 测试管理员访问
-curl -X GET http://localhost:8102/v1/subscription/my/1002 \
-  -H "X-User-ID: 1001" \
-  -H "X-User-Role: admin"
+curl -X GET "http://localhost:8102/subscription/v1/my/550e8400-e29b-41d4-a716-446655440001" \
+  -H "X-User-ID: 550e8400-e29b-41d4-a716-446655440000" \
+  -H "X-User-Role: admin" \
+  -H "X-App-Id: demo-app"
 ```
 
 ### 2. 并发安全测试
 ```bash
 # 并发执行自动续费
 for i in {1..5}; do
-  curl -X POST http://localhost:8102/v1/subscription/auto-renew/process \
+  curl -X POST http://localhost:8102/subscription/v1/auto-renew/process \
     -H "Content-Type: application/json" \
     -d '{"days_before_expiry": 3, "dry_run": false}' &
 done

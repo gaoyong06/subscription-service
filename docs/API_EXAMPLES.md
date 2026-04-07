@@ -22,9 +22,9 @@
 
 用户在购买前需要先查看可用的订阅套餐。
 
-**HTTP 请求**:
+**HTTP 请求**（`appId` 为必填查询参数，与网关/proto 一致）:
 ```bash
-curl -X GET http://localhost:8102/v1/subscription/plans \
+curl -X GET "http://localhost:8102/subscription/v1/plans?appId=demo-app" \
   -H "Content-Type: application/json"
 ```
 
@@ -62,7 +62,7 @@ curl -X GET http://localhost:8102/v1/subscription/plans \
 conn, _ := grpc.Dial("localhost:9102", grpc.WithInsecure())
 client := subscriptionv1.NewSubscriptionClient(conn)
 
-resp, err := client.ListPlans(context.Background(), &subscriptionv1.ListPlansRequest{})
+resp, err := client.ListPlans(context.Background(), &subscriptionv1.ListPlansRequest{AppId: "demo-app"})
 if err != nil {
     log.Fatalf("failed to list plans: %v", err)
 }
@@ -75,48 +75,60 @@ for _, plan := range resp.Plans {
 }
 ```
 
-### 2. 查询用户当前订阅状态
+### 2. 获取或初始化当前用户订阅 (GetOrEnsureMySubscription)
 
-在购买前，可以先查询用户是否已有订阅。
+对应 RPC/HTTP：`GetOrEnsureMySubscription`、`GET /subscription/v1/my/{userId}`。若该用户尚无 `user_subscription` 行，本次请求会幂等写入当前应用默认免费档后再返回。实际调用需登录态，并携带与鉴权中间件约定的一致的 Header（如 `Authorization`）及 `X-App-Id`。
 
-**HTTP 请求**:
+**HTTP 请求**（`userId` 为字符串 UUID）:
 ```bash
-curl -X GET http://localhost:8102/v1/subscription/my/1001 \
-  -H "Content-Type: application/json"
+curl -X GET "http://localhost:8102/subscription/v1/my/550e8400-e29b-41d4-a716-446655440000" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <access_token>" \
+  -H "X-App-Id: demo-app"
 ```
 
-**响应示例（未订阅）**:
+**响应示例（首次访问，已物化默认免费档）**:
 ```json
 {
   "success": true,
   "data": {
-    "is_active": false,
-    "plan_id": "",
-    "start_time": 0,
-    "end_time": 0,
-    "status": "expired"
+    "isActive": true,
+    "planId": "plan_free",
+    "startTime": 1700726400,
+    "endTime": 1893427200,
+    "status": "active",
+    "autoRenew": false,
+    "planName": "plan.name.free",
+    "planType": "free",
+    "periodType": "FOREVER",
+    "defaultFreeMaterialized": true
   }
 }
 ```
 
-**响应示例（已订阅）**:
+**响应示例（已订阅 Pro）**:
 ```json
 {
   "success": true,
   "data": {
-    "is_active": true,
-    "plan_id": "plan_monthly",
-    "start_time": 1700726400,
-    "end_time": 1703318400,
-    "status": "active"
+    "isActive": true,
+    "planId": "plan_monthly",
+    "startTime": 1700726400,
+    "endTime": 1703318400,
+    "status": "active",
+    "autoRenew": true,
+    "planName": "plan.name.pro.monthly",
+    "planType": "pro",
+    "periodType": "MONTH",
+    "defaultFreeMaterialized": false
   }
 }
 ```
 
 **gRPC 调用示例**:
 ```go
-resp, err := client.GetMySubscription(context.Background(), &subscriptionv1.GetMySubscriptionRequest{
-    Uid: 1001,
+resp, err := client.GetOrEnsureMySubscription(context.Background(), &subscriptionv1.GetOrEnsureMySubscriptionRequest{
+    UserId: "550e8400-e29b-41d4-a716-446655440000",
 })
 if err != nil {
     log.Fatalf("failed to get subscription: %v", err)
@@ -127,7 +139,7 @@ if resp.IsActive {
     fmt.Printf("会员有效期至: %s\n", endTime.Format("2006-01-02 15:04:05"))
     fmt.Printf("当前套餐: %s\n", resp.PlanId)
 } else {
-    fmt.Println("当前不是会员")
+    fmt.Println("当前不是有效会员")
 }
 ```
 
@@ -137,12 +149,13 @@ if resp.IsActive {
 
 **HTTP 请求**:
 ```bash
-curl -X POST http://localhost:8102/v1/subscription/order \
+curl -X POST http://localhost:8102/subscription/v1/order \
   -H "Content-Type: application/json" \
   -d '{
-    "uid": 1001,
-    "plan_id": "plan_monthly",
-    "payment_method": "alipay"
+    "userId": "550e8400-e29b-41d4-a716-446655440000",
+    "planId": "plan_monthly",
+    "paymentMethod": "alipay",
+    "region": "default"
   }'
 ```
 
@@ -163,9 +176,10 @@ curl -X POST http://localhost:8102/v1/subscription/order \
 **gRPC 调用示例**:
 ```go
 resp, err := client.CreateSubscriptionOrder(context.Background(), &subscriptionv1.CreateSubscriptionOrderRequest{
-    Uid:           1001,
+    UserId:        "550e8400-e29b-41d4-a716-446655440000",
     PlanId:        "plan_monthly",
     PaymentMethod: "alipay",
+    Region:        "default",
 })
 if err != nil {
     log.Fatalf("failed to create order: %v", err)
@@ -184,11 +198,11 @@ fmt.Printf("支付链接: %s\n", resp.PayUrl)
 
 **HTTP 请求**:
 ```bash
-curl -X POST http://localhost:8102/v1/subscription/payment/success \
+curl -X POST http://localhost:8102/subscription/v1/payment/success \
   -H "Content-Type: application/json" \
   -d '{
-    "order_id": "SUB1700726400001001",
-    "payment_id": "PAY1700726400001",
+    "orderId": "SUB1700726400001001",
+    "paymentId": "PAY1700726400001",
     "amount": 9.99
   }'
 ```
@@ -205,8 +219,8 @@ curl -X POST http://localhost:8102/v1/subscription/payment/success \
 
 **gRPC 调用示例**:
 ```go
-// 通常由 Payment Service 或 MQ 消费者调用
-resp, err := client.HandlePaymentSuccess(context.Background(), &subscriptionv1.HandlePaymentSuccessRequest{
+// 通常由 Payment Service 或 MQ 消费者调用；RPC 返回 google.protobuf.Empty
+_, err := client.HandlePaymentSuccess(context.Background(), &subscriptionv1.HandlePaymentSuccessRequest{
     OrderId:   "SUB1700726400001001",
     PaymentId: "PAY1700726400001",
     Amount:    9.99,
@@ -214,10 +228,7 @@ resp, err := client.HandlePaymentSuccess(context.Background(), &subscriptionv1.H
 if err != nil {
     log.Fatalf("failed to handle payment success: %v", err)
 }
-
-if resp.Success {
-    fmt.Println("订阅激活成功")
-}
+fmt.Println("订阅激活成功")
 ```
 
 ### 5. 验证订阅已激活
@@ -226,7 +237,9 @@ if resp.Success {
 
 **HTTP 请求**:
 ```bash
-curl -X GET http://localhost:8102/v1/subscription/my/1001
+curl -X GET "http://localhost:8102/subscription/v1/my/550e8400-e29b-41d4-a716-446655440000" \
+  -H "Authorization: Bearer <access_token>" \
+  -H "X-App-Id: demo-app"
 ```
 
 **响应示例**:
@@ -234,10 +247,10 @@ curl -X GET http://localhost:8102/v1/subscription/my/1001
 {
   "success": true,
   "data": {
-    "is_active": true,
-    "plan_id": "plan_monthly",
-    "start_time": 1700726400,
-    "end_time": 1703318400,
+    "isActive": true,
+    "planId": "plan_monthly",
+    "startTime": 1700726400,
+    "endTime": 1703318400,
     "status": "active"
   }
 }
@@ -258,29 +271,32 @@ curl -X GET http://localhost:8102/v1/subscription/my/1001
 
 **1. 创建续费订单**:
 ```bash
-curl -X POST http://localhost:8102/v1/subscription/order \
+curl -X POST http://localhost:8102/subscription/v1/order \
   -H "Content-Type: application/json" \
   -d '{
-    "uid": 1001,
-    "plan_id": "plan_monthly",
-    "payment_method": "alipay"
+    "userId": "550e8400-e29b-41d4-a716-446655440000",
+    "planId": "plan_monthly",
+    "paymentMethod": "alipay",
+    "region": "default"
   }'
 ```
 
 **2. 支付成功后**:
 ```bash
-curl -X POST http://localhost:8102/v1/subscription/payment/success \
+curl -X POST http://localhost:8102/subscription/v1/payment/success \
   -H "Content-Type: application/json" \
   -d '{
-    "order_id": "SUB1700726400002001",
-    "payment_id": "PAY1700726400002",
+    "orderId": "SUB1700726400002001",
+    "paymentId": "PAY1700726400002",
     "amount": 9.99
   }'
 ```
 
 **3. 验证订阅已延长**:
 ```bash
-curl -X GET http://localhost:8102/v1/subscription/my/1001
+curl -X GET "http://localhost:8102/subscription/v1/my/550e8400-e29b-41d4-a716-446655440000" \
+  -H "Authorization: Bearer <access_token>" \
+  -H "X-App-Id: demo-app"
 ```
 
 **响应示例**:
@@ -288,10 +304,10 @@ curl -X GET http://localhost:8102/v1/subscription/my/1001
 {
   "success": true,
   "data": {
-    "is_active": true,
-    "plan_id": "plan_monthly",
-    "start_time": 1700726400,
-    "end_time": 1705910400,
+    "isActive": true,
+    "planId": "plan_monthly",
+    "startTime": 1700726400,
+    "endTime": 1705910400,
     "status": "active"
   }
 }
@@ -307,29 +323,32 @@ curl -X GET http://localhost:8102/v1/subscription/my/1001
 
 **1. 创建升级订单**:
 ```bash
-curl -X POST http://localhost:8102/v1/subscription/order \
+curl -X POST http://localhost:8102/subscription/v1/order \
   -H "Content-Type: application/json" \
   -d '{
-    "uid": 1001,
-    "plan_id": "plan_yearly",
-    "payment_method": "wechatpay"
+    "userId": "550e8400-e29b-41d4-a716-446655440000",
+    "planId": "plan_yearly",
+    "paymentMethod": "wechatpay",
+    "region": "default"
   }'
 ```
 
 **2. 支付成功后**:
 ```bash
-curl -X POST http://localhost:8102/v1/subscription/payment/success \
+curl -X POST http://localhost:8102/subscription/v1/payment/success \
   -H "Content-Type: application/json" \
   -d '{
-    "order_id": "SUB1700726400003001",
-    "payment_id": "PAY1700726400003",
+    "orderId": "SUB1700726400003001",
+    "paymentId": "PAY1700726400003",
     "amount": 99.99
   }'
 ```
 
 **3. 验证已升级**:
 ```bash
-curl -X GET http://localhost:8102/v1/subscription/my/1001
+curl -X GET "http://localhost:8102/subscription/v1/my/550e8400-e29b-41d4-a716-446655440000" \
+  -H "Authorization: Bearer <access_token>" \
+  -H "X-App-Id: demo-app"
 ```
 
 **响应示例**:
@@ -337,10 +356,10 @@ curl -X GET http://localhost:8102/v1/subscription/my/1001
 {
   "success": true,
   "data": {
-    "is_active": true,
-    "plan_id": "plan_yearly",
-    "start_time": 1700726400,
-    "end_time": 1732262400,
+    "isActive": true,
+    "planId": "plan_yearly",
+    "startTime": 1700726400,
+    "endTime": 1732262400,
     "status": "active"
   }
 }
@@ -357,29 +376,36 @@ class SubscriptionService {
     this.baseURL = baseURL;
   }
 
-  // 获取套餐列表
-  async getPlans() {
-    const response = await fetch(`${this.baseURL}/v1/subscription/plans`);
+  // 获取套餐列表（appId 必填，与 proto 一致）
+  async getPlans(appId) {
+    const q = new URLSearchParams({ appId });
+    const response = await fetch(`${this.baseURL}/subscription/v1/plans?${q}`);
     const data = await response.json();
     return data.data.plans;
   }
 
-  // 获取用户订阅状态
-  async getMySubscription(uid) {
-    const response = await fetch(`${this.baseURL}/v1/subscription/my/${uid}`);
+  // 获取或初始化当前用户订阅（须登录；示例省略 token 注入）
+  async getOrEnsureMySubscription(userId, accessToken, appId) {
+    const response = await fetch(`${this.baseURL}/subscription/v1/my/${encodeURIComponent(userId)}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'X-App-Id': appId
+      }
+    });
     const data = await response.json();
     return data.data;
   }
 
   // 创建订阅订单
-  async createOrder(uid, planId, paymentMethod) {
-    const response = await fetch(`${this.baseURL}/v1/subscription/order`, {
+  async createOrder(userId, planId, paymentMethod, region = 'default') {
+    const response = await fetch(`${this.baseURL}/subscription/v1/order`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        uid,
-        plan_id: planId,
-        payment_method: paymentMethod
+        userId,
+        planId,
+        paymentMethod,
+        region
       })
     });
     const data = await response.json();
@@ -392,26 +418,26 @@ const subscriptionService = new SubscriptionService();
 
 // 1. 显示套餐列表
 async function showPlans() {
-  const plans = await subscriptionService.getPlans();
+  const plans = await subscriptionService.getPlans('demo-app');
   plans.forEach(plan => {
     console.log(`${plan.name}: ¥${plan.price}/${plan.duration_days}天`);
   });
 }
 
 // 2. 检查订阅状态
-async function checkSubscription(uid) {
-  const subscription = await subscriptionService.getMySubscription(uid);
-  if (subscription.is_active) {
-    const endDate = new Date(subscription.end_time * 1000);
+async function checkSubscription(userId, accessToken, appId) {
+  const subscription = await subscriptionService.getOrEnsureMySubscription(userId, accessToken, appId);
+  if (subscription.isActive) {
+    const endDate = new Date(subscription.endTime * 1000);
     console.log(`会员有效期至: ${endDate.toLocaleDateString()}`);
   } else {
-    console.log('当前不是会员');
+    console.log('当前不是有效会员');
   }
 }
 
 // 3. 购买订阅
-async function purchaseSubscription(uid, planId) {
-  const order = await subscriptionService.createOrder(uid, planId, 'alipay');
+async function purchaseSubscription(userId, planId) {
+  const order = await subscriptionService.createOrder(userId, planId, 'alipay');
   // 跳转到支付页面
   window.location.href = order.pay_url;
 }
@@ -423,7 +449,7 @@ async function purchaseSubscription(uid, planId) {
 
 ```sql
 -- 查询用户订阅状态
-SELECT * FROM user_subscription WHERE user_id = 1001;
+SELECT * FROM user_subscription WHERE user_id = '550e8400-e29b-41d4-a716-446655440000';
 
 -- 查询所有激活的订阅
 SELECT * FROM user_subscription WHERE status = 'active';
@@ -439,7 +465,7 @@ WHERE status = 'active'
 ```sql
 -- 查询用户的订单历史
 SELECT * FROM subscription_order 
-WHERE user_id = 1001 
+WHERE user_id = '550e8400-e29b-41d4-a716-446655440000' 
 ORDER BY created_at DESC;
 
 -- 查询待支付订单
@@ -497,45 +523,45 @@ func TestListPlans(t *testing.T) {
     ctx := context.Background()
     
     // 调用方法
-    resp, err := subscriptionUsecase.ListPlans(ctx)
+    plans, err := subscriptionUsecase.ListPlans(ctx, "demo-app")
     
     // 验证结果
     assert.NoError(t, err)
-    assert.NotNil(t, resp)
-    assert.GreaterOrEqual(t, len(resp.Plans), 2) // 至少有月度和年度套餐
+    assert.NotNil(t, plans)
+    assert.GreaterOrEqual(t, len(plans), 2) // 至少有月度和年度套餐
 }
 
 func TestCreateSubscriptionOrder(t *testing.T) {
     // 准备测试数据
     ctx := context.Background()
-    uid := uint64(1001)
+    userID := "550e8400-e29b-41d4-a716-446655440000"
     planID := "plan_monthly"
     paymentMethod := "alipay"
     
     // 调用方法
-    order, err := subscriptionUsecase.CreateSubscriptionOrder(ctx, uid, planID, paymentMethod)
+    order, payURL, _, _, _, err := subscriptionUsecase.CreateSubscriptionOrder(ctx, userID, planID, paymentMethod, "default")
     
     // 验证结果
     assert.NoError(t, err)
     assert.NotEmpty(t, order.OrderID)
-    assert.NotEmpty(t, order.PaymentID)
-    assert.NotEmpty(t, order.PayURL)
+    assert.NotEmpty(t, payURL)
 }
 
 func TestHandlePaymentSuccess(t *testing.T) {
     // 先创建订单
     ctx := context.Background()
-    order, _ := subscriptionUsecase.CreateSubscriptionOrder(ctx, 1001, "plan_monthly", "alipay")
+    userID := "550e8400-e29b-41d4-a716-446655440000"
+    order, _, _, _, _, _ := subscriptionUsecase.CreateSubscriptionOrder(ctx, userID, "plan_monthly", "alipay", "default")
     
     // 处理支付成功
-    err := subscriptionUsecase.HandlePaymentSuccess(ctx, order.OrderID, order.PaymentID, 9.99)
+    err := subscriptionUsecase.HandlePaymentSuccess(ctx, order.OrderID, 9.99)
     
     // 验证结果
     assert.NoError(t, err)
     
     // 验证订阅已激活
-    subscription, _ := subscriptionUsecase.GetMySubscription(ctx, 1001)
-    assert.True(t, subscription.IsActive)
+    subscription, _ := subscriptionUsecase.FindUserSubscription(ctx, userID)
+    assert.Equal(t, "active", subscription.Status)
     assert.Equal(t, "plan_monthly", subscription.PlanID)
 }
 ```
@@ -545,7 +571,7 @@ func TestHandlePaymentSuccess(t *testing.T) {
 使用 API 测试工具（如 api-tester）测试完整流程：
 
 1. 获取套餐列表
-2. 查询用户订阅状态（未订阅）
+2. 调用 GetOrEnsureMySubscription（无订阅行时会物化默认免费档）
 3. 创建订阅订单
 4. 处理支付成功
 5. 验证订阅已激活

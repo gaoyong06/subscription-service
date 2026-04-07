@@ -26,9 +26,10 @@ const OperationSubscriptionCreatePlanPricing = "/subscription.v1.Subscription/Cr
 const OperationSubscriptionCreateSubscriptionOrder = "/subscription.v1.Subscription/CreateSubscriptionOrder"
 const OperationSubscriptionDeletePlan = "/subscription.v1.Subscription/DeletePlan"
 const OperationSubscriptionDeletePlanPricing = "/subscription.v1.Subscription/DeletePlanPricing"
+const OperationSubscriptionEnsureDefaultFreeSubscription = "/subscription.v1.Subscription/EnsureDefaultFreeSubscription"
 const OperationSubscriptionGetAppSubscriptionHistory = "/subscription.v1.Subscription/GetAppSubscriptionHistory"
 const OperationSubscriptionGetExpiringSubscriptions = "/subscription.v1.Subscription/GetExpiringSubscriptions"
-const OperationSubscriptionGetMySubscription = "/subscription.v1.Subscription/GetMySubscription"
+const OperationSubscriptionGetOrEnsureMySubscription = "/subscription.v1.Subscription/GetOrEnsureMySubscription"
 const OperationSubscriptionGetSubscriptionHistory = "/subscription.v1.Subscription/GetSubscriptionHistory"
 const OperationSubscriptionGetSubscriptionOrder = "/subscription.v1.Subscription/GetSubscriptionOrder"
 const OperationSubscriptionHandlePaymentSuccess = "/subscription.v1.Subscription/HandlePaymentSuccess"
@@ -53,16 +54,30 @@ type SubscriptionHTTPServer interface {
 	CreatePlanPricing(context.Context, *CreatePlanPricingRequest) (*CreatePlanPricingReply, error)
 	// CreateSubscriptionOrder 创建订阅订单 (调用 Payment Service)
 	CreateSubscriptionOrder(context.Context, *CreateSubscriptionOrderRequest) (*CreateSubscriptionOrderReply, error)
-	// DeletePlan 删除订阅套餐
+	// DeletePlan 删除订阅套餐（软删除：仅标记删除时间，数据保留；ListPlans 不再返回）
 	DeletePlan(context.Context, *DeletePlanRequest) (*DeletePlanReply, error)
 	// DeletePlanPricing 删除区域定价
 	DeletePlanPricing(context.Context, *DeletePlanPricingRequest) (*DeletePlanPricingReply, error)
+	// EnsureDefaultFreeSubscription 显式幂等开通默认免费档（与 GetOrEnsureMySubscription 内 Ensure 逻辑一致）。
+	// 一般客户端只需 GET GetOrEnsure；本接口可用于显式「同步」或调试。
+	EnsureDefaultFreeSubscription(context.Context, *EnsureDefaultFreeSubscriptionRequest) (*EnsureDefaultFreeSubscriptionReply, error)
 	// GetAppSubscriptionHistory 获取应用的订阅历史记录（管理员视角）
 	GetAppSubscriptionHistory(context.Context, *GetAppSubscriptionHistoryRequest) (*GetAppSubscriptionHistoryReply, error)
 	// GetExpiringSubscriptions 获取即将过期的订阅（用于定时任务）
 	GetExpiringSubscriptions(context.Context, *GetExpiringSubscriptionsRequest) (*GetExpiringSubscriptionsReply, error)
-	// GetMySubscription 获取用户的订阅状态
-	GetMySubscription(context.Context, *GetMySubscriptionRequest) (*GetMySubscriptionReply, error)
+	// GetOrEnsureMySubscription 获取（并必要时初始化）当前用户的订阅 —— 推荐唯一入口
+	//
+	// 使用背景：
+	// - 产品约定「每位注册用户应有 user_subscription 事实行」；历史上可能存在无行用户（老数据、仅注册未打开客户端等）。
+	// - 本 RPC 在「已登录且仅能查自己」的前提下：若 DB 中尚无订阅行，则在本次请求内幂等写入当前应用下的默认免费档（FOREVER + type=free），再返回。
+	//
+	// 语义说明：
+	// - 非「纯只读」：首次查询可能对当前用户产生 INSERT（与惰性迁移 / read-through 默认状态一致）。
+	// - 幂等：重复调用不会重复创建（已有任意档位订阅时不会覆盖）。
+	// - 须携带 X-App-Id（或与网关约定等价的 app 上下文），以便解析应用维度的免费套餐。
+	//
+	// 鉴权：仅允许查询 JWT 对应用户本人（CheckOwnership）。
+	GetOrEnsureMySubscription(context.Context, *GetOrEnsureMySubscriptionRequest) (*GetOrEnsureMySubscriptionReply, error)
 	// GetSubscriptionHistory 获取订阅历史记录
 	GetSubscriptionHistory(context.Context, *GetSubscriptionHistoryRequest) (*GetSubscriptionHistoryReply, error)
 	// GetSubscriptionOrder 获取订阅订单详情
@@ -96,7 +111,8 @@ type SubscriptionHTTPServer interface {
 func RegisterSubscriptionHTTPServer(s *http.Server, srv SubscriptionHTTPServer) {
 	r := s.Route("/")
 	r.GET("/subscription/v1/plans", _Subscription_ListPlans0_HTTP_Handler(srv))
-	r.GET("/subscription/v1/my/{userId}", _Subscription_GetMySubscription0_HTTP_Handler(srv))
+	r.GET("/subscription/v1/my/{userId}", _Subscription_GetOrEnsureMySubscription0_HTTP_Handler(srv))
+	r.POST("/subscription/v1/my/ensure-free", _Subscription_EnsureDefaultFreeSubscription0_HTTP_Handler(srv))
 	r.POST("/subscription/v1/order", _Subscription_CreateSubscriptionOrder0_HTTP_Handler(srv))
 	r.POST("/subscription/v1/payment/success", _Subscription_HandlePaymentSuccess0_HTTP_Handler(srv))
 	r.POST("/subscription/v1/cancel", _Subscription_CancelSubscription0_HTTP_Handler(srv))
@@ -139,24 +155,46 @@ func _Subscription_ListPlans0_HTTP_Handler(srv SubscriptionHTTPServer) func(ctx 
 	}
 }
 
-func _Subscription_GetMySubscription0_HTTP_Handler(srv SubscriptionHTTPServer) func(ctx http.Context) error {
+func _Subscription_GetOrEnsureMySubscription0_HTTP_Handler(srv SubscriptionHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in GetMySubscriptionRequest
+		var in GetOrEnsureMySubscriptionRequest
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
 		if err := ctx.BindVars(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationSubscriptionGetMySubscription)
+		http.SetOperation(ctx, OperationSubscriptionGetOrEnsureMySubscription)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.GetMySubscription(ctx, req.(*GetMySubscriptionRequest))
+			return srv.GetOrEnsureMySubscription(ctx, req.(*GetOrEnsureMySubscriptionRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*GetMySubscriptionReply)
+		reply := out.(*GetOrEnsureMySubscriptionReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Subscription_EnsureDefaultFreeSubscription0_HTTP_Handler(srv SubscriptionHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in EnsureDefaultFreeSubscriptionRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationSubscriptionEnsureDefaultFreeSubscription)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.EnsureDefaultFreeSubscription(ctx, req.(*EnsureDefaultFreeSubscriptionRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*EnsureDefaultFreeSubscriptionReply)
 		return ctx.Result(200, reply)
 	}
 }
@@ -629,16 +667,30 @@ type SubscriptionHTTPClient interface {
 	CreatePlanPricing(ctx context.Context, req *CreatePlanPricingRequest, opts ...http.CallOption) (rsp *CreatePlanPricingReply, err error)
 	// CreateSubscriptionOrder 创建订阅订单 (调用 Payment Service)
 	CreateSubscriptionOrder(ctx context.Context, req *CreateSubscriptionOrderRequest, opts ...http.CallOption) (rsp *CreateSubscriptionOrderReply, err error)
-	// DeletePlan 删除订阅套餐
+	// DeletePlan 删除订阅套餐（软删除：仅标记删除时间，数据保留；ListPlans 不再返回）
 	DeletePlan(ctx context.Context, req *DeletePlanRequest, opts ...http.CallOption) (rsp *DeletePlanReply, err error)
 	// DeletePlanPricing 删除区域定价
 	DeletePlanPricing(ctx context.Context, req *DeletePlanPricingRequest, opts ...http.CallOption) (rsp *DeletePlanPricingReply, err error)
+	// EnsureDefaultFreeSubscription 显式幂等开通默认免费档（与 GetOrEnsureMySubscription 内 Ensure 逻辑一致）。
+	// 一般客户端只需 GET GetOrEnsure；本接口可用于显式「同步」或调试。
+	EnsureDefaultFreeSubscription(ctx context.Context, req *EnsureDefaultFreeSubscriptionRequest, opts ...http.CallOption) (rsp *EnsureDefaultFreeSubscriptionReply, err error)
 	// GetAppSubscriptionHistory 获取应用的订阅历史记录（管理员视角）
 	GetAppSubscriptionHistory(ctx context.Context, req *GetAppSubscriptionHistoryRequest, opts ...http.CallOption) (rsp *GetAppSubscriptionHistoryReply, err error)
 	// GetExpiringSubscriptions 获取即将过期的订阅（用于定时任务）
 	GetExpiringSubscriptions(ctx context.Context, req *GetExpiringSubscriptionsRequest, opts ...http.CallOption) (rsp *GetExpiringSubscriptionsReply, err error)
-	// GetMySubscription 获取用户的订阅状态
-	GetMySubscription(ctx context.Context, req *GetMySubscriptionRequest, opts ...http.CallOption) (rsp *GetMySubscriptionReply, err error)
+	// GetOrEnsureMySubscription 获取（并必要时初始化）当前用户的订阅 —— 推荐唯一入口
+	//
+	// 使用背景：
+	// - 产品约定「每位注册用户应有 user_subscription 事实行」；历史上可能存在无行用户（老数据、仅注册未打开客户端等）。
+	// - 本 RPC 在「已登录且仅能查自己」的前提下：若 DB 中尚无订阅行，则在本次请求内幂等写入当前应用下的默认免费档（FOREVER + type=free），再返回。
+	//
+	// 语义说明：
+	// - 非「纯只读」：首次查询可能对当前用户产生 INSERT（与惰性迁移 / read-through 默认状态一致）。
+	// - 幂等：重复调用不会重复创建（已有任意档位订阅时不会覆盖）。
+	// - 须携带 X-App-Id（或与网关约定等价的 app 上下文），以便解析应用维度的免费套餐。
+	//
+	// 鉴权：仅允许查询 JWT 对应用户本人（CheckOwnership）。
+	GetOrEnsureMySubscription(ctx context.Context, req *GetOrEnsureMySubscriptionRequest, opts ...http.CallOption) (rsp *GetOrEnsureMySubscriptionReply, err error)
 	// GetSubscriptionHistory 获取订阅历史记录
 	GetSubscriptionHistory(ctx context.Context, req *GetSubscriptionHistoryRequest, opts ...http.CallOption) (rsp *GetSubscriptionHistoryReply, err error)
 	// GetSubscriptionOrder 获取订阅订单详情
@@ -733,7 +785,7 @@ func (c *SubscriptionHTTPClientImpl) CreateSubscriptionOrder(ctx context.Context
 	return &out, nil
 }
 
-// DeletePlan 删除订阅套餐
+// DeletePlan 删除订阅套餐（软删除：仅标记删除时间，数据保留；ListPlans 不再返回）
 func (c *SubscriptionHTTPClientImpl) DeletePlan(ctx context.Context, in *DeletePlanRequest, opts ...http.CallOption) (*DeletePlanReply, error) {
 	var out DeletePlanReply
 	pattern := "/subscription/v1/plans/{planId}"
@@ -755,6 +807,21 @@ func (c *SubscriptionHTTPClientImpl) DeletePlanPricing(ctx context.Context, in *
 	opts = append(opts, http.Operation(OperationSubscriptionDeletePlanPricing))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+// EnsureDefaultFreeSubscription 显式幂等开通默认免费档（与 GetOrEnsureMySubscription 内 Ensure 逻辑一致）。
+// 一般客户端只需 GET GetOrEnsure；本接口可用于显式「同步」或调试。
+func (c *SubscriptionHTTPClientImpl) EnsureDefaultFreeSubscription(ctx context.Context, in *EnsureDefaultFreeSubscriptionRequest, opts ...http.CallOption) (*EnsureDefaultFreeSubscriptionReply, error) {
+	var out EnsureDefaultFreeSubscriptionReply
+	pattern := "/subscription/v1/my/ensure-free"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationSubscriptionEnsureDefaultFreeSubscription))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -789,12 +856,23 @@ func (c *SubscriptionHTTPClientImpl) GetExpiringSubscriptions(ctx context.Contex
 	return &out, nil
 }
 
-// GetMySubscription 获取用户的订阅状态
-func (c *SubscriptionHTTPClientImpl) GetMySubscription(ctx context.Context, in *GetMySubscriptionRequest, opts ...http.CallOption) (*GetMySubscriptionReply, error) {
-	var out GetMySubscriptionReply
+// GetOrEnsureMySubscription 获取（并必要时初始化）当前用户的订阅 —— 推荐唯一入口
+//
+// 使用背景：
+// - 产品约定「每位注册用户应有 user_subscription 事实行」；历史上可能存在无行用户（老数据、仅注册未打开客户端等）。
+// - 本 RPC 在「已登录且仅能查自己」的前提下：若 DB 中尚无订阅行，则在本次请求内幂等写入当前应用下的默认免费档（FOREVER + type=free），再返回。
+//
+// 语义说明：
+// - 非「纯只读」：首次查询可能对当前用户产生 INSERT（与惰性迁移 / read-through 默认状态一致）。
+// - 幂等：重复调用不会重复创建（已有任意档位订阅时不会覆盖）。
+// - 须携带 X-App-Id（或与网关约定等价的 app 上下文），以便解析应用维度的免费套餐。
+//
+// 鉴权：仅允许查询 JWT 对应用户本人（CheckOwnership）。
+func (c *SubscriptionHTTPClientImpl) GetOrEnsureMySubscription(ctx context.Context, in *GetOrEnsureMySubscriptionRequest, opts ...http.CallOption) (*GetOrEnsureMySubscriptionReply, error) {
+	var out GetOrEnsureMySubscriptionReply
 	pattern := "/subscription/v1/my/{userId}"
 	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationSubscriptionGetMySubscription))
+	opts = append(opts, http.Operation(OperationSubscriptionGetOrEnsureMySubscription))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {

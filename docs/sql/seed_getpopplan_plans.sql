@@ -3,8 +3,8 @@
 
   说明：
   - app_id 固定为官方应用 UUID（与 table-plan-web / dev-share 默认 APP_ID 一致）
-  - 文案与 table-plan-web messages/*/modules/pricing.json 对齐；features 存 i18n key（命名空间 modules.pricing 下相对路径为 plans.*.features.*）
-  - 方案 A：plan_id 带计费维度后缀：free-forever、pro/enterprise 的 month / year；pro 与 enterprise 月年成对，勿再使用 gpplan-* 简写
+  - name、description 存 i18n key（与 table-plan-web messages/*/modules/pricing.json）；features 存 key 数组
+  - 方案 A：plan_id 带计费维度后缀：free-forever、pro/enterprise 的 month / year
   - user_id：创建该应用时在 api-key-service 中的开发者用户 UUID —— 执行前请将 @seed_developer_uid 改为真实值
 
   用法示例：
@@ -27,8 +27,8 @@ INSERT INTO `plan` (
   'getpopplan-free-forever-v1',
   @getpopplan_app_id,
   @seed_developer_uid,
-  'Basic',
-  'Perfect for small events and first-time users',
+  'modules.pricing.plans.free.name',
+  'modules.pricing.plans.free.description',
   0.00,
   'USD',
   'FOREVER',
@@ -42,8 +42,8 @@ INSERT INTO `plan` (
   'getpopplan-pro-month-v1',
   @getpopplan_app_id,
   @seed_developer_uid,
-  'Professional',
-  'Ideal for medium-sized weddings and events',
+  'modules.pricing.plans.pro.name',
+  'modules.pricing.plans.pro.description',
   29.99,
   'USD',
   'MONTH',
@@ -57,8 +57,8 @@ INSERT INTO `plan` (
   'getpopplan-pro-year-v1',
   @getpopplan_app_id,
   @seed_developer_uid,
-  'Professional',
-  'Ideal for medium-sized weddings and events',
+  'modules.pricing.plans.pro.name',
+  'modules.pricing.plans.pro.description',
   299.99,
   'USD',
   'YEAR',
@@ -72,8 +72,8 @@ INSERT INTO `plan` (
   'getpopplan-enterprise-month-v1',
   @getpopplan_app_id,
   @seed_developer_uid,
-  'Enterprise',
-  'For large events and corporate clients',
+  'modules.pricing.plans.enterprise.name',
+  'modules.pricing.plans.enterprise.description',
   99.99,
   'USD',
   'MONTH',
@@ -87,8 +87,8 @@ INSERT INTO `plan` (
   'getpopplan-enterprise-year-v1',
   @getpopplan_app_id,
   @seed_developer_uid,
-  'Enterprise',
-  'For large events and corporate clients',
+  'modules.pricing.plans.enterprise.name',
+  'modules.pricing.plans.enterprise.description',
   999.99,
   'USD',
   'YEAR',

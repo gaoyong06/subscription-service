@@ -1097,12 +1097,12 @@ const file_conf_proto_rawDesc = "" +
 	"\x0ePaymentService\x12\x12\n" +
 	"\x04addr\x18\x01 \x01(\tR\x04addr\"%\n" +
 	"\x0fPassportService\x12\x12\n" +
-	"\x04addr\x18\x01 \x01(\tR\x04addr\"\x8e\x01\n" +
+	"\x04addr\x18\x01 \x01(\tR\x04addr\"\x94\x01\n" +
 	"\fSubscription\x12\x1d\n" +
 	"\n" +
 	"return_url\x18\x01 \x01(\tR\treturnUrl\x123\n" +
 	"\x16auto_renew_days_before\x18\x02 \x01(\x05R\x13autoRenewDaysBefore\x12*\n" +
-	"\x11expiry_check_days\x18\x03 \x01(\x05R\x0fexpiryCheckDays\"\xd1\x03\n" +
+	"\x11expiry_check_days\x18\x03 \x01(\x05R\x0fexpiryCheckDaysJ\x04\b\x04\x10\x05\"\xd1\x03\n" +
 	"\tScheduler\x12O\n" +
 	"\fexpiry_check\x18\x01 \x01(\v2,.subscription.conf.Scheduler.ExpiryCheckTaskR\vexpiryCheck\x12[\n" +
 	"\x10renewal_reminder\x18\x02 \x01(\v20.subscription.conf.Scheduler.RenewalReminderTaskR\x0frenewalReminder\x12O\n" +

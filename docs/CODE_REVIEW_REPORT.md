@@ -388,23 +388,22 @@ func (r *planRepo) WarmupCache(ctx context.Context) error {
 ### 5.1 缺少权限验证
 **严重程度**: 🔴 高
 
-**问题**:
-所有 API 都没有验证用户权限:
+**问题**（历史评审场景示意）:
+用户态 RPC 若未校验「资源归属」，则存在越权读取风险。示例写法应使用当前 RPC 名与 `userId`（字符串 UUID）；领域层只读查询为 `FindUserSubscription`，对外聚合为 `GetOrEnsureMySubscription`。
 ```go
-func (s *SubscriptionService) GetMySubscription(ctx context.Context, req *pb.GetMySubscriptionRequest) {
-    // 任何人都可以查询任意 uid 的订阅信息
-    sub, err := s.uc.GetMySubscription(ctx, req.Uid)
+func (s *SubscriptionService) GetOrEnsureMySubscription(ctx context.Context, req *pb.GetOrEnsureMySubscriptionRequest) {
+    // 若未做归属校验，则可能查询任意 userId 的订阅信息
+    sub, err := s.uc.FindUserSubscription(ctx, req.UserId)
+    _ = sub
+    _ = err
 }
 ```
 
 **建议**:
 ```go
-// 1. 从 context 中获取当前登录用户
-currentUID := auth.GetUIDFromContext(ctx)
-
-// 2. 验证权限
-if currentUID != req.Uid && !auth.IsAdmin(ctx) {
-    return nil, errors.New("permission denied")
+// Service 层已对用户态接口使用 CheckOwnership（与 JWT/context 中当前用户比对）
+if err := auth.CheckOwnership(ctx, req.UserId); err != nil {
+    return nil, err
 }
 ```
 
