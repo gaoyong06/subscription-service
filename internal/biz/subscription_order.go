@@ -144,7 +144,8 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrderWithContext(ctx context.Co
 	paymentID, payUrl, payCode, payParams, err := uc.paymentClient.CreatePayment(ctx, orderID, userId, pricing.Price, pricing.Currency, method, subject, returnURL)
 	if err != nil {
 		uc.log.Errorf("Failed to create payment: %v", err)
-		return nil, "", "", "", "", pkgErrors.NewBizErrorWithLang(ctx, errors.ErrCodePaymentFailed)
+		// 使用 Wrap 将 payment-service 返回信息附在 errorMessage 上，便于排查与前端展示
+		return nil, "", "", "", "", pkgErrors.WrapErrorWithLang(ctx, err, errors.ErrCodePaymentFailed)
 	}
 	uc.log.Infof("Payment created: paymentID=%s", paymentID)
 
