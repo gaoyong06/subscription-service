@@ -107,7 +107,7 @@ func addCalendarMonthsUTC(from time.Time, months int, anchorDay int) time.Time {
 	from = from.UTC()
 	y, m, _ := from.Date()
 	// 转为 (year, monthIndex) 其中 monthIndex 0–11
-	totalMonths := int(m)-1 + months + y*12
+	totalMonths := int(m) - 1 + months + y*12
 	newY := totalMonths / 12
 	newM := time.Month((totalMonths % 12) + 1)
 	dim := daysInMonth(newY, newM)

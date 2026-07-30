@@ -183,6 +183,12 @@ service Subscription {
       get: "/subscription/v1/app/history"
     };
   }
+
+  // 获取套餐归属，供完成用户认证的内部控制面做资源授权。
+  rpc GetPlanOwner (GetPlanOwnerRequest) returns (GetPlanOwnerReply);
+
+  // 获取区域定价归属，供完成用户认证的内部控制面做资源授权。
+  rpc GetPlanPricingOwner (GetPlanPricingOwnerRequest) returns (GetPlanPricingOwnerReply);
 }
 
 message Plan {
@@ -293,6 +299,8 @@ message CreateSubscriptionOrderRequest {
   string planId = 2 [(validate.rules).string = {min_len: 1, max_len: 50}];
   string paymentMethod = 3 [(validate.rules).string = {in: ["alipay", "wechatpay"]}]; // alipay, wechatpay
   string region = 4; // 区域代码 (e.g., "CN", "US", "EU")，可选，默认 "default"
+  string campaignId = 5; // 投放活动 ID
+  string clickId = 6; // 短链点击 ID
 }
 
 message CreateSubscriptionOrderReply {
@@ -552,4 +560,24 @@ message GetAppSubscriptionHistoryReply {
   int32 total = 2; // 总数
   int32 page = 3; // 当前页码
   int32 pageSize = 4; // 每页数量
+}
+
+message GetPlanOwnerRequest {
+  string planId = 1 [(validate.rules).string = {min_len: 1, max_len: 64}];
+}
+
+message GetPlanOwnerReply {
+  string planId = 1;
+  string appId = 2;
+  string developerId = 3;
+}
+
+message GetPlanPricingOwnerRequest {
+  uint64 planPricingId = 1 [(validate.rules).uint64 = {gt: 0}];
+}
+
+message GetPlanPricingOwnerReply {
+  uint64 planPricingId = 1;
+  string planId = 2;
+  string appId = 3;
 }

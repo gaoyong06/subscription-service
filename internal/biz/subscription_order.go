@@ -12,6 +12,11 @@ import (
 	"github.com/gaoyong06/go-pkg/middleware/app_id"
 )
 
+func stringValueFromContext(ctx context.Context, key string) string {
+	value, _ := ctx.Value(key).(string)
+	return value
+}
+
 // SubscriptionOrder 简易订单记录 (用于记录订阅购买请求)
 type SubscriptionOrder struct {
 	OrderID       string
@@ -19,6 +24,8 @@ type SubscriptionOrder struct {
 	UserID        string // 用户ID（字符串 UUID）
 	PlanID        string
 	AppID         string // 应用ID
+	CampaignID    string // 投放活动 ID
+	ClickID       string // 短链点击 ID
 	Amount        float64
 	PaymentStatus string // pending, success, failed, closed, refunded, partially_refunded (与payment-service保持一致)
 	CreatedAt     time.Time
@@ -113,6 +120,8 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrderWithContext(ctx context.Co
 		UserID:        userId,
 		PlanID:        planID,
 		AppID:         appID, // 使用从 Context 获取的 app_id
+		CampaignID:    stringValueFromContext(ctx, "campaign_id"),
+		ClickID:       stringValueFromContext(ctx, "click_id"),
 		Amount:        pricing.Price,
 		PaymentStatus: constants.PaymentStatusPending,
 		CreatedAt:     time.Now().UTC(),
@@ -141,7 +150,7 @@ func (uc *SubscriptionUsecase) CreateSubscriptionOrderWithContext(ctx context.Co
 
 	uc.log.Infof("Calling payment service: orderID=%s, appID=%s, amount=%.2f %s, method=%s", orderID, appID, pricing.Price, pricing.Currency, method)
 	// 注意：appId 现在只从 Context 获取（由中间件从 Header/metadata 提取），不再作为参数传递
-	paymentID, payUrl, payCode, payParams, err := uc.paymentClient.CreatePayment(ctx, orderID, userId, pricing.Price, pricing.Currency, method, subject, returnURL)
+	paymentID, payUrl, payCode, payParams, err := uc.paymentClient.CreatePayment(ctx, orderID, userId, pricing.Price, pricing.Currency, method, subject, returnURL, order.CampaignID, order.ClickID)
 	if err != nil {
 		uc.log.Errorf("Failed to create payment: %v", err)
 		// 使用 Wrap 将 payment-service 返回信息附在 errorMessage 上，便于排查与前端展示

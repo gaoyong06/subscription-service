@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.0
 // - protoc             v6.33.1
-// source: subscription/v1/subscription.proto
+// source: subscription.proto
 
 package v1
 
@@ -44,6 +44,8 @@ const (
 	Subscription_GetSubscriptionOrder_FullMethodName          = "/subscription.v1.Subscription/GetSubscriptionOrder"
 	Subscription_ListAppSubscriptions_FullMethodName          = "/subscription.v1.Subscription/ListAppSubscriptions"
 	Subscription_GetAppSubscriptionHistory_FullMethodName     = "/subscription.v1.Subscription/GetAppSubscriptionHistory"
+	Subscription_GetPlanOwner_FullMethodName                  = "/subscription.v1.Subscription/GetPlanOwner"
+	Subscription_GetPlanPricingOwner_FullMethodName           = "/subscription.v1.Subscription/GetPlanPricingOwner"
 )
 
 // SubscriptionClient is the client API for Subscription service.
@@ -110,6 +112,10 @@ type SubscriptionClient interface {
 	ListAppSubscriptions(ctx context.Context, in *ListAppSubscriptionsRequest, opts ...grpc.CallOption) (*ListAppSubscriptionsReply, error)
 	// 获取应用的订阅历史记录（管理员视角）
 	GetAppSubscriptionHistory(ctx context.Context, in *GetAppSubscriptionHistoryRequest, opts ...grpc.CallOption) (*GetAppSubscriptionHistoryReply, error)
+	// 获取套餐归属，供完成用户认证的内部控制面做资源授权。
+	GetPlanOwner(ctx context.Context, in *GetPlanOwnerRequest, opts ...grpc.CallOption) (*GetPlanOwnerReply, error)
+	// 获取区域定价归属，供完成用户认证的内部控制面做资源授权。
+	GetPlanPricingOwner(ctx context.Context, in *GetPlanPricingOwnerRequest, opts ...grpc.CallOption) (*GetPlanPricingOwnerReply, error)
 }
 
 type subscriptionClient struct {
@@ -360,6 +366,26 @@ func (c *subscriptionClient) GetAppSubscriptionHistory(ctx context.Context, in *
 	return out, nil
 }
 
+func (c *subscriptionClient) GetPlanOwner(ctx context.Context, in *GetPlanOwnerRequest, opts ...grpc.CallOption) (*GetPlanOwnerReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPlanOwnerReply)
+	err := c.cc.Invoke(ctx, Subscription_GetPlanOwner_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *subscriptionClient) GetPlanPricingOwner(ctx context.Context, in *GetPlanPricingOwnerRequest, opts ...grpc.CallOption) (*GetPlanPricingOwnerReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPlanPricingOwnerReply)
+	err := c.cc.Invoke(ctx, Subscription_GetPlanPricingOwner_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SubscriptionServer is the server API for Subscription service.
 // All implementations must embed UnimplementedSubscriptionServer
 // for forward compatibility.
@@ -424,6 +450,10 @@ type SubscriptionServer interface {
 	ListAppSubscriptions(context.Context, *ListAppSubscriptionsRequest) (*ListAppSubscriptionsReply, error)
 	// 获取应用的订阅历史记录（管理员视角）
 	GetAppSubscriptionHistory(context.Context, *GetAppSubscriptionHistoryRequest) (*GetAppSubscriptionHistoryReply, error)
+	// 获取套餐归属，供完成用户认证的内部控制面做资源授权。
+	GetPlanOwner(context.Context, *GetPlanOwnerRequest) (*GetPlanOwnerReply, error)
+	// 获取区域定价归属，供完成用户认证的内部控制面做资源授权。
+	GetPlanPricingOwner(context.Context, *GetPlanPricingOwnerRequest) (*GetPlanPricingOwnerReply, error)
 	mustEmbedUnimplementedSubscriptionServer()
 }
 
@@ -505,6 +535,12 @@ func (UnimplementedSubscriptionServer) ListAppSubscriptions(context.Context, *Li
 }
 func (UnimplementedSubscriptionServer) GetAppSubscriptionHistory(context.Context, *GetAppSubscriptionHistoryRequest) (*GetAppSubscriptionHistoryReply, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetAppSubscriptionHistory not implemented")
+}
+func (UnimplementedSubscriptionServer) GetPlanOwner(context.Context, *GetPlanOwnerRequest) (*GetPlanOwnerReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPlanOwner not implemented")
+}
+func (UnimplementedSubscriptionServer) GetPlanPricingOwner(context.Context, *GetPlanPricingOwnerRequest) (*GetPlanPricingOwnerReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPlanPricingOwner not implemented")
 }
 func (UnimplementedSubscriptionServer) mustEmbedUnimplementedSubscriptionServer() {}
 func (UnimplementedSubscriptionServer) testEmbeddedByValue()                      {}
@@ -959,6 +995,42 @@ func _Subscription_GetAppSubscriptionHistory_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Subscription_GetPlanOwner_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPlanOwnerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubscriptionServer).GetPlanOwner(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Subscription_GetPlanOwner_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubscriptionServer).GetPlanOwner(ctx, req.(*GetPlanOwnerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Subscription_GetPlanPricingOwner_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPlanPricingOwnerRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SubscriptionServer).GetPlanPricingOwner(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Subscription_GetPlanPricingOwner_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SubscriptionServer).GetPlanPricingOwner(ctx, req.(*GetPlanPricingOwnerRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Subscription_ServiceDesc is the grpc.ServiceDesc for Subscription service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1062,7 +1134,15 @@ var Subscription_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "GetAppSubscriptionHistory",
 			Handler:    _Subscription_GetAppSubscriptionHistory_Handler,
 		},
+		{
+			MethodName: "GetPlanOwner",
+			Handler:    _Subscription_GetPlanOwner_Handler,
+		},
+		{
+			MethodName: "GetPlanPricingOwner",
+			Handler:    _Subscription_GetPlanPricingOwner_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "subscription/v1/subscription.proto",
+	Metadata: "subscription.proto",
 }

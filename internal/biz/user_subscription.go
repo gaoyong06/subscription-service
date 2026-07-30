@@ -15,18 +15,18 @@ import (
 
 // UserSubscription 用户订阅记录
 type UserSubscription struct {
-	SubscriptionID uint64
-	UserID         string // 用户ID（字符串 UUID）
-	PlanID         string
-	AppID             string // 应用ID（冗余字段，便于按app统计和查询）
-	BillingAnchorDay  int32  // 自然月/自然年续费锚点日（1–31）；DAY/FOREVER 为 0
-	StartTime         time.Time
-	EndTime           time.Time
-	Status         string // active, expired, paused, cancelled
-	OrderID        string
-	IsAutoRenew    bool
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	SubscriptionID   uint64
+	UserID           string // 用户ID（字符串 UUID）
+	PlanID           string
+	AppID            string // 应用ID（冗余字段，便于按app统计和查询）
+	BillingAnchorDay int32  // 自然月/自然年续费锚点日（1–31）；DAY/FOREVER 为 0
+	StartTime        time.Time
+	EndTime          time.Time
+	Status           string // active, expired, paused, cancelled
+	OrderID          string
+	IsAutoRenew      bool
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
 // UserSubscriptionRepo 用户订阅仓库接口
@@ -43,7 +43,7 @@ type UserSubscriptionRepo interface {
 
 // PaymentClient 支付服务客户端接口 (防腐层)
 type PaymentClient interface {
-	CreatePayment(ctx context.Context, orderID string, userId string, amount float64, currency, method, subject, returnURL string) (paymentID, payUrl, payCode, payParams string, err error)
+	CreatePayment(ctx context.Context, orderID string, userId string, amount float64, currency, method, subject, returnURL, campaignID, clickID string) (paymentID, payUrl, payCode, payParams string, err error)
 }
 
 // SubscriptionUsecase 订阅业务逻辑

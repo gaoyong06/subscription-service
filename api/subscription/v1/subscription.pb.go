@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.10
 // 	protoc        v6.33.1
-// source: subscription/v1/subscription.proto
+// source: subscription.proto
 
 package v1
 
@@ -49,7 +49,7 @@ type Plan struct {
 
 func (x *Plan) Reset() {
 	*x = Plan{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[0]
+	mi := &file_subscription_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -61,7 +61,7 @@ func (x *Plan) String() string {
 func (*Plan) ProtoMessage() {}
 
 func (x *Plan) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[0]
+	mi := &file_subscription_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -74,7 +74,7 @@ func (x *Plan) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Plan.ProtoReflect.Descriptor instead.
 func (*Plan) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{0}
+	return file_subscription_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *Plan) GetPlanId() string {
@@ -163,7 +163,7 @@ type ListPlansRequest struct {
 
 func (x *ListPlansRequest) Reset() {
 	*x = ListPlansRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[1]
+	mi := &file_subscription_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -175,7 +175,7 @@ func (x *ListPlansRequest) String() string {
 func (*ListPlansRequest) ProtoMessage() {}
 
 func (x *ListPlansRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[1]
+	mi := &file_subscription_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -188,7 +188,7 @@ func (x *ListPlansRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPlansRequest.ProtoReflect.Descriptor instead.
 func (*ListPlansRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{1}
+	return file_subscription_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *ListPlansRequest) GetAppId() string {
@@ -216,7 +216,7 @@ type CreatePlanRequest struct {
 
 func (x *CreatePlanRequest) Reset() {
 	*x = CreatePlanRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[2]
+	mi := &file_subscription_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -228,7 +228,7 @@ func (x *CreatePlanRequest) String() string {
 func (*CreatePlanRequest) ProtoMessage() {}
 
 func (x *CreatePlanRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[2]
+	mi := &file_subscription_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -241,7 +241,7 @@ func (x *CreatePlanRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePlanRequest.ProtoReflect.Descriptor instead.
 func (*CreatePlanRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{2}
+	return file_subscription_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *CreatePlanRequest) GetName() string {
@@ -316,7 +316,7 @@ type CreatePlanReply struct {
 
 func (x *CreatePlanReply) Reset() {
 	*x = CreatePlanReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[3]
+	mi := &file_subscription_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -328,7 +328,7 @@ func (x *CreatePlanReply) String() string {
 func (*CreatePlanReply) ProtoMessage() {}
 
 func (x *CreatePlanReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[3]
+	mi := &file_subscription_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -341,7 +341,7 @@ func (x *CreatePlanReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePlanReply.ProtoReflect.Descriptor instead.
 func (*CreatePlanReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{3}
+	return file_subscription_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *CreatePlanReply) GetPlan() *Plan {
@@ -368,7 +368,7 @@ type UpdatePlanRequest struct {
 
 func (x *UpdatePlanRequest) Reset() {
 	*x = UpdatePlanRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[4]
+	mi := &file_subscription_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -380,7 +380,7 @@ func (x *UpdatePlanRequest) String() string {
 func (*UpdatePlanRequest) ProtoMessage() {}
 
 func (x *UpdatePlanRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[4]
+	mi := &file_subscription_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -393,7 +393,7 @@ func (x *UpdatePlanRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePlanRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePlanRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{4}
+	return file_subscription_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *UpdatePlanRequest) GetPlanId() string {
@@ -468,7 +468,7 @@ type UpdatePlanReply struct {
 
 func (x *UpdatePlanReply) Reset() {
 	*x = UpdatePlanReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[5]
+	mi := &file_subscription_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -480,7 +480,7 @@ func (x *UpdatePlanReply) String() string {
 func (*UpdatePlanReply) ProtoMessage() {}
 
 func (x *UpdatePlanReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[5]
+	mi := &file_subscription_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -493,7 +493,7 @@ func (x *UpdatePlanReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePlanReply.ProtoReflect.Descriptor instead.
 func (*UpdatePlanReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{5}
+	return file_subscription_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *UpdatePlanReply) GetPlan() *Plan {
@@ -512,7 +512,7 @@ type DeletePlanRequest struct {
 
 func (x *DeletePlanRequest) Reset() {
 	*x = DeletePlanRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[6]
+	mi := &file_subscription_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -524,7 +524,7 @@ func (x *DeletePlanRequest) String() string {
 func (*DeletePlanRequest) ProtoMessage() {}
 
 func (x *DeletePlanRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[6]
+	mi := &file_subscription_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -537,7 +537,7 @@ func (x *DeletePlanRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePlanRequest.ProtoReflect.Descriptor instead.
 func (*DeletePlanRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{6}
+	return file_subscription_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *DeletePlanRequest) GetPlanId() string {
@@ -556,7 +556,7 @@ type DeletePlanReply struct {
 
 func (x *DeletePlanReply) Reset() {
 	*x = DeletePlanReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[7]
+	mi := &file_subscription_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -568,7 +568,7 @@ func (x *DeletePlanReply) String() string {
 func (*DeletePlanReply) ProtoMessage() {}
 
 func (x *DeletePlanReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[7]
+	mi := &file_subscription_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -581,7 +581,7 @@ func (x *DeletePlanReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePlanReply.ProtoReflect.Descriptor instead.
 func (*DeletePlanReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{7}
+	return file_subscription_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *DeletePlanReply) GetPlanId() string {
@@ -600,7 +600,7 @@ type ListPlansReply struct {
 
 func (x *ListPlansReply) Reset() {
 	*x = ListPlansReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[8]
+	mi := &file_subscription_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -612,7 +612,7 @@ func (x *ListPlansReply) String() string {
 func (*ListPlansReply) ProtoMessage() {}
 
 func (x *ListPlansReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[8]
+	mi := &file_subscription_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -625,7 +625,7 @@ func (x *ListPlansReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPlansReply.ProtoReflect.Descriptor instead.
 func (*ListPlansReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{8}
+	return file_subscription_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ListPlansReply) GetPlans() []*Plan {
@@ -644,7 +644,7 @@ type GetOrEnsureMySubscriptionRequest struct {
 
 func (x *GetOrEnsureMySubscriptionRequest) Reset() {
 	*x = GetOrEnsureMySubscriptionRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[9]
+	mi := &file_subscription_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -656,7 +656,7 @@ func (x *GetOrEnsureMySubscriptionRequest) String() string {
 func (*GetOrEnsureMySubscriptionRequest) ProtoMessage() {}
 
 func (x *GetOrEnsureMySubscriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[9]
+	mi := &file_subscription_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -669,7 +669,7 @@ func (x *GetOrEnsureMySubscriptionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOrEnsureMySubscriptionRequest.ProtoReflect.Descriptor instead.
 func (*GetOrEnsureMySubscriptionRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{9}
+	return file_subscription_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetOrEnsureMySubscriptionRequest) GetUserId() string {
@@ -699,7 +699,7 @@ type GetOrEnsureMySubscriptionReply struct {
 
 func (x *GetOrEnsureMySubscriptionReply) Reset() {
 	*x = GetOrEnsureMySubscriptionReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[10]
+	mi := &file_subscription_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -711,7 +711,7 @@ func (x *GetOrEnsureMySubscriptionReply) String() string {
 func (*GetOrEnsureMySubscriptionReply) ProtoMessage() {}
 
 func (x *GetOrEnsureMySubscriptionReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[10]
+	mi := &file_subscription_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -724,7 +724,7 @@ func (x *GetOrEnsureMySubscriptionReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOrEnsureMySubscriptionReply.ProtoReflect.Descriptor instead.
 func (*GetOrEnsureMySubscriptionReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{10}
+	return file_subscription_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetOrEnsureMySubscriptionReply) GetIsActive() bool {
@@ -806,7 +806,7 @@ type EnsureDefaultFreeSubscriptionRequest struct {
 
 func (x *EnsureDefaultFreeSubscriptionRequest) Reset() {
 	*x = EnsureDefaultFreeSubscriptionRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[11]
+	mi := &file_subscription_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -818,7 +818,7 @@ func (x *EnsureDefaultFreeSubscriptionRequest) String() string {
 func (*EnsureDefaultFreeSubscriptionRequest) ProtoMessage() {}
 
 func (x *EnsureDefaultFreeSubscriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[11]
+	mi := &file_subscription_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -831,7 +831,7 @@ func (x *EnsureDefaultFreeSubscriptionRequest) ProtoReflect() protoreflect.Messa
 
 // Deprecated: Use EnsureDefaultFreeSubscriptionRequest.ProtoReflect.Descriptor instead.
 func (*EnsureDefaultFreeSubscriptionRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{11}
+	return file_subscription_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *EnsureDefaultFreeSubscriptionRequest) GetUserId() string {
@@ -851,7 +851,7 @@ type EnsureDefaultFreeSubscriptionReply struct {
 
 func (x *EnsureDefaultFreeSubscriptionReply) Reset() {
 	*x = EnsureDefaultFreeSubscriptionReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[12]
+	mi := &file_subscription_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -863,7 +863,7 @@ func (x *EnsureDefaultFreeSubscriptionReply) String() string {
 func (*EnsureDefaultFreeSubscriptionReply) ProtoMessage() {}
 
 func (x *EnsureDefaultFreeSubscriptionReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[12]
+	mi := &file_subscription_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -876,7 +876,7 @@ func (x *EnsureDefaultFreeSubscriptionReply) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use EnsureDefaultFreeSubscriptionReply.ProtoReflect.Descriptor instead.
 func (*EnsureDefaultFreeSubscriptionReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{12}
+	return file_subscription_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *EnsureDefaultFreeSubscriptionReply) GetCreated() bool {
@@ -899,13 +899,15 @@ type CreateSubscriptionOrderRequest struct {
 	PlanId        string                 `protobuf:"bytes,2,opt,name=planId,proto3" json:"planId,omitempty"`
 	PaymentMethod string                 `protobuf:"bytes,3,opt,name=paymentMethod,proto3" json:"paymentMethod,omitempty"` // alipay, wechatpay
 	Region        string                 `protobuf:"bytes,4,opt,name=region,proto3" json:"region,omitempty"`               // 区域代码 (e.g., "CN", "US", "EU")，可选，默认 "default"
+	CampaignId    string                 `protobuf:"bytes,5,opt,name=campaignId,proto3" json:"campaignId,omitempty"`       // 投放活动 ID
+	ClickId       string                 `protobuf:"bytes,6,opt,name=clickId,proto3" json:"clickId,omitempty"`             // 短链点击 ID
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreateSubscriptionOrderRequest) Reset() {
 	*x = CreateSubscriptionOrderRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[13]
+	mi := &file_subscription_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -917,7 +919,7 @@ func (x *CreateSubscriptionOrderRequest) String() string {
 func (*CreateSubscriptionOrderRequest) ProtoMessage() {}
 
 func (x *CreateSubscriptionOrderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[13]
+	mi := &file_subscription_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -930,7 +932,7 @@ func (x *CreateSubscriptionOrderRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSubscriptionOrderRequest.ProtoReflect.Descriptor instead.
 func (*CreateSubscriptionOrderRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{13}
+	return file_subscription_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *CreateSubscriptionOrderRequest) GetUserId() string {
@@ -961,6 +963,20 @@ func (x *CreateSubscriptionOrderRequest) GetRegion() string {
 	return ""
 }
 
+func (x *CreateSubscriptionOrderRequest) GetCampaignId() string {
+	if x != nil {
+		return x.CampaignId
+	}
+	return ""
+}
+
+func (x *CreateSubscriptionOrderRequest) GetClickId() string {
+	if x != nil {
+		return x.ClickId
+	}
+	return ""
+}
+
 type CreateSubscriptionOrderReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	OrderId       string                 `protobuf:"bytes,1,opt,name=orderId,proto3" json:"orderId,omitempty"`     // 业务订单号
@@ -974,7 +990,7 @@ type CreateSubscriptionOrderReply struct {
 
 func (x *CreateSubscriptionOrderReply) Reset() {
 	*x = CreateSubscriptionOrderReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[14]
+	mi := &file_subscription_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -986,7 +1002,7 @@ func (x *CreateSubscriptionOrderReply) String() string {
 func (*CreateSubscriptionOrderReply) ProtoMessage() {}
 
 func (x *CreateSubscriptionOrderReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[14]
+	mi := &file_subscription_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -999,7 +1015,7 @@ func (x *CreateSubscriptionOrderReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSubscriptionOrderReply.ProtoReflect.Descriptor instead.
 func (*CreateSubscriptionOrderReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{14}
+	return file_subscription_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *CreateSubscriptionOrderReply) GetOrderId() string {
@@ -1048,7 +1064,7 @@ type HandlePaymentSuccessRequest struct {
 
 func (x *HandlePaymentSuccessRequest) Reset() {
 	*x = HandlePaymentSuccessRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[15]
+	mi := &file_subscription_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1060,7 +1076,7 @@ func (x *HandlePaymentSuccessRequest) String() string {
 func (*HandlePaymentSuccessRequest) ProtoMessage() {}
 
 func (x *HandlePaymentSuccessRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[15]
+	mi := &file_subscription_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1073,7 +1089,7 @@ func (x *HandlePaymentSuccessRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HandlePaymentSuccessRequest.ProtoReflect.Descriptor instead.
 func (*HandlePaymentSuccessRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{15}
+	return file_subscription_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *HandlePaymentSuccessRequest) GetOrderId() string {
@@ -1108,7 +1124,7 @@ type CancelSubscriptionRequest struct {
 
 func (x *CancelSubscriptionRequest) Reset() {
 	*x = CancelSubscriptionRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[16]
+	mi := &file_subscription_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1120,7 +1136,7 @@ func (x *CancelSubscriptionRequest) String() string {
 func (*CancelSubscriptionRequest) ProtoMessage() {}
 
 func (x *CancelSubscriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[16]
+	mi := &file_subscription_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1133,7 +1149,7 @@ func (x *CancelSubscriptionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelSubscriptionRequest.ProtoReflect.Descriptor instead.
 func (*CancelSubscriptionRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{16}
+	return file_subscription_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *CancelSubscriptionRequest) GetUserId() string {
@@ -1161,7 +1177,7 @@ type PauseSubscriptionRequest struct {
 
 func (x *PauseSubscriptionRequest) Reset() {
 	*x = PauseSubscriptionRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[17]
+	mi := &file_subscription_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1173,7 +1189,7 @@ func (x *PauseSubscriptionRequest) String() string {
 func (*PauseSubscriptionRequest) ProtoMessage() {}
 
 func (x *PauseSubscriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[17]
+	mi := &file_subscription_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1186,7 +1202,7 @@ func (x *PauseSubscriptionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PauseSubscriptionRequest.ProtoReflect.Descriptor instead.
 func (*PauseSubscriptionRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{17}
+	return file_subscription_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *PauseSubscriptionRequest) GetUserId() string {
@@ -1213,7 +1229,7 @@ type ResumeSubscriptionRequest struct {
 
 func (x *ResumeSubscriptionRequest) Reset() {
 	*x = ResumeSubscriptionRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[18]
+	mi := &file_subscription_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1225,7 +1241,7 @@ func (x *ResumeSubscriptionRequest) String() string {
 func (*ResumeSubscriptionRequest) ProtoMessage() {}
 
 func (x *ResumeSubscriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[18]
+	mi := &file_subscription_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1238,7 +1254,7 @@ func (x *ResumeSubscriptionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResumeSubscriptionRequest.ProtoReflect.Descriptor instead.
 func (*ResumeSubscriptionRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{18}
+	return file_subscription_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *ResumeSubscriptionRequest) GetUserId() string {
@@ -1266,7 +1282,7 @@ type SubscriptionHistoryItem struct {
 
 func (x *SubscriptionHistoryItem) Reset() {
 	*x = SubscriptionHistoryItem{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[19]
+	mi := &file_subscription_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1278,7 +1294,7 @@ func (x *SubscriptionHistoryItem) String() string {
 func (*SubscriptionHistoryItem) ProtoMessage() {}
 
 func (x *SubscriptionHistoryItem) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[19]
+	mi := &file_subscription_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1291,7 +1307,7 @@ func (x *SubscriptionHistoryItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscriptionHistoryItem.ProtoReflect.Descriptor instead.
 func (*SubscriptionHistoryItem) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{19}
+	return file_subscription_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *SubscriptionHistoryItem) GetId() uint64 {
@@ -1368,7 +1384,7 @@ type GetSubscriptionHistoryRequest struct {
 
 func (x *GetSubscriptionHistoryRequest) Reset() {
 	*x = GetSubscriptionHistoryRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[20]
+	mi := &file_subscription_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1380,7 +1396,7 @@ func (x *GetSubscriptionHistoryRequest) String() string {
 func (*GetSubscriptionHistoryRequest) ProtoMessage() {}
 
 func (x *GetSubscriptionHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[20]
+	mi := &file_subscription_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1393,7 +1409,7 @@ func (x *GetSubscriptionHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSubscriptionHistoryRequest.ProtoReflect.Descriptor instead.
 func (*GetSubscriptionHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{20}
+	return file_subscription_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *GetSubscriptionHistoryRequest) GetUserId() string {
@@ -1429,7 +1445,7 @@ type GetSubscriptionHistoryReply struct {
 
 func (x *GetSubscriptionHistoryReply) Reset() {
 	*x = GetSubscriptionHistoryReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[21]
+	mi := &file_subscription_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1441,7 +1457,7 @@ func (x *GetSubscriptionHistoryReply) String() string {
 func (*GetSubscriptionHistoryReply) ProtoMessage() {}
 
 func (x *GetSubscriptionHistoryReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[21]
+	mi := &file_subscription_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1454,7 +1470,7 @@ func (x *GetSubscriptionHistoryReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSubscriptionHistoryReply.ProtoReflect.Descriptor instead.
 func (*GetSubscriptionHistoryReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{21}
+	return file_subscription_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *GetSubscriptionHistoryReply) GetItems() []*SubscriptionHistoryItem {
@@ -1496,7 +1512,7 @@ type SetAutoRenewRequest struct {
 
 func (x *SetAutoRenewRequest) Reset() {
 	*x = SetAutoRenewRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[22]
+	mi := &file_subscription_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1508,7 +1524,7 @@ func (x *SetAutoRenewRequest) String() string {
 func (*SetAutoRenewRequest) ProtoMessage() {}
 
 func (x *SetAutoRenewRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[22]
+	mi := &file_subscription_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1521,7 +1537,7 @@ func (x *SetAutoRenewRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetAutoRenewRequest.ProtoReflect.Descriptor instead.
 func (*SetAutoRenewRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{22}
+	return file_subscription_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *SetAutoRenewRequest) GetUserId() string {
@@ -1550,7 +1566,7 @@ type GetExpiringSubscriptionsRequest struct {
 
 func (x *GetExpiringSubscriptionsRequest) Reset() {
 	*x = GetExpiringSubscriptionsRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[23]
+	mi := &file_subscription_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1562,7 +1578,7 @@ func (x *GetExpiringSubscriptionsRequest) String() string {
 func (*GetExpiringSubscriptionsRequest) ProtoMessage() {}
 
 func (x *GetExpiringSubscriptionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[23]
+	mi := &file_subscription_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1575,7 +1591,7 @@ func (x *GetExpiringSubscriptionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetExpiringSubscriptionsRequest.ProtoReflect.Descriptor instead.
 func (*GetExpiringSubscriptionsRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{23}
+	return file_subscription_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *GetExpiringSubscriptionsRequest) GetDaysBeforeExpiry() int32 {
@@ -1614,7 +1630,7 @@ type SubscriptionInfo struct {
 
 func (x *SubscriptionInfo) Reset() {
 	*x = SubscriptionInfo{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[24]
+	mi := &file_subscription_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1626,7 +1642,7 @@ func (x *SubscriptionInfo) String() string {
 func (*SubscriptionInfo) ProtoMessage() {}
 
 func (x *SubscriptionInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[24]
+	mi := &file_subscription_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1639,7 +1655,7 @@ func (x *SubscriptionInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscriptionInfo.ProtoReflect.Descriptor instead.
 func (*SubscriptionInfo) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{24}
+	return file_subscription_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *SubscriptionInfo) GetUserId() string {
@@ -1703,7 +1719,7 @@ type GetExpiringSubscriptionsReply struct {
 
 func (x *GetExpiringSubscriptionsReply) Reset() {
 	*x = GetExpiringSubscriptionsReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[25]
+	mi := &file_subscription_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1715,7 +1731,7 @@ func (x *GetExpiringSubscriptionsReply) String() string {
 func (*GetExpiringSubscriptionsReply) ProtoMessage() {}
 
 func (x *GetExpiringSubscriptionsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[25]
+	mi := &file_subscription_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1728,7 +1744,7 @@ func (x *GetExpiringSubscriptionsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetExpiringSubscriptionsReply.ProtoReflect.Descriptor instead.
 func (*GetExpiringSubscriptionsReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{25}
+	return file_subscription_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *GetExpiringSubscriptionsReply) GetSubscriptions() []*SubscriptionInfo {
@@ -1768,7 +1784,7 @@ type UpdateExpiredSubscriptionsRequest struct {
 
 func (x *UpdateExpiredSubscriptionsRequest) Reset() {
 	*x = UpdateExpiredSubscriptionsRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[26]
+	mi := &file_subscription_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1780,7 +1796,7 @@ func (x *UpdateExpiredSubscriptionsRequest) String() string {
 func (*UpdateExpiredSubscriptionsRequest) ProtoMessage() {}
 
 func (x *UpdateExpiredSubscriptionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[26]
+	mi := &file_subscription_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1793,7 +1809,7 @@ func (x *UpdateExpiredSubscriptionsRequest) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use UpdateExpiredSubscriptionsRequest.ProtoReflect.Descriptor instead.
 func (*UpdateExpiredSubscriptionsRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{26}
+	return file_subscription_proto_rawDescGZIP(), []int{26}
 }
 
 type UpdateExpiredSubscriptionsReply struct {
@@ -1806,7 +1822,7 @@ type UpdateExpiredSubscriptionsReply struct {
 
 func (x *UpdateExpiredSubscriptionsReply) Reset() {
 	*x = UpdateExpiredSubscriptionsReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[27]
+	mi := &file_subscription_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1818,7 +1834,7 @@ func (x *UpdateExpiredSubscriptionsReply) String() string {
 func (*UpdateExpiredSubscriptionsReply) ProtoMessage() {}
 
 func (x *UpdateExpiredSubscriptionsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[27]
+	mi := &file_subscription_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1831,7 +1847,7 @@ func (x *UpdateExpiredSubscriptionsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateExpiredSubscriptionsReply.ProtoReflect.Descriptor instead.
 func (*UpdateExpiredSubscriptionsReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{27}
+	return file_subscription_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *UpdateExpiredSubscriptionsReply) GetUpdatedCount() int32 {
@@ -1859,7 +1875,7 @@ type ProcessAutoRenewalsRequest struct {
 
 func (x *ProcessAutoRenewalsRequest) Reset() {
 	*x = ProcessAutoRenewalsRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[28]
+	mi := &file_subscription_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1871,7 +1887,7 @@ func (x *ProcessAutoRenewalsRequest) String() string {
 func (*ProcessAutoRenewalsRequest) ProtoMessage() {}
 
 func (x *ProcessAutoRenewalsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[28]
+	mi := &file_subscription_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1884,7 +1900,7 @@ func (x *ProcessAutoRenewalsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProcessAutoRenewalsRequest.ProtoReflect.Descriptor instead.
 func (*ProcessAutoRenewalsRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{28}
+	return file_subscription_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *ProcessAutoRenewalsRequest) GetDaysBeforeExpiry() int32 {
@@ -1915,7 +1931,7 @@ type AutoRenewResult struct {
 
 func (x *AutoRenewResult) Reset() {
 	*x = AutoRenewResult{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[29]
+	mi := &file_subscription_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1927,7 +1943,7 @@ func (x *AutoRenewResult) String() string {
 func (*AutoRenewResult) ProtoMessage() {}
 
 func (x *AutoRenewResult) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[29]
+	mi := &file_subscription_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1940,7 +1956,7 @@ func (x *AutoRenewResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AutoRenewResult.ProtoReflect.Descriptor instead.
 func (*AutoRenewResult) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{29}
+	return file_subscription_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *AutoRenewResult) GetUserId() string {
@@ -1997,7 +2013,7 @@ type ProcessAutoRenewalsReply struct {
 
 func (x *ProcessAutoRenewalsReply) Reset() {
 	*x = ProcessAutoRenewalsReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[30]
+	mi := &file_subscription_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2009,7 +2025,7 @@ func (x *ProcessAutoRenewalsReply) String() string {
 func (*ProcessAutoRenewalsReply) ProtoMessage() {}
 
 func (x *ProcessAutoRenewalsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[30]
+	mi := &file_subscription_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2022,7 +2038,7 @@ func (x *ProcessAutoRenewalsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProcessAutoRenewalsReply.ProtoReflect.Descriptor instead.
 func (*ProcessAutoRenewalsReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{30}
+	return file_subscription_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *ProcessAutoRenewalsReply) GetTotalCount() int32 {
@@ -2067,7 +2083,7 @@ type PlanPricing struct {
 
 func (x *PlanPricing) Reset() {
 	*x = PlanPricing{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[31]
+	mi := &file_subscription_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2079,7 +2095,7 @@ func (x *PlanPricing) String() string {
 func (*PlanPricing) ProtoMessage() {}
 
 func (x *PlanPricing) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[31]
+	mi := &file_subscription_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2092,7 +2108,7 @@ func (x *PlanPricing) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PlanPricing.ProtoReflect.Descriptor instead.
 func (*PlanPricing) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{31}
+	return file_subscription_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *PlanPricing) GetPlanPricingId() uint64 {
@@ -2139,7 +2155,7 @@ type ListPlanPricingsRequest struct {
 
 func (x *ListPlanPricingsRequest) Reset() {
 	*x = ListPlanPricingsRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[32]
+	mi := &file_subscription_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2151,7 +2167,7 @@ func (x *ListPlanPricingsRequest) String() string {
 func (*ListPlanPricingsRequest) ProtoMessage() {}
 
 func (x *ListPlanPricingsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[32]
+	mi := &file_subscription_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2164,7 +2180,7 @@ func (x *ListPlanPricingsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPlanPricingsRequest.ProtoReflect.Descriptor instead.
 func (*ListPlanPricingsRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{32}
+	return file_subscription_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *ListPlanPricingsRequest) GetPlanId() string {
@@ -2183,7 +2199,7 @@ type ListPlanPricingsReply struct {
 
 func (x *ListPlanPricingsReply) Reset() {
 	*x = ListPlanPricingsReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[33]
+	mi := &file_subscription_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2195,7 +2211,7 @@ func (x *ListPlanPricingsReply) String() string {
 func (*ListPlanPricingsReply) ProtoMessage() {}
 
 func (x *ListPlanPricingsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[33]
+	mi := &file_subscription_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2208,7 +2224,7 @@ func (x *ListPlanPricingsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPlanPricingsReply.ProtoReflect.Descriptor instead.
 func (*ListPlanPricingsReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{33}
+	return file_subscription_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *ListPlanPricingsReply) GetPricings() []*PlanPricing {
@@ -2230,7 +2246,7 @@ type CreatePlanPricingRequest struct {
 
 func (x *CreatePlanPricingRequest) Reset() {
 	*x = CreatePlanPricingRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[34]
+	mi := &file_subscription_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2242,7 +2258,7 @@ func (x *CreatePlanPricingRequest) String() string {
 func (*CreatePlanPricingRequest) ProtoMessage() {}
 
 func (x *CreatePlanPricingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[34]
+	mi := &file_subscription_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2255,7 +2271,7 @@ func (x *CreatePlanPricingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePlanPricingRequest.ProtoReflect.Descriptor instead.
 func (*CreatePlanPricingRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{34}
+	return file_subscription_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *CreatePlanPricingRequest) GetPlanId() string {
@@ -2295,7 +2311,7 @@ type CreatePlanPricingReply struct {
 
 func (x *CreatePlanPricingReply) Reset() {
 	*x = CreatePlanPricingReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[35]
+	mi := &file_subscription_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2307,7 +2323,7 @@ func (x *CreatePlanPricingReply) String() string {
 func (*CreatePlanPricingReply) ProtoMessage() {}
 
 func (x *CreatePlanPricingReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[35]
+	mi := &file_subscription_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2320,7 +2336,7 @@ func (x *CreatePlanPricingReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePlanPricingReply.ProtoReflect.Descriptor instead.
 func (*CreatePlanPricingReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{35}
+	return file_subscription_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *CreatePlanPricingReply) GetPricing() *PlanPricing {
@@ -2341,7 +2357,7 @@ type UpdatePlanPricingRequest struct {
 
 func (x *UpdatePlanPricingRequest) Reset() {
 	*x = UpdatePlanPricingRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[36]
+	mi := &file_subscription_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2353,7 +2369,7 @@ func (x *UpdatePlanPricingRequest) String() string {
 func (*UpdatePlanPricingRequest) ProtoMessage() {}
 
 func (x *UpdatePlanPricingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[36]
+	mi := &file_subscription_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2366,7 +2382,7 @@ func (x *UpdatePlanPricingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePlanPricingRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePlanPricingRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{36}
+	return file_subscription_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *UpdatePlanPricingRequest) GetPlanPricingId() uint64 {
@@ -2399,7 +2415,7 @@ type UpdatePlanPricingReply struct {
 
 func (x *UpdatePlanPricingReply) Reset() {
 	*x = UpdatePlanPricingReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[37]
+	mi := &file_subscription_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2411,7 +2427,7 @@ func (x *UpdatePlanPricingReply) String() string {
 func (*UpdatePlanPricingReply) ProtoMessage() {}
 
 func (x *UpdatePlanPricingReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[37]
+	mi := &file_subscription_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2424,7 +2440,7 @@ func (x *UpdatePlanPricingReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePlanPricingReply.ProtoReflect.Descriptor instead.
 func (*UpdatePlanPricingReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{37}
+	return file_subscription_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *UpdatePlanPricingReply) GetPricing() *PlanPricing {
@@ -2443,7 +2459,7 @@ type DeletePlanPricingRequest struct {
 
 func (x *DeletePlanPricingRequest) Reset() {
 	*x = DeletePlanPricingRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[38]
+	mi := &file_subscription_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2455,7 +2471,7 @@ func (x *DeletePlanPricingRequest) String() string {
 func (*DeletePlanPricingRequest) ProtoMessage() {}
 
 func (x *DeletePlanPricingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[38]
+	mi := &file_subscription_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2468,7 +2484,7 @@ func (x *DeletePlanPricingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePlanPricingRequest.ProtoReflect.Descriptor instead.
 func (*DeletePlanPricingRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{38}
+	return file_subscription_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *DeletePlanPricingRequest) GetPlanPricingId() uint64 {
@@ -2487,7 +2503,7 @@ type DeletePlanPricingReply struct {
 
 func (x *DeletePlanPricingReply) Reset() {
 	*x = DeletePlanPricingReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[39]
+	mi := &file_subscription_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2499,7 +2515,7 @@ func (x *DeletePlanPricingReply) String() string {
 func (*DeletePlanPricingReply) ProtoMessage() {}
 
 func (x *DeletePlanPricingReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[39]
+	mi := &file_subscription_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2512,7 +2528,7 @@ func (x *DeletePlanPricingReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeletePlanPricingReply.ProtoReflect.Descriptor instead.
 func (*DeletePlanPricingReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{39}
+	return file_subscription_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *DeletePlanPricingReply) GetPlanPricingId() uint64 {
@@ -2537,7 +2553,7 @@ type ListSubscriptionOrdersRequest struct {
 
 func (x *ListSubscriptionOrdersRequest) Reset() {
 	*x = ListSubscriptionOrdersRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[40]
+	mi := &file_subscription_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2549,7 +2565,7 @@ func (x *ListSubscriptionOrdersRequest) String() string {
 func (*ListSubscriptionOrdersRequest) ProtoMessage() {}
 
 func (x *ListSubscriptionOrdersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[40]
+	mi := &file_subscription_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2562,7 +2578,7 @@ func (x *ListSubscriptionOrdersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSubscriptionOrdersRequest.ProtoReflect.Descriptor instead.
 func (*ListSubscriptionOrdersRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{40}
+	return file_subscription_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *ListSubscriptionOrdersRequest) GetAppId() string {
@@ -2626,7 +2642,7 @@ type SubscriptionOrderInfo struct {
 
 func (x *SubscriptionOrderInfo) Reset() {
 	*x = SubscriptionOrderInfo{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[41]
+	mi := &file_subscription_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2638,7 +2654,7 @@ func (x *SubscriptionOrderInfo) String() string {
 func (*SubscriptionOrderInfo) ProtoMessage() {}
 
 func (x *SubscriptionOrderInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[41]
+	mi := &file_subscription_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2651,7 +2667,7 @@ func (x *SubscriptionOrderInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscriptionOrderInfo.ProtoReflect.Descriptor instead.
 func (*SubscriptionOrderInfo) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{41}
+	return file_subscription_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *SubscriptionOrderInfo) GetOrderId() string {
@@ -2737,7 +2753,7 @@ type ListSubscriptionOrdersReply struct {
 
 func (x *ListSubscriptionOrdersReply) Reset() {
 	*x = ListSubscriptionOrdersReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[42]
+	mi := &file_subscription_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2749,7 +2765,7 @@ func (x *ListSubscriptionOrdersReply) String() string {
 func (*ListSubscriptionOrdersReply) ProtoMessage() {}
 
 func (x *ListSubscriptionOrdersReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[42]
+	mi := &file_subscription_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2762,7 +2778,7 @@ func (x *ListSubscriptionOrdersReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSubscriptionOrdersReply.ProtoReflect.Descriptor instead.
 func (*ListSubscriptionOrdersReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{42}
+	return file_subscription_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *ListSubscriptionOrdersReply) GetOrders() []*SubscriptionOrderInfo {
@@ -2803,7 +2819,7 @@ type GetSubscriptionOrderRequest struct {
 
 func (x *GetSubscriptionOrderRequest) Reset() {
 	*x = GetSubscriptionOrderRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[43]
+	mi := &file_subscription_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2815,7 +2831,7 @@ func (x *GetSubscriptionOrderRequest) String() string {
 func (*GetSubscriptionOrderRequest) ProtoMessage() {}
 
 func (x *GetSubscriptionOrderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[43]
+	mi := &file_subscription_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2828,7 +2844,7 @@ func (x *GetSubscriptionOrderRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSubscriptionOrderRequest.ProtoReflect.Descriptor instead.
 func (*GetSubscriptionOrderRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{43}
+	return file_subscription_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *GetSubscriptionOrderRequest) GetOrderId() string {
@@ -2848,7 +2864,7 @@ type GetSubscriptionOrderReply struct {
 
 func (x *GetSubscriptionOrderReply) Reset() {
 	*x = GetSubscriptionOrderReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[44]
+	mi := &file_subscription_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2860,7 +2876,7 @@ func (x *GetSubscriptionOrderReply) String() string {
 func (*GetSubscriptionOrderReply) ProtoMessage() {}
 
 func (x *GetSubscriptionOrderReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[44]
+	mi := &file_subscription_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2873,7 +2889,7 @@ func (x *GetSubscriptionOrderReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSubscriptionOrderReply.ProtoReflect.Descriptor instead.
 func (*GetSubscriptionOrderReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{44}
+	return file_subscription_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *GetSubscriptionOrderReply) GetOrder() *SubscriptionOrderInfo {
@@ -2897,7 +2913,7 @@ type ListAppSubscriptionsRequest struct {
 
 func (x *ListAppSubscriptionsRequest) Reset() {
 	*x = ListAppSubscriptionsRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[45]
+	mi := &file_subscription_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2909,7 +2925,7 @@ func (x *ListAppSubscriptionsRequest) String() string {
 func (*ListAppSubscriptionsRequest) ProtoMessage() {}
 
 func (x *ListAppSubscriptionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[45]
+	mi := &file_subscription_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2922,7 +2938,7 @@ func (x *ListAppSubscriptionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAppSubscriptionsRequest.ProtoReflect.Descriptor instead.
 func (*ListAppSubscriptionsRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{45}
+	return file_subscription_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *ListAppSubscriptionsRequest) GetAppId() string {
@@ -2981,7 +2997,7 @@ type AppSubscriptionInfo struct {
 
 func (x *AppSubscriptionInfo) Reset() {
 	*x = AppSubscriptionInfo{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[46]
+	mi := &file_subscription_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2993,7 +3009,7 @@ func (x *AppSubscriptionInfo) String() string {
 func (*AppSubscriptionInfo) ProtoMessage() {}
 
 func (x *AppSubscriptionInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[46]
+	mi := &file_subscription_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3006,7 +3022,7 @@ func (x *AppSubscriptionInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AppSubscriptionInfo.ProtoReflect.Descriptor instead.
 func (*AppSubscriptionInfo) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{46}
+	return file_subscription_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *AppSubscriptionInfo) GetSubscriptionId() uint64 {
@@ -3106,7 +3122,7 @@ type ListAppSubscriptionsReply struct {
 
 func (x *ListAppSubscriptionsReply) Reset() {
 	*x = ListAppSubscriptionsReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[47]
+	mi := &file_subscription_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3118,7 +3134,7 @@ func (x *ListAppSubscriptionsReply) String() string {
 func (*ListAppSubscriptionsReply) ProtoMessage() {}
 
 func (x *ListAppSubscriptionsReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[47]
+	mi := &file_subscription_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3131,7 +3147,7 @@ func (x *ListAppSubscriptionsReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAppSubscriptionsReply.ProtoReflect.Descriptor instead.
 func (*ListAppSubscriptionsReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{47}
+	return file_subscription_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *ListAppSubscriptionsReply) GetSubscriptions() []*AppSubscriptionInfo {
@@ -3178,7 +3194,7 @@ type GetAppSubscriptionHistoryRequest struct {
 
 func (x *GetAppSubscriptionHistoryRequest) Reset() {
 	*x = GetAppSubscriptionHistoryRequest{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[48]
+	mi := &file_subscription_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3190,7 +3206,7 @@ func (x *GetAppSubscriptionHistoryRequest) String() string {
 func (*GetAppSubscriptionHistoryRequest) ProtoMessage() {}
 
 func (x *GetAppSubscriptionHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[48]
+	mi := &file_subscription_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3203,7 +3219,7 @@ func (x *GetAppSubscriptionHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAppSubscriptionHistoryRequest.ProtoReflect.Descriptor instead.
 func (*GetAppSubscriptionHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{48}
+	return file_subscription_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *GetAppSubscriptionHistoryRequest) GetAppId() string {
@@ -3268,7 +3284,7 @@ type GetAppSubscriptionHistoryReply struct {
 
 func (x *GetAppSubscriptionHistoryReply) Reset() {
 	*x = GetAppSubscriptionHistoryReply{}
-	mi := &file_subscription_v1_subscription_proto_msgTypes[49]
+	mi := &file_subscription_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3280,7 +3296,7 @@ func (x *GetAppSubscriptionHistoryReply) String() string {
 func (*GetAppSubscriptionHistoryReply) ProtoMessage() {}
 
 func (x *GetAppSubscriptionHistoryReply) ProtoReflect() protoreflect.Message {
-	mi := &file_subscription_v1_subscription_proto_msgTypes[49]
+	mi := &file_subscription_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3293,7 +3309,7 @@ func (x *GetAppSubscriptionHistoryReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAppSubscriptionHistoryReply.ProtoReflect.Descriptor instead.
 func (*GetAppSubscriptionHistoryReply) Descriptor() ([]byte, []int) {
-	return file_subscription_v1_subscription_proto_rawDescGZIP(), []int{49}
+	return file_subscription_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *GetAppSubscriptionHistoryReply) GetItems() []*SubscriptionHistoryItem {
@@ -3324,11 +3340,219 @@ func (x *GetAppSubscriptionHistoryReply) GetPageSize() int32 {
 	return 0
 }
 
-var File_subscription_v1_subscription_proto protoreflect.FileDescriptor
+type GetPlanOwnerRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PlanId        string                 `protobuf:"bytes,1,opt,name=planId,proto3" json:"planId,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
 
-const file_subscription_v1_subscription_proto_rawDesc = "" +
+func (x *GetPlanOwnerRequest) Reset() {
+	*x = GetPlanOwnerRequest{}
+	mi := &file_subscription_proto_msgTypes[50]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPlanOwnerRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPlanOwnerRequest) ProtoMessage() {}
+
+func (x *GetPlanOwnerRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_subscription_proto_msgTypes[50]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPlanOwnerRequest.ProtoReflect.Descriptor instead.
+func (*GetPlanOwnerRequest) Descriptor() ([]byte, []int) {
+	return file_subscription_proto_rawDescGZIP(), []int{50}
+}
+
+func (x *GetPlanOwnerRequest) GetPlanId() string {
+	if x != nil {
+		return x.PlanId
+	}
+	return ""
+}
+
+type GetPlanOwnerReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PlanId        string                 `protobuf:"bytes,1,opt,name=planId,proto3" json:"planId,omitempty"`
+	AppId         string                 `protobuf:"bytes,2,opt,name=appId,proto3" json:"appId,omitempty"`
+	DeveloperId   string                 `protobuf:"bytes,3,opt,name=developerId,proto3" json:"developerId,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPlanOwnerReply) Reset() {
+	*x = GetPlanOwnerReply{}
+	mi := &file_subscription_proto_msgTypes[51]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPlanOwnerReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPlanOwnerReply) ProtoMessage() {}
+
+func (x *GetPlanOwnerReply) ProtoReflect() protoreflect.Message {
+	mi := &file_subscription_proto_msgTypes[51]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPlanOwnerReply.ProtoReflect.Descriptor instead.
+func (*GetPlanOwnerReply) Descriptor() ([]byte, []int) {
+	return file_subscription_proto_rawDescGZIP(), []int{51}
+}
+
+func (x *GetPlanOwnerReply) GetPlanId() string {
+	if x != nil {
+		return x.PlanId
+	}
+	return ""
+}
+
+func (x *GetPlanOwnerReply) GetAppId() string {
+	if x != nil {
+		return x.AppId
+	}
+	return ""
+}
+
+func (x *GetPlanOwnerReply) GetDeveloperId() string {
+	if x != nil {
+		return x.DeveloperId
+	}
+	return ""
+}
+
+type GetPlanPricingOwnerRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PlanPricingId uint64                 `protobuf:"varint,1,opt,name=planPricingId,proto3" json:"planPricingId,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPlanPricingOwnerRequest) Reset() {
+	*x = GetPlanPricingOwnerRequest{}
+	mi := &file_subscription_proto_msgTypes[52]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPlanPricingOwnerRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPlanPricingOwnerRequest) ProtoMessage() {}
+
+func (x *GetPlanPricingOwnerRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_subscription_proto_msgTypes[52]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPlanPricingOwnerRequest.ProtoReflect.Descriptor instead.
+func (*GetPlanPricingOwnerRequest) Descriptor() ([]byte, []int) {
+	return file_subscription_proto_rawDescGZIP(), []int{52}
+}
+
+func (x *GetPlanPricingOwnerRequest) GetPlanPricingId() uint64 {
+	if x != nil {
+		return x.PlanPricingId
+	}
+	return 0
+}
+
+type GetPlanPricingOwnerReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PlanPricingId uint64                 `protobuf:"varint,1,opt,name=planPricingId,proto3" json:"planPricingId,omitempty"`
+	PlanId        string                 `protobuf:"bytes,2,opt,name=planId,proto3" json:"planId,omitempty"`
+	AppId         string                 `protobuf:"bytes,3,opt,name=appId,proto3" json:"appId,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPlanPricingOwnerReply) Reset() {
+	*x = GetPlanPricingOwnerReply{}
+	mi := &file_subscription_proto_msgTypes[53]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPlanPricingOwnerReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPlanPricingOwnerReply) ProtoMessage() {}
+
+func (x *GetPlanPricingOwnerReply) ProtoReflect() protoreflect.Message {
+	mi := &file_subscription_proto_msgTypes[53]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPlanPricingOwnerReply.ProtoReflect.Descriptor instead.
+func (*GetPlanPricingOwnerReply) Descriptor() ([]byte, []int) {
+	return file_subscription_proto_rawDescGZIP(), []int{53}
+}
+
+func (x *GetPlanPricingOwnerReply) GetPlanPricingId() uint64 {
+	if x != nil {
+		return x.PlanPricingId
+	}
+	return 0
+}
+
+func (x *GetPlanPricingOwnerReply) GetPlanId() string {
+	if x != nil {
+		return x.PlanId
+	}
+	return ""
+}
+
+func (x *GetPlanPricingOwnerReply) GetAppId() string {
+	if x != nil {
+		return x.AppId
+	}
+	return ""
+}
+
+var File_subscription_proto protoreflect.FileDescriptor
+
+const file_subscription_proto_rawDesc = "" +
 	"\n" +
-	"\"subscription/v1/subscription.proto\x12\x0fsubscription.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x17validate/validate.proto\x1a\x1bgoogle/protobuf/empty.proto\"\xe2\x02\n" +
+	"\x12subscription.proto\x12\x0fsubscription.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x17validate/validate.proto\x1a\x1bgoogle/protobuf/empty.proto\"\xe2\x02\n" +
 	"\x04Plan\x12\x16\n" +
 	"\x06planId\x18\x01 \x01(\tR\x06planId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
@@ -3399,12 +3623,16 @@ const file_subscription_v1_subscription_proto_rawDesc = "" +
 	"\x06userId\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18$R\x06userId\"l\n" +
 	"\"EnsureDefaultFreeSubscriptionReply\x12\x18\n" +
 	"\acreated\x18\x01 \x01(\bR\acreated\x12,\n" +
-	"\x11alreadySubscribed\x18\x02 \x01(\bR\x11alreadySubscribed\"\xbe\x01\n" +
+	"\x11alreadySubscribed\x18\x02 \x01(\bR\x11alreadySubscribed\"\xf8\x01\n" +
 	"\x1eCreateSubscriptionOrderRequest\x12!\n" +
 	"\x06userId\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18$R\x06userId\x12!\n" +
 	"\x06planId\x18\x02 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x182R\x06planId\x12>\n" +
 	"\rpaymentMethod\x18\x03 \x01(\tB\x18\xfaB\x15r\x13R\x06alipayR\twechatpayR\rpaymentMethod\x12\x16\n" +
-	"\x06region\x18\x04 \x01(\tR\x06region\"\xa6\x01\n" +
+	"\x06region\x18\x04 \x01(\tR\x06region\x12\x1e\n" +
+	"\n" +
+	"campaignId\x18\x05 \x01(\tR\n" +
+	"campaignId\x12\x18\n" +
+	"\aclickId\x18\x06 \x01(\tR\aclickId\"\xa6\x01\n" +
 	"\x1cCreateSubscriptionOrderReply\x12\x18\n" +
 	"\aorderId\x18\x01 \x01(\tR\aorderId\x12\x1c\n" +
 	"\tpaymentId\x18\x02 \x01(\tR\tpaymentId\x12\x16\n" +
@@ -3575,7 +3803,19 @@ const file_subscription_v1_subscription_proto_rawDesc = "" +
 	"\x05items\x18\x01 \x03(\v2(.subscription.v1.SubscriptionHistoryItemR\x05items\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total\x12\x12\n" +
 	"\x04page\x18\x03 \x01(\x05R\x04page\x12\x1a\n" +
-	"\bpageSize\x18\x04 \x01(\x05R\bpageSize2\xf8\x1b\n" +
+	"\bpageSize\x18\x04 \x01(\x05R\bpageSize\"8\n" +
+	"\x13GetPlanOwnerRequest\x12!\n" +
+	"\x06planId\x18\x01 \x01(\tB\t\xfaB\x06r\x04\x10\x01\x18@R\x06planId\"c\n" +
+	"\x11GetPlanOwnerReply\x12\x16\n" +
+	"\x06planId\x18\x01 \x01(\tR\x06planId\x12\x14\n" +
+	"\x05appId\x18\x02 \x01(\tR\x05appId\x12 \n" +
+	"\vdeveloperId\x18\x03 \x01(\tR\vdeveloperId\"K\n" +
+	"\x1aGetPlanPricingOwnerRequest\x12-\n" +
+	"\rplanPricingId\x18\x01 \x01(\x04B\a\xfaB\x042\x02 \x00R\rplanPricingId\"n\n" +
+	"\x18GetPlanPricingOwnerReply\x12$\n" +
+	"\rplanPricingId\x18\x01 \x01(\x04R\rplanPricingId\x12\x16\n" +
+	"\x06planId\x18\x02 \x01(\tR\x06planId\x12\x14\n" +
+	"\x05appId\x18\x03 \x01(\tR\x05appId2\xc1\x1d\n" +
 	"\fSubscription\x12o\n" +
 	"\tListPlans\x12!.subscription.v1.ListPlansRequest\x1a\x1f.subscription.v1.ListPlansReply\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/subscription/v1/plans\x12\xa5\x01\n" +
 	"\x19GetOrEnsureMySubscription\x121.subscription.v1.GetOrEnsureMySubscriptionRequest\x1a/.subscription.v1.GetOrEnsureMySubscriptionReply\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/subscription/v1/my/{userId}\x12\xb7\x01\n" +
@@ -3603,22 +3843,24 @@ const file_subscription_v1_subscription_proto_rawDesc = "" +
 	"\x16ListSubscriptionOrders\x12..subscription.v1.ListSubscriptionOrdersRequest\x1a,.subscription.v1.ListSubscriptionOrdersReply\"\x1f\x82\xd3\xe4\x93\x02\x19\x12\x17/subscription/v1/orders\x12\x9b\x01\n" +
 	"\x14GetSubscriptionOrder\x12,.subscription.v1.GetSubscriptionOrderRequest\x1a*.subscription.v1.GetSubscriptionOrderReply\")\x82\xd3\xe4\x93\x02#\x12!/subscription/v1/orders/{orderId}\x12\x9c\x01\n" +
 	"\x14ListAppSubscriptions\x12,.subscription.v1.ListAppSubscriptionsRequest\x1a*.subscription.v1.ListAppSubscriptionsReply\"*\x82\xd3\xe4\x93\x02$\x12\"/subscription/v1/app/subscriptions\x12\xa5\x01\n" +
-	"\x19GetAppSubscriptionHistory\x121.subscription.v1.GetAppSubscriptionHistoryRequest\x1a/.subscription.v1.GetAppSubscriptionHistoryReply\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/subscription/v1/app/historyB-Z+subscription-service/api/subscription/v1;v1b\x06proto3"
+	"\x19GetAppSubscriptionHistory\x121.subscription.v1.GetAppSubscriptionHistoryRequest\x1a/.subscription.v1.GetAppSubscriptionHistoryReply\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/subscription/v1/app/history\x12X\n" +
+	"\fGetPlanOwner\x12$.subscription.v1.GetPlanOwnerRequest\x1a\".subscription.v1.GetPlanOwnerReply\x12m\n" +
+	"\x13GetPlanPricingOwner\x12+.subscription.v1.GetPlanPricingOwnerRequest\x1a).subscription.v1.GetPlanPricingOwnerReplyB-Z+subscription-service/api/subscription/v1;v1b\x06proto3"
 
 var (
-	file_subscription_v1_subscription_proto_rawDescOnce sync.Once
-	file_subscription_v1_subscription_proto_rawDescData []byte
+	file_subscription_proto_rawDescOnce sync.Once
+	file_subscription_proto_rawDescData []byte
 )
 
-func file_subscription_v1_subscription_proto_rawDescGZIP() []byte {
-	file_subscription_v1_subscription_proto_rawDescOnce.Do(func() {
-		file_subscription_v1_subscription_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_subscription_v1_subscription_proto_rawDesc), len(file_subscription_v1_subscription_proto_rawDesc)))
+func file_subscription_proto_rawDescGZIP() []byte {
+	file_subscription_proto_rawDescOnce.Do(func() {
+		file_subscription_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_subscription_proto_rawDesc), len(file_subscription_proto_rawDesc)))
 	})
-	return file_subscription_v1_subscription_proto_rawDescData
+	return file_subscription_proto_rawDescData
 }
 
-var file_subscription_v1_subscription_proto_msgTypes = make([]protoimpl.MessageInfo, 50)
-var file_subscription_v1_subscription_proto_goTypes = []any{
+var file_subscription_proto_msgTypes = make([]protoimpl.MessageInfo, 54)
+var file_subscription_proto_goTypes = []any{
 	(*Plan)(nil),                                 // 0: subscription.v1.Plan
 	(*ListPlansRequest)(nil),                     // 1: subscription.v1.ListPlansRequest
 	(*CreatePlanRequest)(nil),                    // 2: subscription.v1.CreatePlanRequest
@@ -3669,9 +3911,13 @@ var file_subscription_v1_subscription_proto_goTypes = []any{
 	(*ListAppSubscriptionsReply)(nil),            // 47: subscription.v1.ListAppSubscriptionsReply
 	(*GetAppSubscriptionHistoryRequest)(nil),     // 48: subscription.v1.GetAppSubscriptionHistoryRequest
 	(*GetAppSubscriptionHistoryReply)(nil),       // 49: subscription.v1.GetAppSubscriptionHistoryReply
-	(*emptypb.Empty)(nil),                        // 50: google.protobuf.Empty
+	(*GetPlanOwnerRequest)(nil),                  // 50: subscription.v1.GetPlanOwnerRequest
+	(*GetPlanOwnerReply)(nil),                    // 51: subscription.v1.GetPlanOwnerReply
+	(*GetPlanPricingOwnerRequest)(nil),           // 52: subscription.v1.GetPlanPricingOwnerRequest
+	(*GetPlanPricingOwnerReply)(nil),             // 53: subscription.v1.GetPlanPricingOwnerReply
+	(*emptypb.Empty)(nil),                        // 54: google.protobuf.Empty
 }
-var file_subscription_v1_subscription_proto_depIdxs = []int32{
+var file_subscription_proto_depIdxs = []int32{
 	31, // 0: subscription.v1.Plan.pricings:type_name -> subscription.v1.PlanPricing
 	0,  // 1: subscription.v1.CreatePlanReply.plan:type_name -> subscription.v1.Plan
 	0,  // 2: subscription.v1.UpdatePlanReply.plan:type_name -> subscription.v1.Plan
@@ -3710,57 +3956,61 @@ var file_subscription_v1_subscription_proto_depIdxs = []int32{
 	43, // 35: subscription.v1.Subscription.GetSubscriptionOrder:input_type -> subscription.v1.GetSubscriptionOrderRequest
 	45, // 36: subscription.v1.Subscription.ListAppSubscriptions:input_type -> subscription.v1.ListAppSubscriptionsRequest
 	48, // 37: subscription.v1.Subscription.GetAppSubscriptionHistory:input_type -> subscription.v1.GetAppSubscriptionHistoryRequest
-	8,  // 38: subscription.v1.Subscription.ListPlans:output_type -> subscription.v1.ListPlansReply
-	10, // 39: subscription.v1.Subscription.GetOrEnsureMySubscription:output_type -> subscription.v1.GetOrEnsureMySubscriptionReply
-	12, // 40: subscription.v1.Subscription.EnsureDefaultFreeSubscription:output_type -> subscription.v1.EnsureDefaultFreeSubscriptionReply
-	14, // 41: subscription.v1.Subscription.CreateSubscriptionOrder:output_type -> subscription.v1.CreateSubscriptionOrderReply
-	50, // 42: subscription.v1.Subscription.HandlePaymentSuccess:output_type -> google.protobuf.Empty
-	50, // 43: subscription.v1.Subscription.CancelSubscription:output_type -> google.protobuf.Empty
-	50, // 44: subscription.v1.Subscription.PauseSubscription:output_type -> google.protobuf.Empty
-	50, // 45: subscription.v1.Subscription.ResumeSubscription:output_type -> google.protobuf.Empty
-	21, // 46: subscription.v1.Subscription.GetSubscriptionHistory:output_type -> subscription.v1.GetSubscriptionHistoryReply
-	50, // 47: subscription.v1.Subscription.SetAutoRenew:output_type -> google.protobuf.Empty
-	25, // 48: subscription.v1.Subscription.GetExpiringSubscriptions:output_type -> subscription.v1.GetExpiringSubscriptionsReply
-	27, // 49: subscription.v1.Subscription.UpdateExpiredSubscriptions:output_type -> subscription.v1.UpdateExpiredSubscriptionsReply
-	30, // 50: subscription.v1.Subscription.ProcessAutoRenewals:output_type -> subscription.v1.ProcessAutoRenewalsReply
-	3,  // 51: subscription.v1.Subscription.CreatePlan:output_type -> subscription.v1.CreatePlanReply
-	5,  // 52: subscription.v1.Subscription.UpdatePlan:output_type -> subscription.v1.UpdatePlanReply
-	7,  // 53: subscription.v1.Subscription.DeletePlan:output_type -> subscription.v1.DeletePlanReply
-	33, // 54: subscription.v1.Subscription.ListPlanPricings:output_type -> subscription.v1.ListPlanPricingsReply
-	35, // 55: subscription.v1.Subscription.CreatePlanPricing:output_type -> subscription.v1.CreatePlanPricingReply
-	37, // 56: subscription.v1.Subscription.UpdatePlanPricing:output_type -> subscription.v1.UpdatePlanPricingReply
-	39, // 57: subscription.v1.Subscription.DeletePlanPricing:output_type -> subscription.v1.DeletePlanPricingReply
-	42, // 58: subscription.v1.Subscription.ListSubscriptionOrders:output_type -> subscription.v1.ListSubscriptionOrdersReply
-	44, // 59: subscription.v1.Subscription.GetSubscriptionOrder:output_type -> subscription.v1.GetSubscriptionOrderReply
-	47, // 60: subscription.v1.Subscription.ListAppSubscriptions:output_type -> subscription.v1.ListAppSubscriptionsReply
-	49, // 61: subscription.v1.Subscription.GetAppSubscriptionHistory:output_type -> subscription.v1.GetAppSubscriptionHistoryReply
-	38, // [38:62] is the sub-list for method output_type
-	14, // [14:38] is the sub-list for method input_type
+	50, // 38: subscription.v1.Subscription.GetPlanOwner:input_type -> subscription.v1.GetPlanOwnerRequest
+	52, // 39: subscription.v1.Subscription.GetPlanPricingOwner:input_type -> subscription.v1.GetPlanPricingOwnerRequest
+	8,  // 40: subscription.v1.Subscription.ListPlans:output_type -> subscription.v1.ListPlansReply
+	10, // 41: subscription.v1.Subscription.GetOrEnsureMySubscription:output_type -> subscription.v1.GetOrEnsureMySubscriptionReply
+	12, // 42: subscription.v1.Subscription.EnsureDefaultFreeSubscription:output_type -> subscription.v1.EnsureDefaultFreeSubscriptionReply
+	14, // 43: subscription.v1.Subscription.CreateSubscriptionOrder:output_type -> subscription.v1.CreateSubscriptionOrderReply
+	54, // 44: subscription.v1.Subscription.HandlePaymentSuccess:output_type -> google.protobuf.Empty
+	54, // 45: subscription.v1.Subscription.CancelSubscription:output_type -> google.protobuf.Empty
+	54, // 46: subscription.v1.Subscription.PauseSubscription:output_type -> google.protobuf.Empty
+	54, // 47: subscription.v1.Subscription.ResumeSubscription:output_type -> google.protobuf.Empty
+	21, // 48: subscription.v1.Subscription.GetSubscriptionHistory:output_type -> subscription.v1.GetSubscriptionHistoryReply
+	54, // 49: subscription.v1.Subscription.SetAutoRenew:output_type -> google.protobuf.Empty
+	25, // 50: subscription.v1.Subscription.GetExpiringSubscriptions:output_type -> subscription.v1.GetExpiringSubscriptionsReply
+	27, // 51: subscription.v1.Subscription.UpdateExpiredSubscriptions:output_type -> subscription.v1.UpdateExpiredSubscriptionsReply
+	30, // 52: subscription.v1.Subscription.ProcessAutoRenewals:output_type -> subscription.v1.ProcessAutoRenewalsReply
+	3,  // 53: subscription.v1.Subscription.CreatePlan:output_type -> subscription.v1.CreatePlanReply
+	5,  // 54: subscription.v1.Subscription.UpdatePlan:output_type -> subscription.v1.UpdatePlanReply
+	7,  // 55: subscription.v1.Subscription.DeletePlan:output_type -> subscription.v1.DeletePlanReply
+	33, // 56: subscription.v1.Subscription.ListPlanPricings:output_type -> subscription.v1.ListPlanPricingsReply
+	35, // 57: subscription.v1.Subscription.CreatePlanPricing:output_type -> subscription.v1.CreatePlanPricingReply
+	37, // 58: subscription.v1.Subscription.UpdatePlanPricing:output_type -> subscription.v1.UpdatePlanPricingReply
+	39, // 59: subscription.v1.Subscription.DeletePlanPricing:output_type -> subscription.v1.DeletePlanPricingReply
+	42, // 60: subscription.v1.Subscription.ListSubscriptionOrders:output_type -> subscription.v1.ListSubscriptionOrdersReply
+	44, // 61: subscription.v1.Subscription.GetSubscriptionOrder:output_type -> subscription.v1.GetSubscriptionOrderReply
+	47, // 62: subscription.v1.Subscription.ListAppSubscriptions:output_type -> subscription.v1.ListAppSubscriptionsReply
+	49, // 63: subscription.v1.Subscription.GetAppSubscriptionHistory:output_type -> subscription.v1.GetAppSubscriptionHistoryReply
+	51, // 64: subscription.v1.Subscription.GetPlanOwner:output_type -> subscription.v1.GetPlanOwnerReply
+	53, // 65: subscription.v1.Subscription.GetPlanPricingOwner:output_type -> subscription.v1.GetPlanPricingOwnerReply
+	40, // [40:66] is the sub-list for method output_type
+	14, // [14:40] is the sub-list for method input_type
 	14, // [14:14] is the sub-list for extension type_name
 	14, // [14:14] is the sub-list for extension extendee
 	0,  // [0:14] is the sub-list for field type_name
 }
 
-func init() { file_subscription_v1_subscription_proto_init() }
-func file_subscription_v1_subscription_proto_init() {
-	if File_subscription_v1_subscription_proto != nil {
+func init() { file_subscription_proto_init() }
+func file_subscription_proto_init() {
+	if File_subscription_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_subscription_v1_subscription_proto_rawDesc), len(file_subscription_v1_subscription_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_subscription_proto_rawDesc), len(file_subscription_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   50,
+			NumMessages:   54,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_subscription_v1_subscription_proto_goTypes,
-		DependencyIndexes: file_subscription_v1_subscription_proto_depIdxs,
-		MessageInfos:      file_subscription_v1_subscription_proto_msgTypes,
+		GoTypes:           file_subscription_proto_goTypes,
+		DependencyIndexes: file_subscription_proto_depIdxs,
+		MessageInfos:      file_subscription_proto_msgTypes,
 	}.Build()
-	File_subscription_v1_subscription_proto = out.File
-	file_subscription_v1_subscription_proto_goTypes = nil
-	file_subscription_v1_subscription_proto_depIdxs = nil
+	File_subscription_proto = out.File
+	file_subscription_proto_goTypes = nil
+	file_subscription_proto_depIdxs = nil
 }

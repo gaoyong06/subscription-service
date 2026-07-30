@@ -5,6 +5,8 @@ import (
 	"subscription-service/internal/conf"
 	"subscription-service/internal/service"
 
+	"github.com/gaoyong06/go-pkg/middleware/app_id"
+	"github.com/gaoyong06/go-pkg/middleware/developer_id"
 	"github.com/gaoyong06/go-pkg/middleware/i18n"
 	"github.com/gaoyong06/go-pkg/middleware/user_id"
 
@@ -19,6 +21,8 @@ func NewGRPCServer(c *conf.Bootstrap, sub *service.SubscriptionService, logger l
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
+			app_id.Middleware(),
+			developer_id.Middleware(),
 			// 添加参数验证中间件
 			validate.Validator(),
 			// 添加 user_id 中间件（提取终端用户 ID，支持 gRPC metadata: x-end-user-id）

@@ -8,15 +8,15 @@ import (
 
 // Plan 订阅套餐
 type Plan struct {
-	PlanID       string
-	AppID        string // 应用ID（关联api-key-service的app表）
-	UserID       string // 开发者ID（用户ID，关联api-key-service的app.user_id）
+	PlanID        string
+	AppID         string // 应用ID（关联api-key-service的app表）
+	UserID        string // 开发者ID（用户ID，关联api-key-service的app.user_id）
 	Name          string
 	Description   string
-	Price         float64 // 默认价格（用于兜底，如果plan_pricing表中没有对应地域的价格）
-	Currency      string  // 默认币种（用于兜底）
-	PeriodType    string  // DAY | MONTH | YEAR | FOREVER（UTC 自然历）
-	IntervalCount int32   // FOREVER 时为 0
+	Price         float64  // 默认价格（用于兜底，如果plan_pricing表中没有对应地域的价格）
+	Currency      string   // 默认币种（用于兜底）
+	PeriodType    string   // DAY | MONTH | YEAR | FOREVER（UTC 自然历）
+	IntervalCount int32    // FOREVER 时为 0
 	Features      []string // 权益 i18n key，存库为 JSON 数组
 	Type          string
 }

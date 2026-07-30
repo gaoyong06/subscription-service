@@ -250,13 +250,13 @@ func (s *SubscriptionService) userSubscriptionToOrEnsureReply(ctx context.Contex
 		return nil, pkgErrors.NewBizErrorWithLang(ctx, pkgErrors.ErrCodeInternalError)
 	}
 	reply := &pb.GetOrEnsureMySubscriptionReply{
-		IsActive:                 sub.Status == "active",
-		PlanId:                   sub.PlanID,
-		StartTime:                sub.StartTime.Unix(),
-		EndTime:                  sub.EndTime.Unix(),
-		Status:                   sub.Status,
-		AutoRenew:                sub.IsAutoRenew,
-		DefaultFreeMaterialized:    defaultFreeMaterialized,
+		IsActive:                sub.Status == "active",
+		PlanId:                  sub.PlanID,
+		StartTime:               sub.StartTime.Unix(),
+		EndTime:                 sub.EndTime.Unix(),
+		Status:                  sub.Status,
+		AutoRenew:               sub.IsAutoRenew,
+		DefaultFreeMaterialized: defaultFreeMaterialized,
 	}
 	if plan, err := s.uc.GetPlan(ctx, sub.PlanID); err == nil && plan != nil {
 		reply.PlanName = plan.Name
@@ -317,8 +317,8 @@ func (s *SubscriptionService) EnsureDefaultFreeSubscription(ctx context.Context,
 		return nil, err
 	}
 	return &pb.EnsureDefaultFreeSubscriptionReply{
-		Created:             created,
-		AlreadySubscribed:   already,
+		Created:           created,
+		AlreadySubscribed: already,
 	}, nil
 }
 
@@ -345,6 +345,7 @@ func (s *SubscriptionService) CreateSubscriptionOrder(ctx context.Context, req *
 		}
 	}
 
+	ctx = context.WithValue(context.WithValue(ctx, "campaign_id", req.CampaignId), "click_id", req.ClickId)
 	order, paymentID, payUrl, payCode, payParams, err := s.uc.CreateSubscriptionOrderWithContext(ctx, req.UserId, req.PlanId, req.PaymentMethod, region, clientIP, acceptLanguage, xLanguage)
 	if err != nil {
 		return nil, err
@@ -818,4 +819,22 @@ func (s *SubscriptionService) GetAppSubscriptionHistory(ctx context.Context, req
 		Page:     int32(page),
 		PageSize: int32(pageSize),
 	}, nil
+}
+
+// GetPlanOwner 获取套餐归属，供内部控制面授权使用。
+func (s *SubscriptionService) GetPlanOwner(ctx context.Context, req *pb.GetPlanOwnerRequest) (*pb.GetPlanOwnerReply, error) {
+	plan, err := s.uc.GetPlan(ctx, req.PlanId)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.GetPlanOwnerReply{PlanId: plan.PlanID, AppId: plan.AppID, DeveloperId: plan.UserID}, nil
+}
+
+// GetPlanPricingOwner 获取区域定价归属，供内部控制面授权使用。
+func (s *SubscriptionService) GetPlanPricingOwner(ctx context.Context, req *pb.GetPlanPricingOwnerRequest) (*pb.GetPlanPricingOwnerReply, error) {
+	pricing, err := s.uc.GetPlanPricingByID(ctx, req.PlanPricingId)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.GetPlanPricingOwnerReply{PlanPricingId: pricing.PlanPricingID, PlanId: pricing.PlanID, AppId: pricing.AppID}, nil
 }

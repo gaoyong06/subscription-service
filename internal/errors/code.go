@@ -13,18 +13,18 @@ func init() {
 
 	// 业务错误码和http status错误码映射
 	pkgErrors.RegisterHTTPStatusMapping("subscription-service", map[int]int{
-		ErrCodePlanNotFound:              http.StatusNotFound,
-		ErrCodeDefaultFreePlanNotFound:  http.StatusNotFound,
-		ErrCodeSubscriptionNotFound: http.StatusNotFound,
-		ErrCodeInvalidStatus:        http.StatusBadRequest,
-		ErrCodeOrderNotFound:        http.StatusNotFound,
-		ErrCodeOrderAlreadyPaid:     http.StatusConflict,
-		ErrCodeCannotCancelStatus:   http.StatusConflict,
-		ErrCodeCannotPauseStatus:    http.StatusConflict,
-		ErrCodeCannotResumeStatus:   http.StatusConflict,
-		ErrCodeCannotSetAutoRenew:   http.StatusConflict,
-		ErrCodeOrderCreateFailed:    http.StatusInternalServerError,
-		ErrCodePaymentFailed:        http.StatusBadGateway,
+		ErrCodePlanNotFound:            http.StatusNotFound,
+		ErrCodeDefaultFreePlanNotFound: http.StatusNotFound,
+		ErrCodeSubscriptionNotFound:    http.StatusNotFound,
+		ErrCodeInvalidStatus:           http.StatusBadRequest,
+		ErrCodeOrderNotFound:           http.StatusNotFound,
+		ErrCodeOrderAlreadyPaid:        http.StatusConflict,
+		ErrCodeCannotCancelStatus:      http.StatusConflict,
+		ErrCodeCannotPauseStatus:       http.StatusConflict,
+		ErrCodeCannotResumeStatus:      http.StatusConflict,
+		ErrCodeCannotSetAutoRenew:      http.StatusConflict,
+		ErrCodeOrderCreateFailed:       http.StatusInternalServerError,
+		ErrCodePaymentFailed:           http.StatusBadGateway,
 	})
 }
 
