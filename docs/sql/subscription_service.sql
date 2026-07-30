@@ -96,12 +96,16 @@ CREATE TABLE `subscription_order` (
   `user_id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '用户ID',
   `plan_id` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '套餐ID',
   `app_id` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT '' COMMENT '应用ID',
+  `campaign_id` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '投放活动 ID（订单创建时归因快照）',
+  `click_id` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '短链点击 ID（订单创建时归因快照）',
   `amount` decimal(10,2) NOT NULL COMMENT '金额',
   `payment_status` enum('pending','success','failed','closed','refunded','partially_refunded') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending' COMMENT '支付状态(与payment-service保持一致): pending-待支付(订单已创建，等待支付), success-支付成功, failed-支付失败, closed-订单关闭, refunded-已全额退款, partially_refunded-部分退款',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`order_id`),
   KEY `idx_user_id` (`user_id`),
   KEY `idx_app_id` (`app_id`),
+  KEY `idx_campaign_id` (`campaign_id`),
+  KEY `idx_click_id` (`click_id`),
   KEY `idx_payment_id` (`payment_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='订阅订单表';
 
